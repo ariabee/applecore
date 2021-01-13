@@ -10,7 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from text_transform import TextTransform
 from preprocess import preprocess_wav, preprocess_transcription
-from lstm import BidirectionalGRU, train
+#from lstm import BidirectionalLSTM
+from gru import BidirectionalGRU
 torch.manual_seed(1)
 '''
 This script serves as a foundational aspect of development for the ASR unit for a voice controlled video game
@@ -30,16 +31,16 @@ test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_pro
 train_file = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/train-clean-100.tar.gz"
 test_file = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/test-clean.tar.gz"
 #check to see if the datasets have already been downloaded. If not, download them.
-if os.path.isfile(train_file):
-    print("Train dataset exists")
-else:
-    train_dataset = torchaudio.datasets.LIBRISPEECH("./", url="train-clean-100", download=True)
+#if os.path.isfile(train_file):
+   # print("Train dataset exists")
+#else:
+  #  train_dataset = torchaudio.datasets.LIBRISPEECH("./", url="train-clean-100", download=True)
     #TODO: add way to unzip file and create a directory like the one in the train_dataset variable
 
-if os.path.isfile(test_file):
-    print("Test dataset exists")
-else:
-    test_dataset = torchaudio.datasets.LIBRISPEECH("./", url="test-clean", download=True)
+#if os.path.isfile(test_file):
+  #  print("Test dataset exists")
+#else:
+  #  test_dataset = torchaudio.datasets.LIBRISPEECH("./", url="test-clean", download=True)
     #TODO: add way to unzip file and create a directory like the one in the test_dataset variable
 
 sample_train = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/sample/"
@@ -73,23 +74,32 @@ Data Preprocessing: Extract feature from the spectrographs and map the transcrip
 text_transform = TextTransform()
 
 def data_processing(data):
+    spectrograms = []
+    labels = []
+    input_lengths = []
+    label_lengths = []
     waveform = preprocess_wav(sample_train)
     utterance = preprocess_transcription(sample_train)
     waveform, sample_rate = torchaudio.load(waveform)
 
     spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
-
-
-    #TODO: find out why we transpose and squeeze the transformed waveforms
-
+    spectrograms.append(spec)
     #create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
     label = torch.Tensor(text_transform.text_to_int(utterance.lower()))
-    #spectrograms = nn.utils.rnn.pad_sequence(spec, batch_first=True).unsqueeze(1).transpose(0, 1)
-    #labels = nn.utils.rnn.pad_sequence(label, batch_first=True)
-    labels = torch.FloatTensor(label)
-    #print("spectrograms, labels")
-    #print(spectrograms, labels)
-    return spec, labels
+
+    labels.append(label)
+    input_lengths.append(spec.shape[0]//2)
+    label_lengths.append(len(label))
+
+    #transpose(2, 3)
+    spectrograms = nn.utils.rnn.pad_sequence(spec, batch_first=True).unsqueeze(1).transpose(0, 1)
+    #spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
+    #spectrograms = spectrograms.transpose(2, 3)
+
+    labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
+
+
+    return spectrograms, labels, input_lengths, label_lengths
 
 data_processing(sample_train)
 '''
@@ -104,26 +114,32 @@ train_loader = data.DataLoader(dataset=sample_train,
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
+criterion = nn.CTCLoss(blank=28).to(device)
 
 def train(model, epoch):
     model.train()
     data_len = len(train_loader.dataset)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    criterion = nn.CTCLoss(blank=28)
     scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                               steps_per_epoch=int(len(train_loader)),
                                               epochs=10,
                                               anneal_strategy='linear')
 
     for batch_idx, _data in enumerate(train_loader):
-        spec, labels = _data
-        spec, labels = spec.to(device), labels.to(device)
+        spectrograms, labels, input_lengths, label_lengths = _data
+        spectrograms, labels = spectrograms.to(device), labels.to(device)
 
         optimizer.zero_grad()
 
-        output = model(spec)
+        output = model(spectrograms)
 
-        loss = criterion(output)
+        output = F.log_softmax(output, dim=1)
+        output = output.transpose(0, 1)
+
+
+        loss = criterion(output, labels, input_lengths, label_lengths)
+
+        optimizer.zero_grad()
         loss.backward()
 
         optimizer.step()
@@ -134,12 +150,14 @@ def train(model, epoch):
                 epoch, batch_idx * len(spectrograms), data_len,
                        100. * batch_idx / len(train_loader), loss.item()))
 
-input_dim = 28
+input_dim = 128
 hidden_dim = 100
 layer_dim = 1
-output_dim = 10
+output_dim = 128
+dropout = 0.1
+batch_first = True
 
-model = BidirectionalGRU(input_dim, hidden_dim, layer_dim, output_dim)
+model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 train(model, 10)
 
 

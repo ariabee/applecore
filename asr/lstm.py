@@ -8,54 +8,28 @@ use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
 
+class BidirectionalLSTM(nn.Module):
 
-class BidirectionalGRU(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_dim):
+        super(BidirectionalLSTM, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
 
-    def __init__(self, rnn_dim, hidden_size, dropout, batch_first):
-        super(BidirectionalGRU, self).__init__()
-
-        self.BiGRU = nn.GRU(
-            input_size=rnn_dim, hidden_size=hidden_size,
-            num_layers=1, batch_first=batch_first, bidirectional=True)
-        print("rnn dim")
-        print(rnn_dim)
-        self.layer_norm = nn.LayerNorm(rnn_dim)
-        print("layer norm")
-        print(self.layer_norm)
-        self.dropout = nn.Dropout(dropout)
+        self.lstm = nn.LSTM(
+            input_size, hidden_size, num_layers, batch_first=True, bidirectional=True)
+        self.fc = nn.Linear(hidden_size*2, output_dim)
 
     def forward(self, x):
-        x = self.layer_norm(x)
-        x = F.gelu(x)
-        x, _ = self.BiGRU(x)
-        x = self.dropout(x)
-        return x
-
-
-#taken from the train section from: https://www.kdnuggets.com/2020/07/pytorch-lstm-text-generation-tutorial.html
-def train(dataset, model):
-    model.train()
-
-    dataloader = DataLoader(dataset, batch_size=10)
-    criterion = nn.CTCLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-    for epoch in range(0,2):
-        state_h, state_c = model.init_state(1)
-
-        for batch, idx in enumerate(dataloader):
-            optimizer.zero_grad()
-
-            y_pred, (state_h, state_c) = model(x, (state_h, state_c))
-            loss = criterion(y_pred.transpose(1, 2), y)
-
-            state_h = state_h.detach()
-            state_c = state_c.detach()
-
-            loss.backward()
-            optimizer.step()
-
-            print({'epoch': epoch, 'batch': batch, 'loss': loss.item()})
-
-
-#for predict, model.eval()
+        #print("x")
+        #print(x.size())
+        h0 = torch.zeros(self.num_layers*2, x.size(0), self.hidden_size).to(device)
+        c0 = torch.zeros(self.num_layers*2, x.size(0), self.hidden_size).to(device)
+        #print("h0")
+        #print(h0.size())
+        #print("c0")
+        #print(c0.size())
+        out, _ = self.lstm(x, (h0, c0))
+       # print("lstm hidden")
+       # print(out.size())
+        out = self.fc(out[:, -1, :])
+        return out
