@@ -132,14 +132,13 @@ def train(model, epoch):
         optimizer.zero_grad()
 
         output = model(spectrograms)
+        output = F.log_softmax(output, dim=2)
 
-        output = F.log_softmax(output, dim=1)
         output = output.transpose(0, 1)
 
 
         loss = criterion(output, labels, input_lengths, label_lengths)
 
-        optimizer.zero_grad()
         loss.backward()
 
         optimizer.step()
@@ -152,8 +151,6 @@ def train(model, epoch):
 
 input_dim = 128
 hidden_dim = 100
-layer_dim = 1
-output_dim = 128
 dropout = 0.1
 batch_first = True
 
