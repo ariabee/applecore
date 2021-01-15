@@ -1,4 +1,5 @@
 import os
+import re
 from comet_ml import Experiment
 import torch
 import torch.nn as nn
@@ -9,7 +10,7 @@ import torchaudio
 import numpy as np
 import matplotlib.pyplot as plt
 from text_transform import TextTransform
-from preprocess import preprocess_wav, preprocess_transcription
+from preprocess import full_train_corpus
 #from lstm import BidirectionalLSTM
 from gru import BidirectionalGRU
 torch.manual_seed(1)
@@ -25,11 +26,10 @@ Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, r
 '''
 
 #declare paths for both the training and testing datasets
-train_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/train-clean-100"
+train_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-clean-100"
 test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
 
-train_file = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/train-clean-100.tar.gz"
-test_file = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/test-clean.tar.gz"
+
 #check to see if the datasets have already been downloaded. If not, download them.
 #if os.path.isfile(train_file):
    # print("Train dataset exists")
@@ -42,17 +42,6 @@ test_file = "/home/morgan/Documents/saarland/fourth_semester/lap_software_projec
 #else:
   #  test_dataset = torchaudio.datasets.LIBRISPEECH("./", url="test-clean", download=True)
     #TODO: add way to unzip file and create a directory like the one in the test_dataset variable
-
-sample_train = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/sample/"
-#sample_train_transcription = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/LibriSpeech/train-clean-100/19/198/sample_training_text.txt"
-#sample_train_preprocessed = preprocess(sample_train_transcription)
-sample_audio = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/sample/19-198-0000.flac"
-
-#get spectrograms and labels from the sample sound file
-#waveform, sample_rate = torchaudio.load(sample_train)
-
-#put waveform into mel spectrogram
-#specgram = torchaudio.transforms.MelSpectrogram()(waveform)
 
 
 '''
@@ -78,35 +67,44 @@ def data_processing(data):
     labels = []
     input_lengths = []
     label_lengths = []
-    waveform = preprocess_wav(sample_train)
-    utterance = preprocess_transcription(sample_train)
-    waveform, sample_rate = torchaudio.load(waveform)
+    flac_files = []
+    transcription_files = []
+    for top_directory in os.listdir(train_dataset):
+        for second_directory in os.listdir(os.path.join(train_dataset, top_directory)):
+            working_directory = os.path.join(train_dataset, top_directory, second_directory)
+            for filename in os.listdir(working_directory):
+                if filename.endswith(".flac"):
+                    flac_file = os.path.join(working_directory, filename)
+                    waveform, sample_rate = torchaudio.load(flac_file)
+                    spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
+                if filename.endswith(".txt"):
+                    transcription_file = open(os.path.join(working_directory, filename))
+                    transcription_file = transcription_file.read().split("\n")
+                    for transcription in transcription_file:
+                        # preprocess using a regex to remove the identifying labels and just have the transcribed speech
+                        transcription_file = re.sub("[\d-]", "", transcription)
+                        #print(transcription_file)
+                        label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
 
-    spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
-    spectrograms.append(spec)
-    #create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
-    label = torch.Tensor(text_transform.text_to_int(utterance.lower()))
+        spectrograms.append(spec)
+        #create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
+        labels.append(label)
+        input_lengths.append(spec.shape[0]//2)
+        label_lengths.append(len(label))
 
-    labels.append(label)
-    input_lengths.append(spec.shape[0]//2)
-    label_lengths.append(len(label))
-
-    #transpose(2, 3)
-    spectrograms = nn.utils.rnn.pad_sequence(spec, batch_first=True).unsqueeze(1).transpose(0, 1)
-    #spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
-    #spectrograms = spectrograms.transpose(2, 3)
-
+    spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
+    print("spectrograms")
+    print(spectrograms)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
-
 
     return spectrograms, labels, input_lengths, label_lengths
 
-data_processing(sample_train)
+data_processing(train_dataset)
 '''
 LSTM
 '''
 
-train_loader = data.DataLoader(dataset=sample_train,
+train_loader = data.DataLoader(dataset=train_dataset,
                                 batch_size=10,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
@@ -128,6 +126,8 @@ def train(model, epoch):
     for batch_idx, _data in enumerate(train_loader):
         spectrograms, labels, input_lengths, label_lengths = _data
         spectrograms, labels = spectrograms.to(device), labels.to(device)
+        print("spectrograms train")
+        print(spectrograms.size())
 
         optimizer.zero_grad()
 
@@ -149,8 +149,8 @@ def train(model, epoch):
                 epoch, batch_idx * len(spectrograms), data_len,
                        100. * batch_idx / len(train_loader), loss.item()))
 
-input_dim = 128
-hidden_dim = 100
+input_dim = 512
+hidden_dim = 512
 dropout = 0.1
 batch_first = True
 
