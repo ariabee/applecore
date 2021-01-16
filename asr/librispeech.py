@@ -13,6 +13,8 @@ from text_transform import TextTransform
 from preprocess import full_train_corpus
 #from lstm import BidirectionalLSTM
 from gru import BidirectionalGRU
+from cnn import CNNLayerNorm, ResidualCNN
+from speech_recognition import SpeechRecognitionModel
 torch.manual_seed(1)
 '''
 This script serves as a foundational aspect of development for the ASR unit for a voice controlled video game
@@ -93,8 +95,8 @@ def data_processing(data):
         label_lengths.append(len(label))
 
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
-    print("spectrograms")
-    print(spectrograms)
+    #print("spectrograms")
+    #print(spectrograms)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
 
     return spectrograms, labels, input_lengths, label_lengths
@@ -126,8 +128,8 @@ def train(model, epoch):
     for batch_idx, _data in enumerate(train_loader):
         spectrograms, labels, input_lengths, label_lengths = _data
         spectrograms, labels = spectrograms.to(device), labels.to(device)
-        print("spectrograms train")
-        print(spectrograms.size())
+       # print("spectrograms train")
+        #print(spectrograms.size())
 
         optimizer.zero_grad()
 
@@ -153,8 +155,13 @@ input_dim = 512
 hidden_dim = 512
 dropout = 0.1
 batch_first = True
+n_feats = 128
+cnn_layers = 3
+stride = 2
 
-model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
+
+#model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
+model = SpeechRecognitionModel(cnn_layers, n_feats, stride, dropout)
 train(model, 10)
 
 
