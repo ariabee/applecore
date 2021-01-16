@@ -64,7 +64,7 @@ Data Preprocessing: Extract feature from the spectrographs and map the transcrip
 '''
 text_transform = TextTransform()
 
-def data_processing(data):
+def data_processing(data, toy=True):
     spectrograms = []
     labels = []
     input_lengths = []
@@ -89,19 +89,24 @@ def data_processing(data):
                         label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
 
         spectrograms.append(spec)
+
         #create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
         labels.append(label)
         input_lengths.append(spec.shape[0]//2)
+
         label_lengths.append(len(label))
 
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
+    #spectrograms = spectrograms[:10]
     #print("spectrograms")
-    #print(spectrograms)
+   # print(spectrograms)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
+   # input_lengths = input_lengths[:10]
+   # labels = labels[:10]
 
     return spectrograms, labels, input_lengths, label_lengths
 
-data_processing(train_dataset)
+#data_processing(train_dataset)
 '''
 LSTM
 '''
@@ -134,6 +139,8 @@ def train(model, epoch):
         optimizer.zero_grad()
 
         output = model(spectrograms)
+        #print("output")
+       # print(output)
         output = F.log_softmax(output, dim=2)
 
         output = output.transpose(0, 1)
@@ -151,17 +158,18 @@ def train(model, epoch):
                 epoch, batch_idx * len(spectrograms), data_len,
                        100. * batch_idx / len(train_loader), loss.item()))
 
-input_dim = 512
+rnn_dim = 512
 hidden_dim = 512
 dropout = 0.1
 batch_first = True
 n_feats = 128
 cnn_layers = 3
 stride = 2
+rnn_layers = 5
 
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
-model = SpeechRecognitionModel(cnn_layers, n_feats, stride, dropout)
+model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_feats, stride, dropout)
 train(model, 10)
 
 
