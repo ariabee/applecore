@@ -123,56 +123,51 @@ torch.manual_seed(7)
 device = torch.device("cpu")
 criterion = nn.CTCLoss(blank=28).to(device)
 
+
 def train(model, epoch):
     model.train()
     data_len = len(train_loader.dataset)
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
-                                              steps_per_epoch=int(len(train_loader)),
-                                              epochs=10,
-                                              anneal_strategy='linear')
-
-    for batch_idx, _data in enumerate(train_loader):
-        spectrograms, labels, input_lengths, label_lengths = _data
-        spectrograms, labels = spectrograms.to(device), labels.to(device)
-       # print("spectrograms train")
-        #print(spectrograms.size())
-
-        optimizer.zero_grad()
-
-        output = model(spectrograms)
-        #print("output")
-       # print(output)
-        output = F.log_softmax(output, dim=2)
-
-        output = output.transpose(0, 1)
+    with torch.no_grad():
+        for batch_idx, _data in enumerate(train_loader):
+            spectrograms, labels, input_lengths, label_lengths = _data
+            spectrograms, labels = spectrograms.to(device), labels.to(device)
 
 
-        loss = criterion(output, labels, input_lengths, label_lengths)
+            optimizer.zero_grad()
 
-        loss.backward()
+            output = model(spectrograms)
 
-        optimizer.step()
-        scheduler.step()
-        gc.collect()
+            output = F.log_softmax(output, dim=2)
 
-        if batch_idx % 100 == 0 or batch_idx == data_len:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(spectrograms), data_len,
-                       100. * batch_idx / len(train_loader), loss.item()))
+            output = output.transpose(0, 1)
 
-            # save the model
-            '''
-            The learnable parameters in PyTorch are contained in the model's parameters.
-            A state_dict is a Python dictionary object that maps each layer to its parameters tensor.
-            A state_dict can be easily saved, updated, altered, and restored.
-            '''
-            #print("Model's state_dict:")
-           # for param_tensor in model.state_dict():
-               # print(param_tensor, "\t", model.state_dict()[param_tensor].size())
 
-            print("saving model")
-            torch.save(model.state_dict(), path_to_model)
+            loss = criterion(output, labels, input_lengths, label_lengths)
+
+            loss.backward()
+
+            optimizer.step()
+            scheduler.step()
+           # gc.collect()
+            #torch.cuda.empty_cache()
+
+            if batch_idx % 100 == 0 or batch_idx == data_len:
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                    epoch, batch_idx * len(spectrograms), data_len,
+                        100. * batch_idx / len(train_loader), loss.item()))
+
+             # save the model
+                '''
+                The learnable parameters in PyTorch are contained in the model's parameters.
+                A state_dict is a Python dictionary object that maps each layer to its parameters tensor.
+                A state_dict can be easily saved, updated, altered, and restored.
+                '''
+                #print("Model's state_dict:")
+            # for param_tensor in model.state_dict():
+                # print(param_tensor, "\t", model.state_dict()[param_tensor].size())
+
+                print("saving model")
+                torch.save(model.state_dict(), path_to_model)
 
 rnn_dim = 512
 hidden_dim = 512
@@ -186,6 +181,11 @@ n_class = 29
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
+                                              steps_per_epoch=int(len(train_loader)),
+                                              epochs=10,
+                                              anneal_strategy='linear')
 model.to(device)
 train(model, 10)
 
