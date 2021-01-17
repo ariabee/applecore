@@ -29,7 +29,7 @@ Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, r
 '''
 
 #declare paths for both the training and testing datasets
-train_dataset = "/local/morganw/train-half"
+train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100"
 #test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
 
 path_to_model = "/local/morganw/speech_recognition_saved_models/server.pt"
@@ -114,7 +114,7 @@ LSTM
 '''
 
 train_loader = data.DataLoader(dataset=train_dataset,
-                                batch_size=5,
+                                batch_size=10,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
                                 )
@@ -181,6 +181,7 @@ n_class = 29
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
+model = nn.DataParallel(model, device_ids=[0,1])
 model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
