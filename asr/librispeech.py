@@ -29,7 +29,7 @@ Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, r
 '''
 
 #declare paths for both the training and testing datasets
-train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100/"
+train_dataset = "/local/morganw/train-half"
 #test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
 
 path_to_model = "/local/morganw/speech_recognition_saved_models/server.pt"
@@ -114,13 +114,13 @@ LSTM
 '''
 
 train_loader = data.DataLoader(dataset=train_dataset,
-                                batch_size=10,
+                                batch_size=5,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
                                 )
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
-device = torch.device("cpu")
+device = torch.device("cuda" if use_cuda else "cpu")
 criterion = nn.CTCLoss(blank=28).to(device)
 
 
@@ -134,7 +134,7 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
 
 
             optimizer.zero_grad()
-
+            print("model")
             output = model(spectrograms)
 
             output = F.log_softmax(output, dim=2)
@@ -143,7 +143,7 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
 
 
             loss = criterion(output, labels, input_lengths, label_lengths)
-
+            loss.requires_grad = True
             loss.backward()
 
             optimizer.step()
@@ -181,6 +181,7 @@ n_class = 29
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
+model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                               steps_per_epoch=int(len(train_loader)),
@@ -190,7 +191,6 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
 epochs = 10
 for epoch in range(1, epochs + 1):
     train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
-    model.to(device)
 
 
 
