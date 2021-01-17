@@ -124,7 +124,7 @@ device = torch.device("cpu")
 criterion = nn.CTCLoss(blank=28).to(device)
 
 
-def train(model, epoch):
+def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
     model.train()
     data_len = len(train_loader.dataset)
     with torch.no_grad():
@@ -185,10 +185,12 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                               steps_per_epoch=int(len(train_loader)),
                                               epochs=10,
-                                              anneal_strategy='linear')
-model.to(device)
-train(model, 10)
+                                             anneal_strategy='linear')
 
+epochs = 10
+for epoch in range(1, epochs + 1):
+    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+    model.to(device)
 
 
 
