@@ -154,9 +154,9 @@ def train(model, epoch):
 
         optimizer.step()
         scheduler.step()
-	gc.collect()
+        gc.collect()
 
-	if batch_idx % 100 == 0 or batch_idx == data_len:
+        if batch_idx % 100 == 0 or batch_idx == data_len:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(spectrograms), data_len,
                        100. * batch_idx / len(train_loader), loss.item()))
