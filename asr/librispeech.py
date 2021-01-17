@@ -1,5 +1,6 @@
 import os
 import re
+import gc
 from comet_ml import Experiment
 import torch
 import torch.nn as nn
@@ -10,7 +11,7 @@ import torchaudio
 import numpy as np
 import matplotlib.pyplot as plt
 from text_transform import TextTransform
-from preprocess import full_train_corpus
+#from preprocess import full_train_corpus
 #from lstm import BidirectionalLSTM
 from gru import BidirectionalGRU
 from cnn import CNNLayerNorm, ResidualCNN
@@ -28,10 +29,10 @@ Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, r
 '''
 
 #declare paths for both the training and testing datasets
-train_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop"
-test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
+train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100/"
+#test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
 
-path_to_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/laptop.pt"
+path_to_model = "/local/morganw/speech_recognition_saved_models/server.pt"
 
 #check to see if the datasets have already been downloaded. If not, download them.
 #if os.path.isfile(train_file):
@@ -65,7 +66,7 @@ Data Preprocessing: Extract feature from the spectrographs and map the transcrip
 '''
 text_transform = TextTransform()
 
-def data_processing(data, toy=True):
+def data_processing(data):
     spectrograms = []
     labels = []
     input_lengths = []
@@ -119,7 +120,7 @@ train_loader = data.DataLoader(dataset=train_dataset,
                                 )
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
-device = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cpu")
 criterion = nn.CTCLoss(blank=28).to(device)
 
 def train(model, epoch):
@@ -153,8 +154,9 @@ def train(model, epoch):
 
         optimizer.step()
         scheduler.step()
+	gc.collect()
 
-        if batch_idx % 100 == 0 or batch_idx == data_len:
+	if batch_idx % 100 == 0 or batch_idx == data_len:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(spectrograms), data_len,
                        100. * batch_idx / len(train_loader), loss.item()))
@@ -184,6 +186,7 @@ n_class = 29
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
+model.to(device)
 train(model, 10)
 
 
