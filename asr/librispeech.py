@@ -28,9 +28,10 @@ Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, r
 '''
 
 #declare paths for both the training and testing datasets
-train_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-clean-100"
+train_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop"
 test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
 
+path_to_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/laptop.pt"
 
 #check to see if the datasets have already been downloaded. If not, download them.
 #if os.path.isfile(train_file):
@@ -158,6 +159,19 @@ def train(model, epoch):
                 epoch, batch_idx * len(spectrograms), data_len,
                        100. * batch_idx / len(train_loader), loss.item()))
 
+            # save the model
+            '''
+            The learnable parameters in PyTorch are contained in the model's parameters.
+            A state_dict is a Python dictionary object that maps each layer to its parameters tensor.
+            A state_dict can be easily saved, updated, altered, and restored.
+            '''
+            #print("Model's state_dict:")
+           # for param_tensor in model.state_dict():
+               # print(param_tensor, "\t", model.state_dict()[param_tensor].size())
+
+            print("saving model")
+            torch.save(model.state_dict(), path_to_model)
+
 rnn_dim = 512
 hidden_dim = 512
 dropout = 0.1
@@ -166,10 +180,10 @@ n_feats = 128
 cnn_layers = 3
 stride = 2
 rnn_layers = 5
-
+n_class = 29
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
-model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_feats, stride, dropout)
+model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
 train(model, 10)
 
 

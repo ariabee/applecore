@@ -5,7 +5,7 @@ from cnn import CNNLayerNorm, ResidualCNN
 from gru import BidirectionalGRU
 
 class SpeechRecognitionModel(nn.Module):
-    def __init__(self, n_cnn_layers, n_rnn_layers, rnn_dim, n_feats, stride, dropout):
+    def __init__(self, n_cnn_layers, n_rnn_layers, rnn_dim, n_class, n_feats, stride, dropout):
         super(SpeechRecognitionModel, self).__init__()
         n_feats = n_feats//2
         self.cnn = nn.Conv2d(1, 32, 3, stride, padding=3//2)
@@ -19,6 +19,12 @@ class SpeechRecognitionModel(nn.Module):
                              hidden_size=rnn_dim, dropout=dropout, batch_first=i == 0)
             for i in range(n_rnn_layers)
         ])
+        self.classifier = nn.Sequential(
+            nn.Linear(rnn_dim * 2, rnn_dim),  # birnn returns rnn_dim*2
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(rnn_dim, n_class)
+        )
 
 
     def forward(self, x):
@@ -29,5 +35,5 @@ class SpeechRecognitionModel(nn.Module):
         x = x.transpose(1, 2)  # (batch, time, feature)
         x = self.fully_connected(x)
         x = self.birnn_layers(x)
-        print(x.size())
+        x = self.classifier(x)
         return x
