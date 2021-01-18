@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wizard SYSTEM "Wizard.dtd">
+
+<wizard>
+	<plugin type="dialogos.plugin.sphinx">
+		<att name="language" type="string" value="de_DE"/>
+	</plugin>
+	<graph directed="1" Graphic="1" Layout="points">
+		<att name="width" type="integer" value="750"/>
+		<att name="height" type="integer" value="540"/>
+		<groovyFunctions></groovyFunctions>
+		<node uid="171ce65b-78a4-44cd-8b9f-d47efee82b4e" class="com.clt.diamant.graph.nodes.StartNode">
+			<graphics x="373" y="39" fill="#9999ff"/>
+			<att name="title" type="string" value="Start"/>
+		</node>
+		<node uid="ad5c8050-c314-4d80-b9ee-4ca208861a6f" class="edu.cmu.lti.dialogos.sphinx.plugin.SphinxNode">
+			<graphics x="389" y="122" fill="#b20000"/>
+			<att name="title" type="string" value="Speech recognizer"/>
+			<att name="language" type="string" value="US English"/>
+		</node>
+		<edge src="171ce65b-78a4-44cd-8b9f-d47efee82b4e" tgt="ad5c8050-c314-4d80-b9ee-4ca208861a6f">
+		</edge>
+		<edge src="ad5c8050-c314-4d80-b9ee-4ca208861a6f">
+			<att name="condition" type="string" value="&quot;yes&quot;"/>
+		</edge>
+		<edge src="ad5c8050-c314-4d80-b9ee-4ca208861a6f">
+			<att name="condition" type="string" value="&quot;no&quot;"/>
+		</edge>
+	</graph>
+</wizard>
