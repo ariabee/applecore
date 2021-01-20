@@ -15,46 +15,65 @@ from gru import BidirectionalGRU
 '''
 Method to preprocess the data: 
 '''
-sample_train = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/train-clean-100voice-controlled-world-game/asr/sample/"
-train_corpus = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-clean-100/"
 
-def preprocess_transcription(path_to_transcription):
+test_corpus = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/test_corpus/"
 
-    for filename in os.listdir(path_to_transcription):
-        if filename.endswith(".txt"):
-            sample_transcription = open(os.path.join(path_to_transcription, filename))
-            read_transcription = sample_transcription.read()
+#define a neural network-like layer stack to transform the waveform into a mel spectrogram and apply frequency masking and time masking
+train_audio_transforms = nn.Sequential(
+    torchaudio.transforms.MelSpectrogram(sample_rate=16000, n_mels=128),
+    #frequency masking is how torchaudio performs SpecAugment for the frequency dimension
+    torchaudio.transforms.FrequencyMasking(freq_mask_param=30),
+    #time masking is how torchaudio performs SpechAugment for the time dimension
+    torchaudio.transforms.TimeMasking(time_mask_param=100)
+)
 
-            #preprocess using a regex to remove the identifying labels and just have the transcribed speech
-            sample_transcription_preprocessed = re.sub("^.{0,12}", "", read_transcription)
-            #print(sample_train_preprocessed)
-            return sample_transcription_preprocessed
+'''
+Data Preprocessing: Extract feature from the spectrographs and map the transcriptions to numbers to create labels 
+'''
+text_transform = TextTransform()
 
-#preprocess_transcription(sample_train)
+
+
 
 def preprocess_wav(path_to_wav):
     for filename in os.listdir(path_to_wav):
-        if filename.endswith(".flac"):
+        if filename.endswith(".wav"):
            # print(os.path.join(path_to_wav, filename))
             sample_wav_preprocessed = os.path.join(path_to_wav, filename)
             return sample_wav_preprocessed
 
 
-#preprocess_wav(sample_train)
-flac_files = []
-transcription_files = []
+def preprocess_test(test_corpus):
+    spectrograms = []
+    labels = []
+    input_lengths = []
+    label_lengths = []
+    wav_file = preprocess_wav(test_corpus)
+    waveform, sample_rate = torchaudio.load(wav_file)
+    spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
+    transcription = preprocess_transcription(test_corpus)
+    spectrograms.append(spec)
+    label = torch.Tensor(text_transform.text_to_int(transcription.lower()))
+    # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
+    labels.append(label)
+    input_lengths.append(spec.shape[0] // 2)
 
-def full_train_corpus(train_corpus):
-    for top_directory in os.listdir(train_corpus):
-        for second_directory in os.listdir(os.path.join(train_corpus, top_directory)):
-            working_directory = os.path.join(train_corpus, top_directory, second_directory)
-            for filename in os.listdir(working_directory):
-                if filename.endswith(".flac"):
-                    flac_files.append(filename)
-                if filename.endswith(".txt"):
-                    transcription_files.append(filename)
-                    return flac_files, transcription_files
+    label_lengths.append(len(label))
+    spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
+    # spectrograms = spectrograms[:10]
+    # print("spectrograms")
+    # print(spectrograms)
+    labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
+    # input_lengths = input_lengths[:10]
+    # labels = labels[:10]
+
+   # print(spectrograms, labels, input_lengths, label_lengths)
+    return spectrograms, labels, input_lengths, label_lengths
+
+preprocess_test(test_corpus)
 
 
-full_train_corpus(train_corpus)
+
+
+
 

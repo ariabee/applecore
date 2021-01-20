@@ -15,7 +15,7 @@ from text_transform import TextTransform
 #from lstm import BidirectionalLSTM
 from gru import BidirectionalGRU
 from cnn import CNNLayerNorm, ResidualCNN
-from speech_recognition import SpeechRecognitionModel
+from model import SpeechRecognitionModel
 torch.manual_seed(1)
 '''
 This script serves as a foundational aspect of development for the ASR unit for a voice controlled video game
@@ -32,8 +32,11 @@ Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, r
 train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100"
 #test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
 
+train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop"
+
 path_to_model = "/local/morganw/speech_recognition_saved_models/server.pt"
 
+path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/laptop.pt"
 #check to see if the datasets have already been downloaded. If not, download them.
 #if os.path.isfile(train_file):
    # print("Train dataset exists")
@@ -66,6 +69,7 @@ Data Preprocessing: Extract feature from the spectrographs and map the transcrip
 '''
 text_transform = TextTransform()
 
+
 def data_processing(data):
     spectrograms = []
     labels = []
@@ -73,22 +77,17 @@ def data_processing(data):
     label_lengths = []
     flac_files = []
     transcription_files = []
-    for top_directory in os.listdir(train_dataset):
-        for second_directory in os.listdir(os.path.join(train_dataset, top_directory)):
-            working_directory = os.path.join(train_dataset, top_directory, second_directory)
+    for top_directory in os.listdir(train_local_dataset):
+        for second_directory in os.listdir(os.path.join(train_local_dataset, top_directory)):
+            working_directory = os.path.join(train_local_dataset, top_directory, second_directory)
             for filename in os.listdir(working_directory):
                 if filename.endswith(".flac"):
                     flac_file = os.path.join(working_directory, filename)
+                    print(filename)
                     waveform, sample_rate = torchaudio.load(flac_file)
                     spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
-                if filename.endswith(".txt"):
-                    transcription_file = open(os.path.join(working_directory, filename))
-                    transcription_file = transcription_file.read().split("\n")
-                    for transcription in transcription_file:
-                        # preprocess using a regex to remove the identifying labels and just have the transcribed speech
-                        transcription_file = re.sub("[\d-]", "", transcription)
-                        #print(transcription_file)
-                        label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
+
+                    label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
 
         spectrograms.append(spec)
 
@@ -108,12 +107,12 @@ def data_processing(data):
 
     return spectrograms, labels, input_lengths, label_lengths
 
-#data_processing(train_dataset)
+#data_processing(train_local_dataset)
 '''
 LSTM
 '''
 
-train_loader = data.DataLoader(dataset=train_dataset,
+train_loader = data.DataLoader(dataset=train_local_dataset,
                                 batch_size=10,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
@@ -163,7 +162,7 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
             # print(param_tensor, "\t", model.state_dict()[param_tensor].size())
 
             print("saving model")
-            torch.save(model.state_dict(), path_to_model)
+            torch.save(model.state_dict(), path_to_local_model)
 
 rnn_dim = 512
 hidden_dim = 512
@@ -176,8 +175,8 @@ rnn_layers = 5
 n_class = 29
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
-model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
-model = nn.DataParallel(model, device_ids=[0,1])
+#model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
+#model = nn.DataParallel(model, device_ids=[0, 1])
 model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
@@ -186,8 +185,8 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                              anneal_strategy='linear')
 
 epochs = 10
-for epoch in range(1, epochs + 1):
-    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+#for epoch in range(1, epochs + 1):
+   # train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 
 
 
