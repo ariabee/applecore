@@ -1,6 +1,7 @@
 import pygame, sys
 from pygame.locals import *
 import random, time
+import speech_recognition as sr
 
 # Initialzing
 pygame.init()
@@ -22,68 +23,117 @@ font_small = pygame.font.SysFont("Verdana", 20)
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 600
 
+r = sr.Recognizer()
+
 TASKS = "TASKS"
 
-background = pygame.image.load("grass.jpg")
+#background = pygame.image.load("grass.jpg")
 
 # Create a white screen
 DISPLAYSURF = pygame.display.set_mode((400, 600))
 DISPLAYSURF.fill(WHITE)
 
-"""
+
 class Camera:
-    def __init__(self, position):
+    def __init__(self):
+        self.bgimage = pygame.image.load('grass.jpg')
+        self.rectBGimg = self.bgimage.get_rect()
 
-        self.offset = Vector(windowWidth / 2, windowHeight / 2)
-        self.scale = Vector(windowWidth, windowHeight)
-        self.position = position - self.offset + self.level.player.scale / 2
-        self.rect = pygame.Rect(self.position, self.scale)
-        self.velocity = Vector(0, 0)
+        self.bgY1 = 0
+        self.bgX1 = 0
 
-        self.image = pygame.Surface((10, 10)).convert()
-        self.image.fill((0, 0, 255))
-        camera_position = self.position + self.offset
-        player_position = self.level.player.position + self.level.player.scale / 2
-        distance = player_position - camera_position
-        cam_x = 0  # 150 # allowed_distance_x_from_camera
+        self.bgY2 = self.rectBGimg.height
+        self.bgX2 = self.rectBGimg.width
 
-    def update(self, milliseconds):
-        camera_position.y = player_position.y
-        if distance.x > cam_x:
-            camera_position.x = player_position.x - cam_x
-        if distance.x < -cam_x:
-            camera_position.x = player_position.x + cam_x
+        self.moving_speed = 5
 
-        self.position = camera_position - self.offset
+    def update_upwards(self):
+        self.bgY1 = 0
+        self.bgX2 = 0
+        self.bgY1 += self.moving_speed
+        self.bgY2 += self.moving_speed
+        if self.bgY1 >= self.rectBGimg.height:
+            self.bgY1 = -self.rectBGimg.height
+        if self.bgY2 >= self.rectBGimg.height:
+            self.bgY2 = -self.rectBGimg.height
 
-        self.rect.topleft = self.position  # - self.offset
-"""
+    def update_downwards(self):
+        self.bgY1 = 0
+        self.bgX2 = 0
+        self.bgY1 -= self.moving_speed
+        self.bgY2 -= self.moving_speed
+        if self.bgY1 <= -self.rectBGimg.height:
+            self.bgY1 = self.rectBGimg.height
+        if self.bgY2 <= -self.rectBGimg.height:
+            self.bgY2 = self.rectBGimg.height
+
+    def update_left(self):
+        self.bgX1 += self.moving_speed
+        self.bgX2 += self.moving_speed
+        self.bgY1 = 0
+        self.bgY2 = 0
+        if self.bgX1 >= self.rectBGimg.width:
+            self.bgX1 = -self.rectBGimg.width
+        if self.bgX2 >= self.rectBGimg.width:
+            self.bgX2 = -self.rectBGimg.width
+
+    def update_right(self):
+        self.bgX1 -= self.moving_speed
+        self.bgX2 -= self.moving_speed
+        self.bgY1 = 0
+        self.bgY2 = 0
+        if self.bgX1 <= -self.rectBGimg.width:
+            self.bgX1 = self.rectBGimg.width
+        if self.bgX2 <= -self.rectBGimg.width:
+            self.bgX2 = self.rectBGimg.width
+
+    def render(self):
+        DISPLAYSURF.blit(self.bgimage, (self.bgX1, self.bgY1))
+        DISPLAYSURF.blit(self.bgimage, (self.bgX2, self.bgY2))
+
 
 class Avatar(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("apple.png")
-        self.surf = pygame.Surface((90, 90))
+        self.surf = pygame.Surface((200, 200))
         self.rect = self.surf.get_rect(center=(340, 420))
 
     def move(self):
         pressed_keys = pygame.key.get_pressed()
+        if pressed_keys[K_UP]:
+            with sr.Microphone() as source:
+                audio = r.listen(source)
+                try:
+                    text = r.recognize_google(audio)
+                    print(text)
+                    if text == 'up':
+                        if self.rect.top > 0:
+                            self.rect.move_ip(0, -100)
+                        else:
+                            camera.update_upwards()
+                    if text == 'down':
+                        if self.rect.bottom < SCREEN_HEIGHT:
+                            self.rect.move_ip(0, 100)
+                        else:
+                            camera.update_downwards()
+                    if text == 'left':
+                        if self.rect.left > 0:
+                            self.rect.move_ip(-100, 0)
+                        else:
+                            camera.update_left()
+                    if text == 'right':
+                        if self.rect.right < SCREEN_WIDTH:
+                            self.rect.move_ip(100, 0)
+                        else:
+                            camera.update_right()
+                except:
+                    print('Did not get that try Again')
+                    text = ''
 
-        if self.rect.top > 0:
-            if pressed_keys[K_UP]:
-                self.rect.move_ip(0, -5)
-        if self.rect.bottom < SCREEN_HEIGHT:
-            if pressed_keys[K_DOWN]:
-                self.rect.move_ip(0, 5)
-
-        if self.rect.left > 0:
-            if pressed_keys[K_LEFT]:
-                self.rect.move_ip(-5, 0)
-        if self.rect.right < SCREEN_WIDTH:
-            if pressed_keys[K_RIGHT]:
-                self.rect.move_ip(5, 0)
 
 # Setting up Sprites
+camera = Camera()
 P1 = Avatar()
 
 # Creating Sprites Groups
@@ -99,7 +149,10 @@ while True:
             pygame.quit()
             sys.exit()
 
-    DISPLAYSURF.blit(background, (0, 0))
+    #DISPLAYSURF.blit(background, (0, 0))
+    #camera.update()
+    camera.render()
+
     tasks = font_small.render(str(TASKS), True, RED)
     DISPLAYSURF.blit(tasks, (10, 10))
 
