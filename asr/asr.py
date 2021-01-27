@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 from text_transform import TextTransform
 #from preprocess import preprocess_wav, preprocess_transcription
 from decoder import GreedyDecoder
+from sklearn.preprocessing import LabelEncoder
+from m5 import M5
 '''
 Speech recognition: take user speech input and save it into a wav file
 '''
@@ -24,11 +26,7 @@ test_wav = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project
 
 test_transcription = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/test.txt"
 
-path_to_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/speech_recognition_saved_models/server.pt"
-
-path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/laptop.pt"
-
-path_to_transcription = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/test_transcription.txt"
+test_corpus = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/speech_commands_full/speech_commands/commands"
 
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
@@ -64,83 +62,137 @@ def transcribeInput(test_wav, test_transcription):
             f.write(r.recognize_google(audio))
         return test_transcription
 
+waveforms = []
+labels = []
 
-def preprocess_wav(waveform):
-    input_lengths = []
-    waveform, sample_rate = torchaudio.load(waveform)
-    spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
-    input_lengths.append(spec.shape[0] // 2)
-    #print(spec.size())
-    return spec
+def preprocess_label(path_to_wav):
+    for top_directory in os.listdir(path_to_wav):
+        if os.path.isdir(os.path.join(path_to_wav, top_directory)):
+            working_directory = os.path.join(path_to_wav, top_directory)
+            label = top_directory
+            labels.append(label)
+   # print(labels)
+    return labels
 
-def preprocess_transcription(transcription):
-    label_lengths = []
-    label = torch.Tensor(text_transform.text_to_int(transcription.lower()))
-    label_lengths.append(len(label))
-    return label, label_lengths
+def preprocess_wav(path_to_wav):
+    for top_directory in os.listdir(path_to_wav):
+        if os.path.isdir(os.path.join(path_to_wav, top_directory)):
+            working_directory = os.path.join(path_to_wav, top_directory)
+            for second_directory in os.listdir(os.path.join(path_to_wav, working_directory)):
+                wav_file = os.path.join(path_to_wav, working_directory, second_directory)
+                waveform, sample_rate = torchaudio.load(wav_file)
+                channel = 0
+                transform = torchaudio.transforms.Resample(sample_rate, 8000)(waveform[channel, :].view(1, -1))
+                # print(resampled_waveform)
+                waveforms.append(transform)
+   # print(transform)
+    return transform
+
+def train_set(waveform, label):
+    waveform = preprocess_wav(test_corpus)
+    label = preprocess_label(test_corpus)
+    return waveform[0], label[0]
+
+waveform, label = train_set(preprocess_wav(test_corpus), preprocess_label(test_corpus))
 
 
-
-wav_file = preprocess_wav(test_wav)
-wav_file = np.expand_dims(wav_file, axis=0)
-wav_file = np.expand_dims(wav_file, axis=0)
-wav_file = torch.tensor(wav_file)
-print(wav_file.size())
+def label_to_index(word, labels):
+    # Return the position of the word in labels
+    return torch.tensor(labels.index(word))
 
 
+def index_to_label(index, labels):
+    # Return the word corresponding to the index in labels
+    # This is the inverse of label_to_index
+    return labels[index]
+
+#preprocess_label(test_corpus)
+word_start = "yes"
+index = label_to_index(word_start, preprocess_label(test_corpus))
+word_recovered = index_to_label(index, preprocess_label(test_corpus))
 
 
-def test(model, device, test_loader, criterion, optimizer, scheduler, epoch):
-    model.eval()
-    data_len = len(test_loader.dataset)
-    for batch_idx, _data in enumerate(test_loader):
-        spectrograms, labels, input_lengths, label_lengths = _data
-        spectrograms, labels = spectrograms.to(device), labels.to(device)
+def pad_sequence(batch):
+    # Make all tensor in a batch the same length by padding with zeros
+    batch = [item.t() for item in batch]
+    batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.)
+    return batch.permute(0, 2, 1)
 
+
+def collate_fn(batch):
+
+    # A data tuple has the form:
+    # waveform, sample_rate, label, speaker_id, utterance_number
+    tensors, targets = [], []
+    # Gather in lists, and encode labels as indices
+    for waveform, label in batch:
+        tensors += [waveform]
+        targets += [label_to_index(label)]
+
+    # Group the list of tensors into a batched tensor
+    tensors = pad_sequence(tensors)
+    targets = torch.stack(targets)
+
+    return tensors, targets
+
+batch_size = 256
+
+if device == "cuda":
+    num_workers = 1
+    pin_memory = True
+else:
+    num_workers = 0
+    pin_memory = False
+
+train_loader = torch.utils.data.DataLoader(
+    train_set(preprocess_wav(test_corpus), preprocess_label(test_corpus)),
+    batch_size=batch_size,
+    shuffle=True,
+    collate_fn=collate_fn,
+    num_workers=num_workers,
+    pin_memory=pin_memory,
+)
+
+model = M5(n_input=1, n_output=len(labels))
+model.to(device)
+
+optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)  # reduce the learning after 20 epochs by a factor of 10
+new_sample_rate = 8000
+sample_rate = 1600
+transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
+
+def train(model, epoch, log_interval):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        print(batch_idx)
+        print(data)
+        print(target)
+
+        data = data.to(device)
+        target = target.to(device)
+
+        # apply transform and model on whole batch directly on device
+        data = transform(data)
+        output = model(data)
+
+        # negative log-likelihood for a tensor of size (batch x 1 x n_output)
+        loss = F.nll_loss(output.squeeze(), target)
 
         optimizer.zero_grad()
-        print("model")
-        output = model(spectrograms)
+        loss.backward()
+        optimizer.step()
 
-        #TODO: take most of this out- only leave the spectrograms, labels, and label lengths
-        #see if we can use another dataloader- the current one is just not working
-        #see if we can use the GreedyDecoder to output the transcribed text
-        #also, take out the transcription from the transcribe method. our goal is to have the model do it and have
-        #the user tell us if it is right or wrong
+        # print training stats
+        if batch_idx % log_interval == 0:
+            print(f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}")
 
-        output = F.log_softmax(output, dim=2)
+        # record loss
+        losses.append(loss.item())
 
-        output = output.transpose(0, 1)
-
-
-        loss = criterion(output, labels, input_lengths, label_lengths)
-        #test_loss += loss.item() / len(test_loader)
-
-        decoded_preds, decoded_targets = GreedyDecoder(output.transpose(0, 1), labels, label_lengths)
-        print(decoded_preds, decoded_targets)
-
-#predict(path_to_local_model)
-#userInput(path_to_wav)
-#transcribe(path_to_wav)
-
-
-rnn_dim = 512
-hidden_dim = 512
-dropout = 0.1
-batch_first = True
-n_feats = 128
-cnn_layers = 3
-stride = 2
-rnn_layers = 5
-n_class = 29
-model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
-model = nn.DataParallel(model)
-model.to(device)
-model.load_state_dict(torch.load(path_to_model, map_location=torch.device('cpu')))
-
-output = model(wav_file)
-print("output")
-#print(output)
-
-epoch = 1
-#test(model, device, test_loader, criterion, optimizer, scheduler, epoch)
+losses = []
+transform = transform.to(device)
+n_epoch = 2
+log_interval = 20
+for epoch in range(1, n_epoch + 1):
+    train(model, epoch, log_interval)
