@@ -20,9 +20,16 @@ class M5(nn.Module):
         self.fc1 = nn.Linear(2 * n_channel, n_output)
 
     def forward(self, x):
+        #print("x")
+       # print(x)
         x = self.conv1(x)
         x = F.relu(self.bn1(x))
+      #  print("x relu")
+      #  print(x.shape)
+        #x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = self.pool1(x)
+       # print("x batch pool")
+       # print(x.shape)
         x = self.conv2(x)
         x = F.relu(self.bn2(x))
         x = self.pool2(x)
