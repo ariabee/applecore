@@ -1,0 +1,3 @@
+# ignore python caching files
+*.pyc
+.jython_cache/
