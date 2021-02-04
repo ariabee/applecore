@@ -36,15 +36,17 @@ avatar.give_name(name)
 
 
 # Game Loop
-print("Teach " + name + " to: climb the tree.")
+print("Teach " + avatar.name + " to: climb the tree.")
 instruction = ""
 while instruction != "stop":
 
+	# Get text instruction from user
 	instruction = input("\nType something: ").lower()
 
-	trying = avatar.try_action(instruction)
-	print(name + ": ", end="")
-	print(trying)
+	# Process instruction, output text interpretation and action
+	attempt = avatar.attempt(instruction)
+	print(avatar.name + ": ", end="")
+	print(attempt)
 	
 	
 

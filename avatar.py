@@ -11,6 +11,14 @@
 
 # ACTIONS = [move(instruct), left(instruct), right(instruct), yes(instruct), no(instruct)]
 
+def move(instruct):
+
+	response = instruct + ": *avatar is moving*"
+	return(response)
+
+
+ACTIONS = [move]
+
 
 # Game avatar
 class Avatar:
@@ -19,7 +27,9 @@ class Avatar:
 	'''
 	def __init__(self):
 		self.name = "Young Apple"
-		self.knowledge = {'run': 0, 'move': 0, 'go': 0, 'left': 1, 'right': 2, 'yes': 3, 'no': 4}
+		self.knowledge = {'move': 0, 'run': 0, 'go': 0, 'walk': 0, 'left': 1, \
+						  'right': 2, 'yes': 3, 'no': 4, \
+						  'tree': 5}
 
 	# def process(raw_instruction):
 	# 	instruction = raw_instruction.split() # nvm bc want any string combo
@@ -27,7 +37,15 @@ class Avatar:
 	def give_name(self, new_name):
 		self.name = new_name
 
-	def try_action(self, instruction):
+
+	def attempt(self, instruction):
+		"""
+		The Avatar processes the instruction into 
+		1) words "it understands" / that are retrievable in the knowledge base.
+		2) carries out the retrieved actions
+
+		param: instruction, the input string from the user
+		"""
 
 		composition = ""
 		actions = []
@@ -39,6 +57,28 @@ class Avatar:
 				actions.append(self.knowledge[movement_words])
 
 		return(composition, actions)
+		#return(composition, self.try_actions(actions))
+
+
+	def try_actions(self, actions):
+		"""
+		Execute the retrieved action functions.
+		"""
+		responses = []
+
+		for action_index in actions:
+			responses.append(ACTIONS[action_index]("move")) # Update the parameter to be specific to user's words, or update move function
+
+		return(responses)
+
+		
+
+
+
+
+
+
+
 
 
 
