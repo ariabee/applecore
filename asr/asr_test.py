@@ -89,3 +89,7 @@ waveform = inputLoad(test_wav)
 #utterance = "go"
 predict(waveform)
 #print(f"Expected: {utterance}. Predicted: {predict(waveform)}.")
+
+
+
+
