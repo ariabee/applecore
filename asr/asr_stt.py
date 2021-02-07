@@ -6,12 +6,14 @@ from torch.autograd import Variable
 import torchaudio
 from m5 import M5
 #from model import SpeechRecognitionModel
-from cnn_2 import VGG
+from cnn_2 import CNN
 from torchaudio.datasets import SPEECHCOMMANDS
 import os
 
 path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/speech_commands_model/speech_commands_model.pt"
 
+#class to download the speech commands dataset (if not already downloaded)
+#also, split the data into training, testing, and validation class
 class SubsetSC(SPEECHCOMMANDS):
     def __init__(self, subset: str = None):
         super().__init__("./", download=True)
@@ -30,14 +32,17 @@ class SubsetSC(SPEECHCOMMANDS):
             excludes = set(excludes)
             self._walker = [w for w in self._walker if w not in excludes]
 
+
 # Create training and testing split of the data. We do not use validation in this tutorial.
 train_set = SubsetSC("training")
 test_set = SubsetSC("testing")
 
 waveform, sample_rate, label, speaker_id, utterance_number = train_set[0]
 
+#create the list of labels from the train set
 labels = sorted(list(set(datapoint[2] for datapoint in train_set)))
-#print(labels)
+
+#resample the waveform to 8000 as this is the frequency where most of the data can be captured
 new_sample_rate = 8000
 transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
 transformed = transform(waveform)
@@ -47,6 +52,7 @@ torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
 
 
+#for evaluation
 def label_to_index(word):
     # Return the position of the word in labels
     return torch.tensor(labels.index(word))
@@ -106,13 +112,9 @@ train_loader = torch.utils.data.DataLoader(
     pin_memory=pin_memory,
 )
 
-#print("transformed 0")
-#print(transformed.shape[0])
 
-#print("transformed")
-#print(transformed)
 #model = M5(n_input=transformed.shape[0], n_output=len(labels))
-model = VGG("VGG16")
+model = CNN()
 model.to(device)
 
 optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
@@ -121,10 +123,11 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 def train(model, epoch, log_interval):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
-
-       # data = data.to(device)
-        #target = target.to(device)
-        data, target = Variable(data), Variable(target)
+        data = data.unsqueeze(1)
+        print("data")
+        print(data.shape)
+        data = data.to(device)
+        target = target.to(device)
         #print(data)
         optimizer.zero_grad()
 
@@ -133,10 +136,9 @@ def train(model, epoch, log_interval):
         output = model(data)
 
         # negative log-likelihood for a tensor of size (batch x 1 x n_output)
-        loss = F.nll_loss(output.squeeze(), target)
+        loss = nn.CrossEntropyLoss(reduction='sum')
 
 
-        loss.backward()
         optimizer.step()
 
         # print training stats

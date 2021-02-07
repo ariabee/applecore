@@ -18,6 +18,7 @@ from text_transform import TextTransform
 from decoder import GreedyDecoder
 from sklearn.preprocessing import LabelEncoder
 from m5 import M5
+import re
 '''
 Speech recognition: take user speech input and save it into a wav file
 '''
@@ -62,17 +63,10 @@ def transcribeInput(test_wav, test_transcription):
             f.write(r.recognize_google(audio))
         return test_transcription
 
-waveforms = []
 labels = []
-
-def preprocess_label(path_to_wav):
-    for top_directory in os.listdir(path_to_wav):
-        if os.path.isdir(os.path.join(path_to_wav, top_directory)):
-            working_directory = os.path.join(path_to_wav, top_directory)
-            label = top_directory
-            labels.append(label)
-   # print(labels)
-    return labels
+waveforms = []
+speaker_ids = []
+utterance_numbers = []
 
 def preprocess_wav(path_to_wav):
     for top_directory in os.listdir(path_to_wav):
@@ -81,35 +75,52 @@ def preprocess_wav(path_to_wav):
             for second_directory in os.listdir(os.path.join(path_to_wav, working_directory)):
                 wav_file = os.path.join(path_to_wav, working_directory, second_directory)
                 waveform, sample_rate = torchaudio.load(wav_file)
-                channel = 0
-                transform = torchaudio.transforms.Resample(sample_rate, 8000)(waveform[channel, :].view(1, -1))
                 # print(resampled_waveform)
-                waveforms.append(transform)
+                waveforms.append(waveform)
    # print(transform)
-    return transform
+    return waveforms, sample_rate
+
+def preprocess_label(path_to_wav):
+    for top_directory in os.listdir(path_to_wav):
+        if os.path.isdir(os.path.join(path_to_wav, top_directory)):
+            working_directory = os.path.join(path_to_wav, top_directory)
+            label = top_directory
+            labels.append(label)
+            for wav_file in os.listdir(os.path.join(path_to_wav, top_directory, working_directory)):
+                speaker_id = wav_file.split("_nohash")
+                speaker_ids.append(speaker_id)
+                utterance_number = re.findall("(?<=_)(\d+)", wav_file)
+                utterance_numbers.append(utterance_number)
+   # print(labels)
+    return labels, speaker_ids, utterance_numbers
 
 def train_set(waveform, label):
-    waveform = preprocess_wav(test_corpus)
-    label = preprocess_label(test_corpus)
-    return waveform[0], label[0]
-
-waveform, label = train_set(preprocess_wav(test_corpus), preprocess_label(test_corpus))
+    waveform, sample_rate = preprocess_wav(test_corpus)
+    label, speaker_id, utterance_number = preprocess_label(test_corpus)
+    return waveform, sample_rate, label, speaker_id, utterance_number
 
 
-def label_to_index(word, labels):
+waveform, sample_rate, label, speaker_id, utterance_number = train_set(preprocess_wav(test_corpus), preprocess_label(test_corpus))
+label = sorted(list(set(label)))
+
+#print(waveform, sample_rate, label, speaker_id, utterance_number)
+
+def label_to_index(word):
     # Return the position of the word in labels
     return torch.tensor(labels.index(word))
 
 
-def index_to_label(index, labels):
+def index_to_label(index):
     # Return the word corresponding to the index in labels
     # This is the inverse of label_to_index
     return labels[index]
 
-#preprocess_label(test_corpus)
-word_start = "yes"
-index = label_to_index(word_start, preprocess_label(test_corpus))
-word_recovered = index_to_label(index, preprocess_label(test_corpus))
+
+word_start = "bed"
+index = label_to_index(word_start)
+word_recovered = index_to_label(index)
+
+#print(word_start, "-->", index, "-->", word_recovered)
 
 
 def pad_sequence(batch):
@@ -125,7 +136,11 @@ def collate_fn(batch):
     # waveform, sample_rate, label, speaker_id, utterance_number
     tensors, targets = [], []
     # Gather in lists, and encode labels as indices
-    for waveform, label in batch:
+    for waveform, _, label, *_ in batch:
+       # print("waveform")
+       # print(waveform)
+      #  print("label")
+      #  print(label)
         tensors += [waveform]
         targets += [label_to_index(label)]
 
@@ -145,7 +160,7 @@ else:
     pin_memory = False
 
 train_loader = torch.utils.data.DataLoader(
-    train_set(preprocess_wav(test_corpus), preprocess_label(test_corpus)),
+    train_set,
     batch_size=batch_size,
     shuffle=True,
     collate_fn=collate_fn,
@@ -165,9 +180,9 @@ transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_s
 def train(model, epoch, log_interval):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
-        print(batch_idx)
-        print(data)
-        print(target)
+       # print(batch_idx)
+       # print(data)
+     #   print(target)
 
         data = data.to(device)
         target = target.to(device)
@@ -194,5 +209,5 @@ losses = []
 transform = transform.to(device)
 n_epoch = 2
 log_interval = 20
-for epoch in range(1, n_epoch + 1):
-    train(model, epoch, log_interval)
+#for epoch in range(1, n_epoch + 1):
+  #  train(model, epoch, log_interval)

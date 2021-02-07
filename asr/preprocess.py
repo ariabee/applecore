@@ -1,4 +1,4 @@
-import os
+import os.path
 import re
 from comet_ml import Experiment
 import torch
@@ -12,11 +12,12 @@ import matplotlib.pyplot as plt
 from text_transform import TextTransform
 #from lstm import BidirectionalLSTM
 from gru import BidirectionalGRU
+from sklearn.preprocessing import LabelEncoder
 '''
 Method to preprocess the data: 
 '''
 
-test_corpus = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/test_corpus/"
+test_corpus = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/speech_commands_full/speech_commands/commands"
 
 #define a neural network-like layer stack to transform the waveform into a mel spectrogram and apply frequency masking and time masking
 train_audio_transforms = nn.Sequential(
@@ -32,15 +33,33 @@ Data Preprocessing: Extract feature from the spectrographs and map the transcrip
 '''
 text_transform = TextTransform()
 
-
+def to_categorical(y, num_classes):
+    """ 1-hot encodes a tensor """
+    return np.eye(num_classes, dtype='uint8')[y]
 
 
 def preprocess_wav(path_to_wav):
-    for filename in os.listdir(path_to_wav):
-        if filename.endswith(".wav"):
-           # print(os.path.join(path_to_wav, filename))
-            sample_wav_preprocessed = os.path.join(path_to_wav, filename)
-            return sample_wav_preprocessed
+    for top_directory in os.listdir(path_to_wav):
+        if os.path.isdir(os.path.join(path_to_wav, top_directory)):
+            working_directory = os.path.join(path_to_wav, top_directory)
+            for second_directory in os.listdir(os.path.join(path_to_wav, working_directory)):
+                wav_file = os.path.join(path_to_wav, working_directory, second_directory)
+                waveform, sample_rate = torchaudio.load(wav_file)
+                channel = 0
+                transform = torchaudio.transforms.Resample(sample_rate, 8000)(waveform[channel, :].view(1, -1))
+                # print(resampled_waveform)
+                waveforms.append(transform)
+   # print(transform)
+    return transform
+
+def preprocess_label(path_to_wav):
+    for top_directory in os.listdir(path_to_wav):
+        if os.path.isdir(os.path.join(path_to_wav, top_directory)):
+            working_directory = os.path.join(path_to_wav, top_directory)
+            label = top_directory
+            labels.append(label)
+   # print(labels)
+    return labels
 
 
 def preprocess_test(test_corpus):
@@ -70,7 +89,7 @@ def preprocess_test(test_corpus):
    # print(spectrograms, labels, input_lengths, label_lengths)
     return spectrograms, labels, input_lengths, label_lengths
 
-preprocess_test(test_corpus)
+preprocess_wav(test_corpus)
 
 
 
