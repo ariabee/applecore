@@ -1,38 +1,110 @@
-import pygame, sys
-from pygame.locals import *
-import random, time
-import speech_recognition as sr
+import pygame as pg
+import sys
+from settings import *
+from sprites import *
+from map import *
+import pathlib
 
-# Initialzing
-pygame.init()
 
-# Setting up FPS
-FPS = 60
-FramePerSec = pygame.time.Clock()
+class Game:
 
-# Creating colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
+    def __init__(self):
+        pg.init()
+        self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        self.clock = pg.time.Clock()
+        self.load_data()
 
+    def load_data(self):
+        game_folder = pathlib.Path(__file__).parent
+        img_folder = pathlib.Path(game_folder / 'img')
+        self.map_folder = pathlib.Path(game_folder / 'maps')
+        self.dim_screen = pg.Surface(self.screen.get_size()).convert_alpha()
+        self.dim_screen.fill((0, 0, 0, 180))
+        self.avatar_img = pg.image.load(str(pathlib.Path(img_folder / 'avatar.png'))).convert_alpha()
+
+    def new(self):
+        # initialize all variables and do all the setup for a new game
+        #self.all_sprites = pg.sprite.Group()
+        self.all_sprites = pg.sprite.LayeredUpdates()
+        self.walls = pg.sprite.Group()
+        self.map = TiledMap(str(pathlib.Path(self.map_folder / 'level1.txt')))
+        self.map_img = self.map.make_map()
+        self.map.rect = self.map_img.get_rect()
+        for tile_object in self.map.tmxdata.objects:
+            obj_center = vec(tile_object.x + tile_object.width / 2,
+                             tile_object.y + tile_object.height / 2)
+            if tile_object.name == 'player':
+                self.avatar = Avatar(self, obj_center.x, obj_center.y)
+            if tile_object.name == 'wall':
+                Obstacle(self, tile_object.x, tile_object.y,
+                         tile_object.width, tile_object.height)
+        self.camera = Camera(self.map.width, self.map.height)
+
+    def run(self):
+        # game loop - set self.playing = False to end the game
+        self.playing = True
+        while self.playing:
+            self.dt = self.clock.tick(FPS) / 1000
+            self.events()
+            self.update()
+            self.draw()
+
+    def quit(self):
+        pg.quit()
+        sys.exit()
+
+    def update(self):
+        # update portion of the game loop
+        self.all_sprites.update()
+        self.camera.update(self.avatar)
+
+    def draw_grid(self):
+        for x in range(0, WIDTH, TILESIZE):
+            pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
+        for y in range(0, HEIGHT, TILESIZE):
+            pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
+
+    def draw(self):
+        self.screen.blit(self.map_img, self.camera.apply(self.map))
+        for sprite in self.all_sprites:
+            self.screen.blit(sprite.image, self.camera.apply(sprite))
+        pg.display.flip()
+
+    def events(self):
+        # catch all events here
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.quit()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    self.quit()
+                if event.key == pg.K_LEFT:
+                    self.avatar.move(dx=-1)
+                if event.key == pg.K_RIGHT:
+                    self.avatar.move(dx=1)
+                if event.key == pg.K_UP:
+                    self.avatar.move(dy=-1)
+                if event.key == pg.K_DOWN:
+                    self.avatar.move(dy=1)
+
+    def show_start_screen(self):
+        pass
+
+    def show_go_screen(self):
+        pass
+
+g = Game()
+g.show_start_screen()
+while True:
+    g.new()
+    g.run()
+    g.show_go_screen()
+
+
+"""
 # Setting up Fonts
-font = pygame.font.SysFont("Verdana", 60)
-font_small = pygame.font.SysFont("Verdana", 20)
-
-# Other Variables for use in the program
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 600
-
-TASKS = "TASKS"
-
-# Create a white screen
-DISPLAYSURF = pygame.display.set_mode((400, 600))
-DISPLAYSURF.fill(WHITE)
-image = pygame.image.load('grass.jpg')
-DISPLAYSURF.blit(image, (0, 0))
-
-tasks = font_small.render(str(TASKS), True, RED)
-
+font = pg.font.SysFont("Verdana", 60)
+font_small = pg.font.SysFont("Verdana", 20)
 class Background():
 
     def __init__(self):
@@ -76,63 +148,4 @@ class Background():
         DISPLAYSURF.blit(self.image, (0, self.bgY))
         DISPLAYSURF.blit(self.image, (0, self.bgY2))
         DISPLAYSURF.blit(tasks, (10, 10))
-
-class Avatar(pygame.sprite.Sprite):
-
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("apple.png")
-        self.surf = pygame.Surface((200, 200))
-        self.rect = self.surf.get_rect(center=(340, 420))
-
-    def move(self):
-        pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[K_UP]:
-            if self.rect.top > 0:
-                self.rect.move_ip(0, -5)
-            else:
-                background.updateY(-5)
-        if pressed_keys[K_DOWN]:
-            if self.rect.bottom < SCREEN_HEIGHT:
-                self.rect.move_ip(0, 5)
-            else:
-                background.updateY(5)
-        if pressed_keys[K_LEFT]:
-            if self.rect.left > 0:
-                self.rect.move_ip(-5, 0)
-            else:
-                background.updateX(-5)
-        if pressed_keys[K_RIGHT]:
-            if self.rect.right < SCREEN_WIDTH:
-                self.rect.move_ip(5, 0)
-            else:
-                background.updateX(5)
-
-# Setting up Sprites
-P1 = Avatar()
-
-# Creating Sprites Groups
-all_sprites = pygame.sprite.Group()
-all_sprites.add(P1)
-
-background = Background()
-
-# Game Loop
-while True:
-
-    #DISPLAYSURF.blit(background, (0, 0))
-    background.redrawBackground()
-
-    # Cycles through all events occurring
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-
-    # Moves and Re-draws all Sprites
-    for entity in all_sprites:
-        DISPLAYSURF.blit(entity.image, entity.rect)
-        entity.move()
-
-    pygame.display.update()
-    FramePerSec.tick(FPS)
+"""
