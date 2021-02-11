@@ -27,6 +27,7 @@ class Agent:
 	'''
 	def __init__(self):
 		self.name = "Young Apple"
+		self.position = (20,20) # testing position
 		self.knowledge = {'move': 0, 'run': 0, 'go': 0, 'walk': 0, 'left': 1, \
 						  'right': 2, 'yes': 3, 'no': 4, \
 						  'tree': 5}
