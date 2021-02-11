@@ -70,6 +70,7 @@ class Game:
 
     def events(self):
         # catch all events here
+        # speech input
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.quit()

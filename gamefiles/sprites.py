@@ -14,6 +14,16 @@ class Avatar(pg.sprite.Sprite):
         self.y = y * TILESIZE
         self.image.fill(RED)
         #self.image.blit(self.img, ((x, y)))
+        #self.knowledge = Knowledge()
+        self.command = ""
+        self.orientation = "front" # left, right, front, back
+
+    def turn(self, direction):
+        """
+        change the orientation of the agent to a different direction
+        """
+        # self.image.blit(self.img_0/90/180/270, ((x, y)))
+        pass
 
     def get_keys(self):
         self.vx, self.vy = 0, 0
@@ -50,8 +60,21 @@ class Avatar(pg.sprite.Sprite):
                 self.vy = 0
                 self.rect.y = self.y
 
+    def climb_tree(self):
+        # if standing in front of the trunk
+        # just climb the tree
+        pass
+
+    def listen(self):
+        # speech input
+        # self.command
+        pass
+
     def update(self):
+        # put command into Knowledge
+        # self.command = ""
         self.get_keys()
+        # call turn function
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
@@ -97,6 +120,7 @@ class Tree(pg.sprite.Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+        # self.trunk =
 
 
 
