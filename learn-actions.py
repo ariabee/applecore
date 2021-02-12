@@ -1,5 +1,6 @@
 # Testing out python logic for mapping instructions to functions
 from agent import *
+from transcript import Transcript
 
 # Define complex actions
 
@@ -30,6 +31,9 @@ print("\n        *******************************************************\n\
 # Create agent
 agent = Agent()
 
+# Create transcript
+transcript = Transcript()
+
 # Give Young Apple a name
 name = name_agent()
 agent.give_name(name)
@@ -42,11 +46,14 @@ while instruction != "stop":
 
 	# Get text instruction from user
 	instruction = input("\nType something: ").lower()
+	transcript.store_instruction(instruction)
 
 	# Process instruction, output text interpretation and action
 	attempt = agent.interpret(instruction)
 	print(agent.name + ": ", end="")
 	print(attempt)
+
+	print("\ninput: " + transcript.current_instruction())
 	
 	
 
