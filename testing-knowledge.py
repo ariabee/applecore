@@ -8,3 +8,6 @@ knowledge = Knowledge(agent)
 
 print(knowledge.agent.name)
 print(knowledge.move())
+
+for action in knowledge.actions:
+    print(action())

@@ -44,7 +44,7 @@ while instruction != "stop":
 	instruction = input("\nType something: ").lower()
 
 	# Process instruction, output text interpretation and action
-	attempt = agent.attempt(instruction)
+	attempt = agent.interpret(instruction)
 	print(agent.name + ": ", end="")
 	print(attempt)
 	
