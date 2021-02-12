@@ -1,4 +1,4 @@
-# ~KNOWLEDGE v.0 : every lexeme maps to a function, no separate lexeme categories/types~
+# COPY of Knowledge class with future needs testing.
 # Knowledge base class for game character.
 # Contains background lexicon and movement functions.
 # Contains mapping and updating functions of meaning 
@@ -14,27 +14,26 @@ class Knowledge:
                          'up': 3, \
                          'down': 4, \
                          'yes': 5, 'no': 6, \
-						 'tree': 7}
-        
-        self.learned = {} # An initially empty list of learned commands mapped to actions.
+						 'tree': 7} 
 
-        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree]
+        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no] # Items might need to be lists of actions (such that lexemes map to action sequences)
         self.objects = {'tree':(10,10), \
                          'you': agent.position} # x, y posiiton on map
-        # self.confirmations = [self.yes, self.no]
-        # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
-
+        self.confirmations = [self.yes, self.no]
+        #self.parameters = []
+        self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
+        # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations, \
+        #                    "parameter": self.parameters}
+                        
+        
         self.agent = agent
 
     def lexicon(self):
         return self._lexicon
 
-    # def add_to_lexicon(self, words, action):
-    #     self._lexicon.update({words : action})
-    #     # might change action to self._actions[action]
-    
-    def add_to_learned(self, words, action_sequence):
-        self.learned.update({words : action_sequence})
+    def add_to_lexicon(self, words, action):
+        self._lexicon.update({words : action})
+        # might change action to self._actions[action]
 
     def move(self):
         return("moving")
@@ -56,13 +55,6 @@ class Knowledge:
 
     def no(self):
         return("oops :(")
-
-    def tree(self):
-        return self.objects['tree'] # Return tree coordinates
-
-    # def an_object(self, object_name):
-    #     coordinates = self.objects[object_name]
-    #     return coordinates
 
 
 

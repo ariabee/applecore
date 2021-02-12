@@ -19,8 +19,6 @@ def move(instruct):
 	return(response)
 
 
-ACTIONS = [move]
-
 
 # Game agent
 class Agent:
