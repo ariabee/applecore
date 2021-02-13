@@ -45,25 +45,36 @@ class Transcript:
         return self.instructions[next_to_last_index]
 
 
+
+
     def current_instruction(self):
         '''
         Returns the current instruction from the transcript.
         '''
         return self.instructions[len(self.instructions)-1]
+
    
 
     def previous_actions(self):
         '''
         Returns the previous action sequence from the transcript.
         '''
-        return self.action_sequences[len(self.action_sequences)-1-1]
+        index_prev_input = len(self.instructions)-1-1 # assume that all instructions are stored first
+        return self.action_sequences[index_prev_input]
 
 
     def current_actions(self):
         '''
         Returns the current action sequence from the transcript.
         '''
-        return self.action_sequences[len(self.action_sequences)-1]
+        index_current_input = len(self.instructions)-1
+        return self.action_sequences[index_current_input]
+
+    def previous(self):
+        '''
+        Returns the previous instruction and action sequence in the transcript as a tuple.
+        '''
+        return (self.previous_instruction(), self.previous_actions())
 
 
     def current(self):

@@ -1,4 +1,4 @@
-# COPY of Knowledge class with future needs testing.
+# COPY of Knowledge class with future-needs exploring.
 # Knowledge base class for game character.
 # Contains background lexicon and movement functions.
 # Contains mapping and updating functions of meaning 
