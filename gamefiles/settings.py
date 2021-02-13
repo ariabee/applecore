@@ -1,3 +1,5 @@
+import speech_recognition as sr
+
 # define some colors (R, G, B)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -23,4 +25,6 @@ GRIDWIDTH = WIDTH / TILESIZE
 GRIDHEIGHT = HEIGHT / TILESIZE
 
 # Player settings
-PLAYER_SPEED = 300
+PLAYER_SPEED = 80
+
+r = sr.Recognizer()

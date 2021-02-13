@@ -19,8 +19,15 @@ class Game:
 
     def load_data(self):
         game_folder = path.dirname(__file__)
-        self.map = Map(path.join(game_folder, 'maps/map.txt'))
+        img_folder = path.join(game_folder, "img")
+        map_folder = path.join(game_folder, "maps")
+        #self.map = Map(path.join(map_folder, "map.txt"))
+        self.map = TiledMap(path.join(map_folder, "tiled_map.tmx"))
+        self.map_img = self.map.make_map()
+        self.map_rect = self.map_img.get_rect()
 
+    """
+    old new function which loads an old map
     def new(self):
         # initialize all variables and do all the setup for a new game
         self.all_sprites = pg.sprite.Group()
@@ -35,6 +42,18 @@ class Game:
                     Tree(self, col, row)
                 if tile == 'P':
                     self.avatar = Avatar(self, col, row)
+        self.camera = Camera(self.map.width, self.map.height)
+        """
+
+    def new(self):
+        # initialize all variables and do all the setup for a new game
+        self.all_sprites = pg.sprite.Group()
+        self.walls = pg.sprite.Group()
+        for tile_object in self.map.map_data.objects:
+            if tile_object.name == "agent":
+                self.avatar = Avatar(self, tile_object.x, tile_object.y)
+            if tile_object.name == "tree":
+                self.tree = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
         self.camera = Camera(self.map.width, self.map.height)
 
     def run(self):
@@ -62,8 +81,9 @@ class Game:
             pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
 
     def draw(self):
-        self.screen.fill(GREEN)
-        self.draw_grid()
+        #self.screen.fill(GREEN)
+        #self.draw_grid()
+        self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
         pg.display.flip()
