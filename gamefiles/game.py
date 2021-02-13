@@ -1,165 +1,114 @@
-import pygame, sys
-from pygame.locals import *
-import random, time
-import speech_recognition as sr
+# KidsCanCode - Game Development with Pygame video series
+# Tile-based game - Part 4
+# Scrolling Map/Camera
+# Video link: https://youtu.be/3zV2ewk-IGU
+import pygame as pg
+import sys
+from os import path
+from settings import *
+from sprites import *
+from map import *
+from agent import *
 
-# Initialzing
-pygame.init()
-
-# Setting up FPS
-FPS = 60
-FramePerSec = pygame.time.Clock()
-
-# Creating colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-
-# Setting up Fonts
-font = pygame.font.SysFont("Verdana", 60)
-font_small = pygame.font.SysFont("Verdana", 20)
-
-# Other Variables for use in the program
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 600
-
-r = sr.Recognizer()
-
-TASKS = "TASKS"
-
-#background = pygame.image.load("grass.jpg")
-
-# Create a white screen
-DISPLAYSURF = pygame.display.set_mode((400, 600))
-DISPLAYSURF.fill(WHITE)
-
-
-class Camera:
+class Game:
     def __init__(self):
-        self.bgimage = pygame.image.load('grass.jpg')
-        self.rectBGimg = self.bgimage.get_rect()
+        pg.init()
+        self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        pg.display.set_caption(TITLE)
+        self.clock = pg.time.Clock()
+        self.load_data()
 
-        self.bgY1 = 0
-        self.bgX1 = 0
+    def load_data(self):
+        game_folder = path.dirname(__file__)
+        img_folder = path.join(game_folder, "img")
+        map_folder = path.join(game_folder, "maps")
+        #self.map = Map(path.join(map_folder, "map.txt"))
+        self.map = TiledMap(path.join(map_folder, "tiled_map.tmx"))
+        self.map_img = self.map.make_map()
+        self.map_rect = self.map_img.get_rect()
 
-        self.bgY2 = self.rectBGimg.height
-        self.bgX2 = self.rectBGimg.width
+    """
+    old new function which loads an old map
+    def new(self):
+        # initialize all variables and do all the setup for a new game
+        self.all_sprites = pg.sprite.Group()
+        self.walls = pg.sprite.Group()
+        for row, tiles in enumerate(self.map.data):
+            for col, tile in enumerate(tiles):
+                if tile == 'A':
+                    Water(self, col, row)
+                if tile == 'W':
+                    Wall(self, col, row)
+                if tile == 'T':
+                    Tree(self, col, row)
+                if tile == 'P':
+                    self.avatar = Avatar(self, col, row)
+        self.camera = Camera(self.map.width, self.map.height)
+        """
 
-        self.moving_speed = 5
+    def new(self):
+        # initialize all variables and do all the setup for a new game
+        self.all_sprites = pg.sprite.Group()
+        self.walls = pg.sprite.Group()
+        for tile_object in self.map.map_data.objects:
+            if tile_object.name == "agent":
+                self.agent = Agent(self, tile_object.x, tile_object.y)
+            if tile_object.name == "tree":
+                self.tree = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+        self.camera = Camera(self.map.width, self.map.height)
 
-    def update_upwards(self):
-        self.bgY1 = 0
-        self.bgX2 = 0
-        self.bgY1 += self.moving_speed
-        self.bgY2 += self.moving_speed
-        if self.bgY1 >= self.rectBGimg.height:
-            self.bgY1 = -self.rectBGimg.height
-        if self.bgY2 >= self.rectBGimg.height:
-            self.bgY2 = -self.rectBGimg.height
+    def run(self):
+        # game loop - set self.playing = False to end the game
+        self.playing = True
+        while self.playing:
+            self.dt = self.clock.tick(FPS) / 1000
+            self.events()
+            self.update()
+            self.draw()
 
-    def update_downwards(self):
-        self.bgY1 = 0
-        self.bgX2 = 0
-        self.bgY1 -= self.moving_speed
-        self.bgY2 -= self.moving_speed
-        if self.bgY1 <= -self.rectBGimg.height:
-            self.bgY1 = self.rectBGimg.height
-        if self.bgY2 <= -self.rectBGimg.height:
-            self.bgY2 = self.rectBGimg.height
+    def quit(self):
+        pg.quit()
+        sys.exit()
 
-    def update_left(self):
-        self.bgX1 += self.moving_speed
-        self.bgX2 += self.moving_speed
-        self.bgY1 = 0
-        self.bgY2 = 0
-        if self.bgX1 >= self.rectBGimg.width:
-            self.bgX1 = -self.rectBGimg.width
-        if self.bgX2 >= self.rectBGimg.width:
-            self.bgX2 = -self.rectBGimg.width
+    def update(self):
+        # update portion of the game loop
+        self.all_sprites.update()
+        self.camera.update(self.agent)
 
-    def update_right(self):
-        self.bgX1 -= self.moving_speed
-        self.bgX2 -= self.moving_speed
-        self.bgY1 = 0
-        self.bgY2 = 0
-        if self.bgX1 <= -self.rectBGimg.width:
-            self.bgX1 = self.rectBGimg.width
-        if self.bgX2 <= -self.rectBGimg.width:
-            self.bgX2 = self.rectBGimg.width
+    def draw_grid(self):
+        for x in range(0, WIDTH, TILESIZE):
+            pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
+        for y in range(0, HEIGHT, TILESIZE):
+            pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
 
-    def render(self):
-        DISPLAYSURF.blit(self.bgimage, (self.bgX1, self.bgY1))
-        DISPLAYSURF.blit(self.bgimage, (self.bgX2, self.bgY2))
+    def draw(self):
+        #self.screen.fill(GREEN)
+        #self.draw_grid()
+        self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
+        for sprite in self.all_sprites:
+            self.screen.blit(sprite.image, self.camera.apply(sprite))
+        pg.display.flip()
 
+    def events(self):
+        # catch all events here
+        # speech input
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.quit()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    self.quit()
 
-class Avatar(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("apple.png")
-        self.surf = pygame.Surface((200, 200))
-        self.rect = self.surf.get_rect(center=(340, 420))
+    def show_start_screen(self):
+        pass
 
-    def move(self):
-        pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[K_UP]:
-            with sr.Microphone() as source:
-                audio = r.listen(source)
-                try:
-                    text = r.recognize_google(audio)
-                    print(text)
-                    if text == 'up':
-                        if self.rect.top > 0:
-                            self.rect.move_ip(0, -100)
-                        else:
-                            camera.update_upwards()
-                    if text == 'down':
-                        if self.rect.bottom < SCREEN_HEIGHT:
-                            self.rect.move_ip(0, 100)
-                        else:
-                            camera.update_downwards()
-                    if text == 'left':
-                        if self.rect.left > 0:
-                            self.rect.move_ip(-100, 0)
-                        else:
-                            camera.update_left()
-                    if text == 'right':
-                        if self.rect.right < SCREEN_WIDTH:
-                            self.rect.move_ip(100, 0)
-                        else:
-                            camera.update_right()
-                except:
-                    print('Did not get that try Again')
-                    text = ''
+    def show_go_screen(self):
+        pass
 
-
-# Setting up Sprites
-camera = Camera()
-P1 = Avatar()
-
-# Creating Sprites Groups
-all_sprites = pygame.sprite.Group()
-all_sprites.add(P1)
-
-# Game Loop
+# create the game object
+g = Game()
+g.show_start_screen()
 while True:
-
-    # Cycles through all events occuring
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-
-    #DISPLAYSURF.blit(background, (0, 0))
-    #camera.update()
-    camera.render()
-
-    tasks = font_small.render(str(TASKS), True, RED)
-    DISPLAYSURF.blit(tasks, (10, 10))
-
-    # Moves and Re-draws all Sprites
-    for entity in all_sprites:
-        DISPLAYSURF.blit(entity.image, entity.rect)
-        entity.move()
-
-    pygame.display.update()
-    FramePerSec.tick(FPS)
+    g.new()
+    g.run()
+    g.show_go_screen()

@@ -7,6 +7,7 @@ import sys
 from os import path
 from settings import *
 from sprites import *
+from agent import *
 from map import *
 
 class Game:

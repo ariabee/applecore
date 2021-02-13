@@ -25,6 +25,6 @@ GRIDWIDTH = WIDTH / TILESIZE
 GRIDHEIGHT = HEIGHT / TILESIZE
 
 # Player settings
-PLAYER_SPEED = 80
+AGENT_SPEED = 80
 
 r = sr.Recognizer()
