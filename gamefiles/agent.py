@@ -3,28 +3,28 @@ from settings import *
 from map import collide_hit_rect
 vec = pg.math.Vector2
 import speech_recognition as sr
-#from knowledge import Knowledge
-#from transcript import Transcript
+from knowledge import Knowledge
+from transcript import Transcript
 
 def collide_with_walls(sprite, group, dir):
     if dir == 'x':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
         if hits:
             if hits[0].rect.centerx > sprite.hit_rect.centerx:
-                sprite.pos.x = hits[0].rect.left - sprite.hit_rect.width / 2
+                sprite.position.x = hits[0].rect.left - sprite.hit_rect.width / 2
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
-                sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2
+                sprite.position.x = hits[0].rect.right + sprite.hit_rect.width / 2
             sprite.vel.x = 0
-            sprite.hit_rect.centerx = sprite.pos.x
+            sprite.hit_rect.centerx = sprite.position.x
     if dir == 'y':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
         if hits:
             if hits[0].rect.centery > sprite.hit_rect.centery:
-                sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+                sprite.position.y = hits[0].rect.top - sprite.hit_rect.height / 2
             if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
+                sprite.position.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
             sprite.vel.y = 0
-            sprite.hit_rect.centery = sprite.pos.y
+            sprite.hit_rect.centery = sprite.position.y
 
 class Agent(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -36,21 +36,19 @@ class Agent(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
         self.hit_rect.center = self.rect.center
-        #self.vx, self.vy = 0, 0
         self.vel = vec(0, 0)
         #self.x = x * TILESIZE
         #self.y = y * TILESIZE
-        self.pos = vec(x, y)
+        self.position = vec(x, y)
         self.image.fill(RED)
         #self.image.blit(self.img, ((x, y)))
-        #self.knowledge = Knowledge()
         self.instruction = ""
         self.orientation = "front" # left, right, front, back
 
         self.name = "Young Apple"
         #self.position = (20, 20)  # testing position
-        #self.knowledge = Knowledge(self)
-        #self.transcript = Transcript()
+        self.knowledge = Knowledge(self)
+        self.transcript = Transcript()
         self.current_actions = []  # working memory
 
     def turn(self, direction):
@@ -60,10 +58,23 @@ class Agent(pg.sprite.Sprite):
         # self.image.blit(self.img_0/90/180/270, ((x, y)))
         pass
 
-    def get_keys(self):
+    def listen(self):
+        # speech input
+        # self.command
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]:
-            self.listen()
+            self.vel = vec(0, 0)
+            with sr.Microphone() as source:
+                audio = r.listen(source)
+                try:
+                    self.instruction = r.recognize_google(audio)
+                    print(self.instruction)
+                except:
+                    self.instruction = ''
+                    print("silence")
+            attempt = self.attempt()
+            print(attempt)
+
 
         """
         if keys[pg.K_LEFT] or keys[pg.K_a]:
@@ -84,6 +95,85 @@ class Agent(pg.sprite.Sprite):
         mapped_meaning = self.knowledge.lexicon()["you"]
         self.knowledge.add_to_lexicon(new_name, mapped_meaning)
 
+    def store_parsed_actions(self, parsed_actions):
+        self.current_actions = parsed_actions
+
+    def interpret(self):
+        """
+        The Agent processes the instruction into
+        1) words "it understands" / that are retrievable in the knowledge base
+        2) a list of actions to carry out
+        param: instruction, the input string from the user
+        return: composition, the recognized string of words
+        return: actions, the list of corresponding actions
+        """
+
+        composition = ""
+        actions = []
+        unknowns = ""
+        instruction = self.instruction
+
+        instruction_split = instruction.split()  # split sentence into list of words
+        lexicon = self.knowledge.lexicon()
+        learned = self.knowledge.learned()
+        # instruction_edited = instruction
+
+        # # First check for learned phrases
+        # for phrase in learned:
+        # 	if phrase in instruction:
+        # 		composition += (phrase + " ")
+        # 		actions.append(learned[phrase])
+
+        # 		# If found, remove phrase from instruction
+        # 		instruction_edited = instruction_edited.replace(phrase, " ")
+
+        # instruction_split = instruction_edited.split()
+
+        # Check for movement words in the instruction that the agent also recognizes
+        for word in instruction_split:
+            if word in lexicon:
+                composition += (word + " ")
+                actions.append(lexicon[word])
+
+        self.store_parsed_actions(actions)
+
+        return (composition, actions)
+        # return(composition, self.try_actions(actions))
+
+    def try_actions(self, parsed_actions):
+        """
+        Execute the retrieved action functions.
+        """
+        responses = []
+
+        for actions in parsed_actions:
+            for action in actions:
+                action_response = self.knowledge.actions[action]()  # do the action, get the response
+                responses.append(action_response)  # todo: update responses to be specific to user's words
+            # (through a function parameter or through function itself)
+
+        return (responses)
+
+    def attempt(self):
+        """
+        Make an attempt to interpret and parse actions from the given input.
+        param: instruction, the input string from the user
+        return: compositon, the composed and recognized string of words
+        return: responses, the responses generated by doing the actions
+        """
+        instruction = self.instruction
+        # Interpret the instructions
+        composition, parsed_actions = self.interpret()
+
+        # Save the parsed actions to working memory
+        self.current_actions = parsed_actions
+
+        # Try the actions and collect the responses
+        responses = self.try_actions(parsed_actions)
+
+        return (composition, responses)
+
+    """
     def move(self):
         self.vx, self.vy = 0, 0
         if self.instruction == "left":
@@ -97,6 +187,7 @@ class Agent(pg.sprite.Sprite):
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
             self.vy *= 0.7071
+            """
 
     """
     def collide_with_walls(self, dir):
@@ -125,27 +216,15 @@ class Agent(pg.sprite.Sprite):
         # just climb the tree
         pass
 
-    def listen(self):
-        # speech input
-        # self.command
-        with sr.Microphone() as source:
-            audio = r.listen(source)
-            try:
-                self.instruction = r.recognize_google(audio)
-                print(self.instruction)
-            except:
-                self.instruction = ''
-                print("silence")
 
     def update(self):
-        self.get_keys()
-        self.move()
+        self.listen()
         self.rect = self.image.get_rect()
-        self.rect.center = self.pos
-        self.pos += vec(self.vx, self.vy) * self.game.dt
-        self.hit_rect.centerx = self.pos.x
+        self.rect.center = self.position
+        self.position += self.vel * self.game.dt
+        self.hit_rect.centerx = self.position.x
         collide_with_walls(self, self.game.walls, 'x')
-        self.hit_rect.centery = self.pos.y
+        self.hit_rect.centery = self.position.y
         collide_with_walls(self, self.game.walls, 'y')
         self.rect.center = self.hit_rect.center
 

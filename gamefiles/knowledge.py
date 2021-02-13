@@ -5,6 +5,7 @@
 # to pre-existing knowledge.
 
 from transcript import Transcript
+from settings import *
 
 class Knowledge:
 
@@ -56,20 +57,56 @@ class Knowledge:
         actions_is_empty = not self.agent.transcript.action_sequences
         return instruct_is_empty or actions_is_empty
 
-    def move(self):
-        return("moving")
+
+    #def move(self):
+    #    return("moving")
 
     def left(self):
+        print("going left")
+        self.agent.vel.x, self.agent.vy = 0, 0
+        self.agent.vel.x = -AGENT_SPEED
+        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
+            self.agent.vel.x *= 0.7071
+            self.agent.vel.y *= 0.7071
         return("going left")
 
     def right(self):
+        self.agent.vel.x, self.agent.vel.y = 0, 0
+        self.agent.vel.x = AGENT_SPEED
+        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
+            self.agent.vel.x *= 0.7071
+            self.agent.vel.y *= 0.7071
         return("going right")
 
     def up(self):
+        self.agent.vel.x, self.agent.vel.y = 0, 0
+        self.agent.vel.y = -AGENT_SPEED
+        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
+            self.agent.vel.x *= 0.7071
+            self.agent.vel.y *= 0.7071
         return("going up")
 
     def down(self):
+        self.agent.vel.x, self.agent.vel.y = 0, 0
+        self.agent.vel.y = AGENT_SPEED
+        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
+            self.agent.vel.x *= 0.7071
+            self.agent.vel.y *= 0.7071
         return("going down")
+
+    def move(self):
+        self.agent.vel.x, self.agent.vel.y = 0, 0
+        #if self.agent.instruction == "left":
+        #    self.agent.vx = -AGENT_SPEED
+        if self.agent.instruction == "right":
+            self.agent.vel.x = AGENT_SPEED
+        if self.agent.instruction == "up":
+            self.agent.vel.y = -AGENT_SPEED
+        if self.agent.instruction == "down":
+            self.agent.vel.y = AGENT_SPEED
+        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
+            self.agent.vel.x *= 0.7071
+            self.agent.vel.y *= 0.7071
 
     def yes(self):
         response = self.link_prev_command() if not self.is_transcript_empty() else ""
