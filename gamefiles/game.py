@@ -33,10 +33,10 @@ class Game:
 
     def load_data(self):
         game_folder = path.dirname(__file__)
-        img_folder = path.join(game_folder, "img")
-        map_folder = path.join(game_folder, "maps")
+        self.img_folder = path.join(game_folder, "img")
+        self.map_folder = path.join(game_folder, "maps")
         #self.map = Map(path.join(map_folder, "map.txt"))
-        self.map = TiledMap(path.join(map_folder, "tiled_map.tmx"))
+        self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
 
