@@ -52,12 +52,12 @@ class Agent(pg.sprite.Sprite):
         #         audio = r.listen(source)
         #         try:
         #             self.instruction = r.recognize_google(audio)
-        #             print(self.instruction)
+        #             print("You: " + str(self.instruction))
         #         except:
         #             self.instruction = ''
         #             print("silence")
         #     attempt = self.attempt()
-        #     print(attempt)
+        #     print(self.name + ": " + str(attempt))
 
         ## TEXT-ONLY INPUT
         self.instruction = input("\nType something: ").lower()
