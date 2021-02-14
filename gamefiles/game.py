@@ -94,9 +94,6 @@ class Game:
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
 
-    def get_tree(self):
-        return self.tree_trunk
-
     def run(self):
         # game loop - set self.playing = False to end the game
         self.playing = True
@@ -140,10 +137,29 @@ class Game:
                     self.quit()
 
     def show_start_screen(self):
-        pass
+        self.intro()
 
     def show_go_screen(self):
         pass
+
+    def name_agent(self):
+        '''
+        User names the game agent. Returns string name of agent. 
+        '''
+        name = input("What would you like to call me when teaching me tricks? ")
+        confirm = input("Call me, a young apple, '" + name + "'? (y/n) ")
+        while confirm.lower()=="n":
+            name = input("Okay, what would you like to call me? ")
+            confirm = input("Call me, '" + name + "'? (y/n) ")
+        print("Terrific. '" + name +"' is my name!" )
+
+        return(name)
+    
+    def intro(self):
+        print("\n            *******************************************************\n\
+            * Hello, and welcome to the world of me, Young Apple. *\n\
+            * I'm ready to move around and learn new tricks.      *\n\
+            *******************************************************\n")
 
 # create the game object
 g = Game()
@@ -151,5 +167,11 @@ g.show_start_screen()
 
 while True:
     g.new()
+
+    # Give Young Apple a name
+    name = g.name_agent()
+    g.agent.give_name(name.lower())
+    print("Teach me, " + name + ", to: climb the tree.")
+
     g.run()
     g.show_go_screen()
