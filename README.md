@@ -1,8 +1,13 @@
-# applecore
+# Apple Core-dination
 
-**Apple Core-dination:**
-Shared World Voice-Controlled Game
+*Shared World Voice-Controlled Game*
 
-LAP software project
+Language, Action, & Perception Software Project
 
-*(Formerly: voice-controlled-world-game)*
+Winter 2020-2021
+
+## How to Use (Development)
+1. Clone repository files (gamefiles/)
+2. Run `pip install -r requirements.txt` to install dependencies.
+3. Navigate to `gamefiles/` on local machine.
+4. Run `python3 game.py` or `python game.py` to play the game.
