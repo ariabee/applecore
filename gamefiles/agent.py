@@ -38,6 +38,7 @@ class Agent(pg.sprite.Sprite):
         self.transcript = Transcript()
         self.current_actions = []  # working memory
 
+
     def turn(self, direction):
         """
         change the orientation of the agent to a different direction

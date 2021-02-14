@@ -30,7 +30,6 @@ class Game:
         #self.model = M5(n_input=1, n_output=35)
         # load trained model
         #self.model.load_state_dict(torch.load(path_to_local_model))
-        self.tree_trunk = None
 
     def load_data(self):
         game_folder = path.dirname(__file__)
@@ -90,6 +89,7 @@ class Game:
             if tile_object.name == "tree_trunk":
                 self.tree_trunk = Tree(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height,
                                            self.tree_top)
+        for tile_object in self.map.map_data.objects:
             if tile_object.name == "agent":
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)

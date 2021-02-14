@@ -28,8 +28,8 @@ class Knowledge:
         self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me]
         self.objects = {'tree': (10,10), \
                          'me': agent.position} # x, y posiiton on map
-        # self.objects = {'tree': (self.agent.game.get_tree().x, self.agent.game.get_tree().y), \
-        #             'me': agent.position} # x, y posiiton on map
+        self.objects = {'tree': (self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
+                     'me': agent.position} # x, y posiiton on map
         # self.confirmations = [self.yes, self.no]
         # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
 
