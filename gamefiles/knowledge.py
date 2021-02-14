@@ -44,7 +44,11 @@ class Knowledge:
         print(self._lexicon)
     
     def add_to_learned(self, words, action_sequence):
-        self._learned.update({words : action_sequence})
+        """
+        Add a phrase and its learned list of actions to learned.
+        E.g.: "go up there", [[0],[1],[3]] stored as "go up there" : [0,1,3]
+        """
+        self._learned.update({words : [a[0] for a in action_sequence]}) # [0, 3, 1, 2]
         print("~~learned: " + str(self._learned))
         return "I learned to: " + str(words)
 
@@ -136,7 +140,7 @@ class Knowledge:
 
     # Define complex actions / game tasks:
 
-    def climb_the_tree(self):
+    def climb_tree(self):
     # def climb_the_tree(self, position, action_sequence):
         # (should perform actions, either predefined or passed into the function)
         # move agent to position
@@ -146,8 +150,11 @@ class Knowledge:
         # IDEA: could pass in action squence parameter made up of agent position + actions taken by agent from 
         # last completed action sequence (marked success)
 
+        # if standing in front of the trunk
+        # just climb the tree
+
         #self.agent.position = vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)
- 
+
         return "climbing the tree"
 
 

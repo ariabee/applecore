@@ -1,6 +1,8 @@
 import pygame as pg
+import os
 from settings import *
 from map import collide_hit_rect
+from sprites import *
 import speech_recognition as sr
 from knowledge import Knowledge
 from transcript import Transcript
@@ -8,25 +10,6 @@ import math
 
 vec = pg.math.Vector2
 
-def collide_with_walls(sprite, group, dir):
-    if dir == 'x':
-        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
-        if hits:
-            if hits[0].rect.centerx > sprite.hit_rect.centerx:
-                sprite.position.x = hits[0].rect.left - sprite.hit_rect.width / 2
-            if hits[0].rect.centerx < sprite.hit_rect.centerx:
-                sprite.position.x = hits[0].rect.right + sprite.hit_rect.width / 2
-            sprite.vel.x = 0
-            sprite.hit_rect.centerx = sprite.position.x
-    if dir == 'y':
-        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
-        if hits:
-            if hits[0].rect.centery > sprite.hit_rect.centery:
-                sprite.position.y = hits[0].rect.top - sprite.hit_rect.height / 2
-            if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.position.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
-            sprite.vel.y = 0
-            sprite.hit_rect.centery = sprite.position.y
 
 class Agent(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -63,9 +46,11 @@ class Agent(pg.sprite.Sprite):
         # self.image.blit(self.img_0/90/180/270, ((x, y)))
         pass
 
-    def listen(self):
+    def listen_attempt(self):
         # speech input
         # self.command
+
+        #UNCOMMENT FOR SPEECH VERSION
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]:
             self.vel = vec(0, 0)
@@ -75,13 +60,19 @@ class Agent(pg.sprite.Sprite):
                 audio = r.listen(source)
                 try:
                     self.instruction = r.recognize_google(audio)
-                    print(self.instruction)
+                    print("You: " + str(self.instruction))
                 except:
                     self.instruction = ''
                     print("silence")
             attempt = self.attempt()
-            print(attempt)
+            print(self.name + ": " + str(attempt))
 
+#         ## TEXT-ONLY INPUT
+#         self.instruction = input("\nType something: ").lower()
+#         attempt = self.attempt()
+#         print(attempt)
+
+        return self.instruction
 
         """
         MORGAN'S MODEL
@@ -110,7 +101,6 @@ class Agent(pg.sprite.Sprite):
             attempt = self.attempt()
             print(attempt)
         """
-
 
         """
         if keys[pg.K_LEFT] or keys[pg.K_a]:
@@ -152,24 +142,26 @@ class Agent(pg.sprite.Sprite):
         instruction_split = instruction.split()  # split sentence into list of words
         lexicon = self.knowledge.lexicon()
         learned = self.knowledge.learned()
-        # instruction_edited = instruction
+        instruction_minus_phrases = instruction
 
-        # # First check for learned phrases
-        # for phrase in learned:
-        # 	if phrase in instruction:
-        # 		composition += (phrase + " ")
-        # 		actions.append(learned[phrase])
+        # First check for learned phrases
+        for phrase in learned:
+            if phrase in instruction:
+                print("found the phrase: " + str(phrase))
+                composition += (phrase + " ")
+                actions.append(learned[phrase])
 
-        # 		# If found, remove phrase from instruction
-        # 		instruction_edited = instruction_edited.replace(phrase, " ")
+                # If found, remove phrase from instruction
+                instruction_minus_phrases = instruction.replace(phrase, " ")
 
-        # instruction_split = instruction_edited.split()
+        instruction_split = instruction_minus_phrases.split()
 
         # Check for movement words in the instruction that the agent also recognizes
         for word in instruction_split:
             if word in lexicon:
                 composition += (word + " ")
                 actions.append(lexicon[word])
+                # print(actions)
 
         self.store_parsed_actions(actions)
 
@@ -181,7 +173,7 @@ class Agent(pg.sprite.Sprite):
         Execute the retrieved action functions.
         """
         responses = []
-
+        
         for actions in parsed_actions:
             for action in actions:
                 action_response = self.knowledge.actions[action]()  # do the action, get the response
@@ -203,6 +195,10 @@ class Agent(pg.sprite.Sprite):
 
         # Save the parsed actions to working memory
         self.current_actions = parsed_actions
+        
+        # Save the instruction and current actions to transcript
+        if self.instruction:
+            self.transcript.store(self.instruction, self.current_actions)
 
         # Try the actions and collect the responses
         responses = self.try_actions(parsed_actions)
@@ -247,14 +243,14 @@ class Agent(pg.sprite.Sprite):
                 self.rect.y = self.y
     """
 
-    def climb_tree(self):
-        # if standing in front of the trunk
-        # just climb the tree
-        pass
+    # def climb_tree(self):
+    #     # if standing in front of the trunk
+    #     # just climb the tree
+    #     pass
 
 
     def update(self):
-        self.listen()
+        self.listen_attempt()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
         if not math.isclose(self.position.x, self.dest_x, rel_tol=1e-09, abs_tol=0.5) or not math.isclose(self.position.y,

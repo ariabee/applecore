@@ -32,9 +32,11 @@ class Transcript:
 
 
     def store(self, instruct="", actions=[]):
+        """
+        Store instructions: string, and actions: list in transcript.
+        """
         self.instructions.append(instruct)
-        if actions:
-            self.action_sequences.append(actions)
+        self.action_sequences.append(actions)
 
 
     def previous_instruction(self):
