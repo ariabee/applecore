@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+'''
+This entire code was taken from https://pytorch.org/tutorials/intermediate/speech_command_recognition_with_torchaudio.html
+'''
 class M5(nn.Module):
     def __init__(self, n_input=1, n_output=35, stride=16, n_channel=32):
         super().__init__()

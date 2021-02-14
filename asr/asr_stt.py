@@ -10,7 +10,13 @@ from cnn_2 import CNN
 from torchaudio.datasets import SPEECHCOMMANDS
 import os
 
+'''
+This entire code was taken from https://pytorch.org/tutorials/intermediate/speech_command_recognition_with_torchaudio.html
+
+Planned work is to create another speech to text model using the LibriTTS dataset
+'''
 path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/applecore/speech_commands_model/speech_commands_model.pt"
+
 
 #class to download the speech commands dataset (if not already downloaded)
 #also, split the data into training, testing, and validation class
