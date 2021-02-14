@@ -127,7 +127,7 @@ class Knowledge:
 
     # Define complex actions / game tasks:
 
-    def climb_the_tree(self):
+    def climb_tree(self):
     # def climb_the_tree(self, position, action_sequence):
         # (should perform actions, either predefined or passed into the function)
         # move agent to position
@@ -136,6 +136,9 @@ class Knowledge:
 
         # IDEA: could pass in action squence parameter made up of agent position + actions taken by agent from 
         # last completed action sequence (marked success)
+
+        # if standing in front of the trunk
+        # just climb the tree
  
         return "climbing the tree"
 

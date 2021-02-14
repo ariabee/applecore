@@ -14,7 +14,7 @@ class Agent(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.img = pg.image.load("img/avatar.png")
+        # self.img = pg.image.load("img/avatar.png")
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
         self.hit_rect.center = self.rect.center
@@ -56,6 +56,8 @@ class Agent(pg.sprite.Sprite):
                     print("silence")
             attempt = self.attempt()
             print(attempt)
+
+        return self.instruction
 
 
         """
@@ -149,6 +151,10 @@ class Agent(pg.sprite.Sprite):
 
         # Save the parsed actions to working memory
         self.current_actions = parsed_actions
+        
+        # Save the instruction and current actions to transcript
+        if self.instruction:
+            self.transcript.store(self.instruction, self.current_actions)
 
         # Try the actions and collect the responses
         responses = self.try_actions(parsed_actions)
@@ -193,10 +199,10 @@ class Agent(pg.sprite.Sprite):
                 self.rect.y = self.y
     """
 
-    def climb_tree(self):
-        # if standing in front of the trunk
-        # just climb the tree
-        pass
+    # def climb_tree(self):
+    #     # if standing in front of the trunk
+    #     # just climb the tree
+    #     pass
 
 
     def update(self):
