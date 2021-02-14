@@ -69,6 +69,8 @@ class Agent(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]:
             self.vel = vec(0, 0)
+            self.dest_x = self.position.x
+            self.dest_y = self.position.y
             with sr.Microphone() as source:
                 audio = r.listen(source)
                 try:
@@ -79,6 +81,35 @@ class Agent(pg.sprite.Sprite):
                     print("silence")
             attempt = self.attempt()
             print(attempt)
+
+
+        """
+        MORGAN'S MODEL
+        keys = pg.key.get_pressed()
+        if keys[pg.K_SPACE]:
+            self.vel = vec(0, 0)
+            
+            #call STT (speech to text) class to get the wav file to predict
+            user_input = SpeechToText.userInput(path_to_wav)
+
+            #call STT class to get the waveform from the user_input
+            waveform = SpeechToText.inputLoad(path_to_wav)
+
+            #call STT class to get a prediction on the wav file
+            prediction = SpeechToText.get_prediction(waveform, device, transform, model)
+            print(prediction)
+
+            with sr.Microphone() as source:
+                audio = r.listen(source)
+                try:
+                    self.instruction = r.recognize_google(audio)
+                    print(self.instruction)
+                except:
+                    self.instruction = ''
+                    print("silence")
+            attempt = self.attempt()
+            print(attempt)
+        """
 
 
         """
