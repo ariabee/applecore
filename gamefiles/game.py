@@ -10,7 +10,7 @@ from sprites import *
 from map import *
 from agent import *
 
-#import random, time
+import random, time
 import torch
 import torchaudio
 from asr.m5 import M5
@@ -30,7 +30,6 @@ class Game:
         game_folder = path.dirname(__file__)
         self.img_folder = path.join(game_folder, "img")
         self.map_folder = path.join(game_folder, "maps")
-        #self.map = Map(path.join(map_folder, "map.txt"))
         self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
@@ -56,33 +55,6 @@ class Game:
         # load trained model
         model.load_state_dict(torch.load(path_to_local_model))
 
-        # call STT (speech to text) class to get the wav file to predict
-        user_input = SpeechToText.userInput(path_to_wav)
-
-        # call STT class to get the waveform from the user_input
-        waveform = SpeechToText.inputLoad(user_input, path_to_wav)
-
-        # call STT class to get a prediction on the wav file
-        prediction = SpeechToText.get_prediction(waveform, device, transform, model)
-        print(prediction)
-    """
-    old new function which loads an old map
-    def new(self):
-        # initialize all variables and do all the setup for a new game
-        self.all_sprites = pg.sprite.Group()
-        self.walls = pg.sprite.Group()
-        for row, tiles in enumerate(self.map.data):
-            for col, tile in enumerate(tiles):
-                if tile == 'A':
-                    Water(self, col, row)
-                if tile == 'W':
-                    Wall(self, col, row)
-                if tile == 'T':
-                    Tree(self, col, row)
-                if tile == 'P':
-                    self.avatar = Avatar(self, col, row)
-        self.camera = Camera(self.map.width, self.map.height)
-        """
 
     def new(self):
         # initialize all variables and do all the setup for a new game

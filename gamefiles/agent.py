@@ -22,18 +22,12 @@ class Agent(pg.sprite.Sprite):
         self.hit_rect = self.rect
         self.hit_rect.center = self.rect.center
         self.vel = vec(0, 0)
-        #self.x = x * TILESIZE
-        #self.y = y * TILESIZE
         self.position = vec(x, y)
         self.dest_x = x
         self.dest_y = y
-        #self.image.fill(RED)
-        #self.image.blit(self.img, (x, y))
         self.instruction = ""
         self.orientation = "front" # left, right, front, back
-
         self.name = "Young Apple"
-        #self.position = (20, 20)  # testing position
         self.knowledge = Knowledge(self)
         self.transcript = Transcript()
         self.current_actions = []  # working memory
@@ -47,9 +41,6 @@ class Agent(pg.sprite.Sprite):
         pass
 
     def listen_attempt(self):
-        # speech input
-        # self.command
-
         #UNCOMMENT FOR SPEECH VERSION
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]:
@@ -58,12 +49,8 @@ class Agent(pg.sprite.Sprite):
             self.dest_y = self.position.y
             with sr.Microphone() as source:
                 audio = r.listen(source)
-                try:
-                    self.instruction = r.recognize_google(audio)
-                    print("You: " + str(self.instruction))
-                except:
-                    self.instruction = ''
-                    print("silence")
+                self.instruction = r.recognize_google(audio)
+                print("You: " + str(self.instruction))
             attempt = self.attempt()
             print(self.name + ": " + str(attempt))
 
@@ -72,49 +59,20 @@ class Agent(pg.sprite.Sprite):
         # attempt = self.attempt()
         # print(attempt)
 
+        elif keys[pg.K_m]:
+            self.vel = vec(0, 0)
+            self.dest_x = self.position.x
+            self.dest_y = self.position.y
+            # call STT (speech to text) class to get the wav file to predict
+            user_input = SpeechToText.userInput(path_to_wav)
+            waveform = SpeechToText.inputLoad(path_to_wav)
+            self.instruction = SpeechToText.get_prediction(waveform, device, transform, model)
+            print("You: " + str(self.instruction))
+            attempt = self.attempt()
+            print(self.name + ": " + str(attempt))
+
         return self.instruction
 
-        """
-        MORGAN'S MODEL
-        keys = pg.key.get_pressed()
-        if keys[pg.K_SPACE]:
-            self.vel = vec(0, 0)
-            
-            #call STT (speech to text) class to get the wav file to predict
-            user_input = SpeechToText.userInput(path_to_wav)
-
-            #call STT class to get the waveform from the user_input
-            waveform = SpeechToText.inputLoad(path_to_wav)
-
-            #call STT class to get a prediction on the wav file
-            prediction = SpeechToText.get_prediction(waveform, device, transform, model)
-            print(prediction)
-
-            with sr.Microphone() as source:
-                audio = r.listen(source)
-                try:
-                    self.instruction = r.recognize_google(audio)
-                    print(self.instruction)
-                except:
-                    self.instruction = ''
-                    print("silence")
-            attempt = self.attempt()
-            print(attempt)
-        """
-
-        """
-        if keys[pg.K_LEFT] or keys[pg.K_a]:
-            self.vx = -PLAYER_SPEED
-        if keys[pg.K_RIGHT] or keys[pg.K_d]:
-            self.vx = PLAYER_SPEED
-        if keys[pg.K_UP] or keys[pg.K_w]:
-            self.vy = -PLAYER_SPEED
-        if keys[pg.K_DOWN] or keys[pg.K_s]:
-            self.vy = PLAYER_SPEED
-        if self.vx != 0 and self.vy != 0:
-            self.vx *= 0.7071
-            self.vy *= 0.7071
-        """
 
     def give_name(self, new_name):
         self.name = new_name
@@ -205,49 +163,6 @@ class Agent(pg.sprite.Sprite):
 
         return (composition, responses)
 
-    """
-    def move(self):
-        self.vx, self.vy = 0, 0
-        if self.instruction == "left":
-            self.vx = -AGENT_SPEED
-        if self.instruction== "right":
-            self.vx = AGENT_SPEED
-        if self.instruction == "up":
-            self.vy = -AGENT_SPEED
-        if self.instruction == "down":
-            self.vy = AGENT_SPEED
-        if self.vx != 0 and self.vy != 0:
-            self.vx *= 0.7071
-            self.vy *= 0.7071
-            """
-
-    """
-    def collide_with_walls(self, dir):
-        if dir == 'x':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False)
-            if hits:
-                if self.vx > 0:
-                    self.x = hits[0].rect.left - self.rect.width
-                if self.vx < 0:
-                    self.x = hits[0].rect.right
-                self.vx = 0
-                self.rect.x = self.x
-        if dir == 'y':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False)
-            if hits:
-                if self.vy > 0:
-                    self.y = hits[0].rect.top - self.rect.height
-                if self.vy < 0:
-                    self.y = hits[0].rect.bottom
-                self.vy = 0
-                self.rect.y = self.y
-    """
-
-    # def climb_tree(self):
-    #     # if standing in front of the trunk
-    #     # just climb the tree
-    #     pass
-
 
     def update(self):
         self.listen_attempt()
@@ -262,18 +177,3 @@ class Agent(pg.sprite.Sprite):
             collide_with_walls(self, self.game.walls, 'y')
             self.rect.center = self.hit_rect.center
 
-
-    """
-    old update function for old map
-    def update(self):
-        # put command into Knowledge
-        # self.command = ""
-        self.get_keys()
-        # call turn function
-        self.x += self.vx * self.game.dt
-        self.y += self.vy * self.game.dt
-        self.rect.x = self.x
-        self.collide_with_walls('x')
-        self.rect.y = self.y
-        self.collide_with_walls('y')
-        """
