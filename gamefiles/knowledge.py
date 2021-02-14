@@ -7,6 +7,7 @@
 from transcript import Transcript
 from settings import *
 
+
 class Knowledge:
 
     def __init__(self, agent):
@@ -67,35 +68,43 @@ class Knowledge:
 
     def left(self):
         print("going left")
+        self.agent.dest_x -= 100
         self.agent.vel.x, self.agent.vy = 0, 0
         self.agent.vel.x = -AGENT_SPEED
         if self.agent.vel.x != 0 and self.agent.vel.y != 0:
-            self.agent.vel.x *= 0.7071
-            self.agent.vel.y *= 0.7071
+            self.agent.vel.x *= 1
+            self.agent.vel.y *= 1
+        #self.agent.position.x -= 50
         return("going left")
 
     def right(self):
+        self.agent.dest_x += 100
         self.agent.vel.x, self.agent.vel.y = 0, 0
         self.agent.vel.x = AGENT_SPEED
         if self.agent.vel.x != 0 and self.agent.vel.y != 0:
             self.agent.vel.x *= 0.7071
             self.agent.vel.y *= 0.7071
+        #self.agent.position.x += 50
         return("going right")
 
     def up(self):
+        self.agent.dest_y -= 100
         self.agent.vel.x, self.agent.vel.y = 0, 0
         self.agent.vel.y = -AGENT_SPEED
         if self.agent.vel.x != 0 and self.agent.vel.y != 0:
             self.agent.vel.x *= 0.7071
             self.agent.vel.y *= 0.7071
+        #self.agent.position.y -= 50
         return("going up")
 
     def down(self):
+        self.agent.dest_y += 100
         self.agent.vel.x, self.agent.vel.y = 0, 0
         self.agent.vel.y = AGENT_SPEED
         if self.agent.vel.x != 0 and self.agent.vel.y != 0:
             self.agent.vel.x *= 0.7071
             self.agent.vel.y *= 0.7071
+        #self.agent.position.y += 50
         return("going down")
 
     def move(self):
@@ -143,7 +152,9 @@ class Knowledge:
 
         # if standing in front of the trunk
         # just climb the tree
- 
+
+        #self.agent.position = vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)
+
         return "climbing the tree"
 
 
