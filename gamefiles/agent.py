@@ -40,22 +40,29 @@ class Agent(pg.sprite.Sprite):
         # self.image.blit(self.img_0/90/180/270, ((x, y)))
         pass
 
-    def listen(self):
+    def listen_attempt(self):
         # speech input
         # self.command
-        keys = pg.key.get_pressed()
-        if keys[pg.K_SPACE]:
-            self.vel = vec(0, 0)
-            with sr.Microphone() as source:
-                audio = r.listen(source)
-                try:
-                    self.instruction = r.recognize_google(audio)
-                    print(self.instruction)
-                except:
-                    self.instruction = ''
-                    print("silence")
-            attempt = self.attempt()
-            print(attempt)
+
+        ##UNCOMMENT FOR SPEECH VERSION
+        # keys = pg.key.get_pressed()
+        # if keys[pg.K_SPACE]:
+        #     self.vel = vec(0, 0)
+        #     with sr.Microphone() as source:
+        #         audio = r.listen(source)
+        #         try:
+        #             self.instruction = r.recognize_google(audio)
+        #             print(self.instruction)
+        #         except:
+        #             self.instruction = ''
+        #             print("silence")
+        #     attempt = self.attempt()
+        #     print(attempt)
+
+        ## TEXT-ONLY INPUT
+        self.instruction = input("\nType something: ").lower()
+        attempt = self.attempt()
+        print(attempt)
 
         return self.instruction
 
@@ -206,7 +213,7 @@ class Agent(pg.sprite.Sprite):
 
 
     def update(self):
-        self.listen()
+        self.listen_attempt()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
         self.position += self.vel * self.game.dt
