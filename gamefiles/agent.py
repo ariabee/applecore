@@ -67,10 +67,10 @@ class Agent(pg.sprite.Sprite):
             attempt = self.attempt()
             print(self.name + ": " + str(attempt))
 
-#         ## TEXT-ONLY INPUT
-#         self.instruction = input("\nType something: ").lower()
-#         attempt = self.attempt()
-#         print(attempt)
+        # ## TEXT-ONLY INPUT
+        # self.instruction = input("\nType something: ").lower()
+        # attempt = self.attempt()
+        # print(attempt)
 
         return self.instruction
 
