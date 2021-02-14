@@ -7,6 +7,7 @@ import speech_recognition as sr
 from knowledge import Knowledge
 from transcript import Transcript
 import math
+from os import path
 
 vec = pg.math.Vector2
 
@@ -16,8 +17,7 @@ class Agent(pg.sprite.Sprite):
         self.groups = game.all_sprites
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        #self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image = pg.image.load("img/apple_64px.png")
+        self.image = pg.image.load(path.join(game.img_folder, "apple_64px.png"))
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.hit_rect = self.rect
