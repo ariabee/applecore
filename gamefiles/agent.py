@@ -16,6 +16,7 @@ class Agent(pg.sprite.Sprite):
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
         # self.img = pg.image.load(os.path.join("img", "agent_32px.png"))
+        # self.img = pg.image.load('img/avatar.png')
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
         self.hit_rect.center = self.rect.center
@@ -108,24 +109,26 @@ class Agent(pg.sprite.Sprite):
         instruction_split = instruction.split()  # split sentence into list of words
         lexicon = self.knowledge.lexicon()
         learned = self.knowledge.learned()
-        # instruction_edited = instruction
+        instruction_minus_phrases = instruction
 
-        # # First check for learned phrases
-        # for phrase in learned:
-        # 	if phrase in instruction:
-        # 		composition += (phrase + " ")
-        # 		actions.append(learned[phrase])
+        # First check for learned phrases
+        for phrase in learned:
+            if phrase in instruction:
+                print("found the phrase: " + str(phrase))
+                composition += (phrase + " ")
+                actions.append(learned[phrase])
 
-        # 		# If found, remove phrase from instruction
-        # 		instruction_edited = instruction_edited.replace(phrase, " ")
+                # If found, remove phrase from instruction
+                instruction_minus_phrases = instruction.replace(phrase, " ")
 
-        # instruction_split = instruction_edited.split()
+        instruction_split = instruction_minus_phrases.split()
 
         # Check for movement words in the instruction that the agent also recognizes
         for word in instruction_split:
             if word in lexicon:
                 composition += (word + " ")
                 actions.append(lexicon[word])
+                # print(actions)
 
         self.store_parsed_actions(actions)
 
@@ -137,7 +140,7 @@ class Agent(pg.sprite.Sprite):
         Execute the retrieved action functions.
         """
         responses = []
-
+        
         for actions in parsed_actions:
             for action in actions:
                 action_response = self.knowledge.actions[action]()  # do the action, get the response
