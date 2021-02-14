@@ -1,4 +1,5 @@
 import pygame as pg
+import os
 from settings import *
 from map import collide_hit_rect
 vec = pg.math.Vector2
@@ -14,7 +15,7 @@ class Agent(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        # self.img = pg.image.load("img/avatar.png")
+        # self.img = pg.image.load(os.path.join("img", "agent_32px.png"))
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
         self.hit_rect.center = self.rect.center
