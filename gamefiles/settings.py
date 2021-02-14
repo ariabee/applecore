@@ -14,10 +14,10 @@ BLUE = (0, 85, 255)
 CYAN = (0, 255, 255)
 
 # game settings
-WIDTH = 1024   # 16 * 64 or 32 * 32 or 64 * 16
-HEIGHT = 512  # 16 * 48 or 32 * 24 or 64 * 12
+WIDTH = 800
+HEIGHT = 480
 FPS = 60
-TITLE = "Tilemap Demo"
+TITLE = "APPLECORE"
 BGCOLOR = DARKGREY
 
 TILESIZE = 32
@@ -25,6 +25,6 @@ GRIDWIDTH = WIDTH / TILESIZE
 GRIDHEIGHT = HEIGHT / TILESIZE
 
 # Player settings
-AGENT_SPEED = 30
+AGENT_SPEED = 10
 
 r = sr.Recognizer()

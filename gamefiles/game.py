@@ -53,8 +53,15 @@ class Game:
         for tile_object in self.map.map_data.objects:
             if tile_object.name == "agent":
                 self.agent = Agent(self, tile_object.x, tile_object.y)
-            if tile_object.name == "tree":
-                self.tree = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "game_border":
+                self.game_border = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "water":
+                self.water = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "tree_top":
+                self.tree_top = Tree_top(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "tree_trunk":
+                self.tree_trunk = Tree(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height,
+                                           self.tree_top)
         self.camera = Camera(self.map.width, self.map.height)
 
     def run(self):

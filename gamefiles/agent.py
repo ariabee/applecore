@@ -1,10 +1,12 @@
 import pygame as pg
 from settings import *
 from map import collide_hit_rect
-vec = pg.math.Vector2
 import speech_recognition as sr
 from knowledge import Knowledge
 from transcript import Transcript
+import math
+
+vec = pg.math.Vector2
 
 def collide_with_walls(sprite, group, dir):
     if dir == 'x':
@@ -31,17 +33,20 @@ class Agent(pg.sprite.Sprite):
         self.groups = game.all_sprites
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.img = pg.image.load("img/avatar.png")
+        #self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image = pg.image.load("img/avatar.png")
         self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
         self.hit_rect = self.rect
         self.hit_rect.center = self.rect.center
         self.vel = vec(0, 0)
         #self.x = x * TILESIZE
         #self.y = y * TILESIZE
         self.position = vec(x, y)
-        self.image.fill(RED)
-        #self.image.blit(self.img, ((x, y)))
+        self.dest_x = x
+        self.dest_y = y
+        #self.image.fill(RED)
+        #self.image.blit(self.img, (x, y))
         self.instruction = ""
         self.orientation = "front" # left, right, front, back
 
@@ -221,12 +226,15 @@ class Agent(pg.sprite.Sprite):
         self.listen()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
-        self.position += self.vel * self.game.dt
-        self.hit_rect.centerx = self.position.x
-        collide_with_walls(self, self.game.walls, 'x')
-        self.hit_rect.centery = self.position.y
-        collide_with_walls(self, self.game.walls, 'y')
-        self.rect.center = self.hit_rect.center
+        if not math.isclose(self.position.x, self.dest_x, rel_tol=1e-09, abs_tol=0.5) or not math.isclose(self.position.y,
+                                                                                                      self.dest_y, rel_tol=1e-09, abs_tol=0.5):
+            self.position += self.vel * self.game.dt
+            self.hit_rect.centerx = self.position.x
+            collide_with_walls(self, self.game.walls, 'x')
+            self.hit_rect.centery = self.position.y
+            collide_with_walls(self, self.game.walls, 'y')
+            self.rect.center = self.hit_rect.center
+
 
     """
     old update function for old map

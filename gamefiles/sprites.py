@@ -16,6 +16,27 @@ class Obstacle(pg.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+class Tree(pg.sprite.Sprite):
+    def __init__(self, game, x, y, w, h, top):
+        self.groups = game.walls
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.rect = pg.Rect(x, y, w, h)
+        self.x = x
+        self.y = y
+        self.rect.x = x
+        self.rect.y = y
+        self.tree_top = top
+
+class Tree_top(pg.sprite.Sprite):
+    def __init__(self, game, x, y, w, h):
+        pg.sprite.Sprite.__init__(self)
+        self.game = game
+        self.rect = pg.Rect(x, y, w, h)
+        self.x = x
+        self.y = y
+        self.rect.x = x
+        self.rect.y = y
 
 """
 from old map data
