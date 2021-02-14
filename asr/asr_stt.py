@@ -10,7 +10,7 @@ from cnn_2 import CNN
 from torchaudio.datasets import SPEECHCOMMANDS
 import os
 
-path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/speech_commands_model/speech_commands_model.pt"
+path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/applecore/speech_commands_model/speech_commands_model.pt"
 
 #class to download the speech commands dataset (if not already downloaded)
 #also, split the data into training, testing, and validation class
@@ -103,6 +103,7 @@ else:
     num_workers = 0
     pin_memory = False
 
+#initialize the train data loader
 train_loader = torch.utils.data.DataLoader(
     train_set,
     batch_size=batch_size,
@@ -113,32 +114,30 @@ train_loader = torch.utils.data.DataLoader(
 )
 
 
-#model = M5(n_input=transformed.shape[0], n_output=len(labels))
-model = CNN()
+model = M5(n_input=transformed.shape[0], n_output=len(labels))
+#model = CNN()
 model.to(device)
 
 optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
+#train the model
 def train(model, epoch, log_interval):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
-        data = data.unsqueeze(1)
-        print("data")
-        print(data.shape)
         data = data.to(device)
         target = target.to(device)
-        #print(data)
         optimizer.zero_grad()
 
         # apply transform and model on whole batch directly on device
-        #data = transform(data)
+        data = transform(data)
         output = model(data)
 
         # negative log-likelihood for a tensor of size (batch x 1 x n_output)
-        loss = nn.CrossEntropyLoss(reduction='sum')
+        loss = F.nll_loss(output.squeeze(), target)
 
-
+        optimizer.zero_grad()
+        loss.backward()
         optimizer.step()
 
         # print training stats
@@ -147,11 +146,11 @@ def train(model, epoch, log_interval):
 
         # record loss
         losses.append(loss.item())
-       # print("saving model")
-      #  torch.save(model.state_dict(), path_to_local_model)
+        print("saving model")
+        torch.save(model.state_dict(), path_to_local_model)
 
 
-
+#initialize test data loader
 test_loader = torch.utils.data.DataLoader(
     test_set,
     batch_size=batch_size,
@@ -170,6 +169,7 @@ def get_likely_index(tensor):
     # find most likely label index for each element in the batch
     return tensor.argmax(dim=-1)
 
+#test the model
 def test(model, epoch):
     model.eval()
     correct = 0
@@ -190,7 +190,7 @@ def test(model, epoch):
    # torch.save(model.state_dict(), path_to_local_model)
 
 losses = []
-n_epoch = 1
+n_epoch = 30
 log_interval = 20
 for epoch in range(1, n_epoch + 1):
     train(model, epoch, log_interval)

@@ -1,7 +1,7 @@
 import speech_recognition as sr
 import torch
 import torch.nn as nn
-from m5 import M5
+from asr.m5 import M5
 import torchaudio
 
 class SpeechToText():
