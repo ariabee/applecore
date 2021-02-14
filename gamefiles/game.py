@@ -11,12 +11,11 @@ from map import *
 from agent import *
 
 #import random, time
-#import torch
-#import torchaudio
-#from asr import m5
-#from asr.m5 import M5
-#from asr.speech_to_text import SpeechToText
-#import speech_recognition as sr
+import torch
+import torchaudio
+from asr.m5 import M5
+from asr.speech_to_text import SpeechToText
+import speech_recognition as sr
 
 
 class Game:
@@ -26,10 +25,6 @@ class Game:
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         self.load_data()
-        # initialize model, M5, with proper parameters
-        #self.model = M5(n_input=1, n_output=35)
-        # load trained model
-        #self.model.load_state_dict(torch.load(path_to_local_model))
 
     def load_data(self):
         game_folder = path.dirname(__file__)
@@ -39,23 +34,37 @@ class Game:
         self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
-
-        # initialize path to local (local machine) model
-        path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/speech_commands_model/speech_commands_model.pt"
-
         # initialize path to the wav file to be predicted
-        path_to_wav = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/voice-controlled-world-game/asr/bed.wav"
+        path_to_wav = "user_input.wav"
 
         # initialize device for cpu or gpu
-        #use_cuda = torch.cuda.is_available()
-        #torch.manual_seed(7)
-        #device = torch.device("cuda" if use_cuda else "cpu")
+        use_cuda = torch.cuda.is_available()
+        torch.manual_seed(7)
+        device = torch.device("cuda" if use_cuda else "cpu")
 
         # resample the wav files from 1600 to 8000
         sample_rate = 1600
         new_sample_rate = 8000
-        #transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
+        transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
 
+        # initialize model, M5, with proper parameters
+        model = M5(n_input=1, n_output=35)
+
+        # initialize path to local (local machine) model
+        path_to_local_model = "speech_commands_model/speech_commands_model.pt"
+
+        # load trained model
+        model.load_state_dict(torch.load(path_to_local_model))
+
+        # call STT (speech to text) class to get the wav file to predict
+        user_input = SpeechToText.userInput(path_to_wav)
+
+        # call STT class to get the waveform from the user_input
+        waveform = SpeechToText.inputLoad(user_input, path_to_wav)
+
+        # call STT class to get a prediction on the wav file
+        prediction = SpeechToText.get_prediction(waveform, device, transform, model)
+        print(prediction)
     """
     old new function which loads an old map
     def new(self):
