@@ -144,6 +144,7 @@ class Game:
 # create the game object
 g = Game()
 g.show_start_screen()
+
 while True:
     g.new()
     g.run()
