@@ -34,7 +34,7 @@ class Agent(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         #self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image = pg.image.load("img/avatar.png")
+        self.image = pg.image.load("img/apple_64px.png")
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.hit_rect = self.rect
