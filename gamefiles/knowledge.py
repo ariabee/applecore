@@ -6,11 +6,13 @@
 
 from transcript import Transcript
 from settings import *
+from random import randint
 
 
 class Knowledge:
 
     def __init__(self, agent):
+        self.agent = agent
         # TODO: might need to make every word have a function. or a value of category, index in category
         self._lexicon = {'move': [0], 'run': [0], 'go': [0], 'walk': [0], \
                          'left': [1], \
@@ -24,13 +26,12 @@ class Knowledge:
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
         self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me]
-        self.objects = {'tree':(10,10), \
+        self.objects = {'tree': (10,10), \
                          'me': agent.position} # x, y posiiton on map
+        # self.objects = {'tree': (self.agent.game.get_tree().x, self.agent.game.get_tree().y), \
+        #             'me': agent.position} # x, y posiiton on map
         # self.confirmations = [self.yes, self.no]
         # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
-
-        self.agent = agent
-
 
     def lexicon(self):
         return self._lexicon
@@ -63,11 +64,22 @@ class Knowledge:
         return instruct_is_empty or actions_is_empty
 
 
-    #def move(self):
-    #    return("moving")
+    def move(self):
+        # future: pick random destination
+        # for now: pick random direction function
+        random = randint(1,4)
+        if random == 1:
+            self.left()
+        elif random == 2:
+            self.right()
+        elif random == 3:
+            self.up()
+        else:
+            self.down()
+
+        return("moving somewhere")
 
     def left(self):
-        print("going left")
         self.agent.dest_x -= 100
         self.agent.vel.x, self.agent.vy = 0, 0
         self.agent.vel.x = -AGENT_SPEED
@@ -107,20 +119,6 @@ class Knowledge:
         #self.agent.position.y += 50
         return("going down")
 
-    def move(self):
-        self.agent.vel.x, self.agent.vel.y = 0, 0
-        #if self.agent.instruction == "left":
-        #    self.agent.vx = -AGENT_SPEED
-        if self.agent.instruction == "right":
-            self.agent.vel.x = AGENT_SPEED
-        if self.agent.instruction == "up":
-            self.agent.vel.y = -AGENT_SPEED
-        if self.agent.instruction == "down":
-            self.agent.vel.y = AGENT_SPEED
-        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
-            self.agent.vel.x *= 0.7071
-            self.agent.vel.y *= 0.7071
-
     def yes(self):
         response = self.link_prev_command() if not self.is_transcript_empty() else ""
         return("yes! " + str(response))
@@ -129,6 +127,8 @@ class Knowledge:
         return("oops :(")
 
     def tree(self):
+        # tree_coords = self.objects['tree']
+        # self.agent.dest_x, self.agent.dest_y = tree_coords
         return self.objects['tree'] # Return tree coordinates
 
     def me(self):

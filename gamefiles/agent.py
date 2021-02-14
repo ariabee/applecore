@@ -1,5 +1,4 @@
 import pygame as pg
-import os
 from settings import *
 from map import collide_hit_rect
 from sprites import *
@@ -67,10 +66,10 @@ class Agent(pg.sprite.Sprite):
             attempt = self.attempt()
             print(self.name + ": " + str(attempt))
 
-#         ## TEXT-ONLY INPUT
-#         self.instruction = input("\nType something: ").lower()
-#         attempt = self.attempt()
-#         print(attempt)
+        # ## TEXT-ONLY INPUT
+        # self.instruction = input("\nType something: ").lower()
+        # attempt = self.attempt()
+        # print(attempt)
 
         return self.instruction
 
