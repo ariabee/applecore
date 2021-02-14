@@ -33,6 +33,10 @@ class Game:
         self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
+
+        self.load_asr()
+
+    def load_asr(self):
         # initialize path to the wav file to be predicted
         path_to_wav = "user_input.wav"
 
