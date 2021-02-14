@@ -1,5 +1,4 @@
 import pygame as pg
-import os
 from settings import *
 from map import collide_hit_rect
 from sprites import *
