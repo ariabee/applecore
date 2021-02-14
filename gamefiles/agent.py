@@ -49,12 +49,14 @@ class Agent(pg.sprite.Sprite):
             self.dest_x = self.position.x
             self.dest_y = self.position.y
             with sr.Microphone() as source:
+                audio = r.listen(source)
                 try:
-                    audio = r.listen(source)
                     self.instruction = r.recognize_google(audio)
-                    print("You: " + str(self.instruction))
+                    print("\nYou: " + str(self.instruction))
                 except:
-                    print("Hm? Can you please say that again?")
+                    self.instruction = ''
+                    print("\nYou: *silence*")
+                    print("(Hm? Can you please say that again?)")
             attempt = self.attempt()
             print(self.name + ": " + str(attempt))
 
@@ -72,9 +74,10 @@ class Agent(pg.sprite.Sprite):
                 user_input = SpeechToText.userInput(path_to_wav)
                 waveform = SpeechToText.inputLoad(path_to_wav)
                 self.instruction = SpeechToText.get_prediction(waveform, device, transform, model)
+                print("You: " + str(self.instruction))
             except:
                 print("Hm? Can you please say that again?")
-                print("You: " + str(self.instruction))
+                self.instruction = ''
             attempt = self.attempt()
             print(self.name + ": " + str(attempt))
 
