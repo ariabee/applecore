@@ -65,17 +65,17 @@ class Knowledge:
 
 
     def move(self):
-        # future: pick random destination
-        # for now: pick random direction function
-        random = randint(1,4)
-        if random == 1:
-            self.left()
-        elif random == 2:
-            self.right()
-        elif random == 3:
-            self.up()
-        else:
-            self.down()
+        # # future: pick random destination or move a little
+        # # for now: pick random direction function
+        # random = randint(1,4)
+        # if random == 1:
+        #     self.left()
+        # elif random == 2:
+        #     self.right()
+        # elif random == 3:
+        #     self.up()
+        # else:
+        #     self.down()
 
         return("moving somewhere")
 
