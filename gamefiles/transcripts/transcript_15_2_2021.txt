@@ -1,0 +1,6 @@
+go to the tree
+[[0], [7]]
+going
+[]
+go
+[[0]]

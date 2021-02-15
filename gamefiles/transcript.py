@@ -7,6 +7,7 @@
 # Transcript will be accessed by agent to recall previous "experience".
 # TODO: think about time stamps / time stamp approaches in future dev. iterations.
 # TODO: after baseline, expand and refine linguistic feedback property
+from datetime import *
 
 class Transcript:
 
@@ -21,7 +22,9 @@ class Transcript:
         self.instructions = []
         self.action_sequences = []
         self.feedback = [] # Will be added after baseline.
-
+        self.dt = datetime.today()
+        self.file = 'transcript_'+str(self.dt.day)+'_'+str(self.dt.month)+'_'+str(self.dt.year)+'.txt'
+        self.file_path = 'transcripts/' + self.file
 
     def store_instruction(self, instruct):
         self.instructions.append(instruct)
@@ -48,14 +51,12 @@ class Transcript:
 
 
 
-
     def current_instruction(self):
         '''
         Returns the current instruction from the transcript.
         '''
         return self.instructions[len(self.instructions)-1]
 
-   
 
     def previous_actions(self):
         '''
@@ -84,3 +85,11 @@ class Transcript:
         Returns the most recent instruction and action sequence in the transcript as a tuple.
         '''
         return (self.current_instruction(), self.current_actions())
+
+    def save(self):
+        #TODO: make this save to a csv file
+        with open(self.file_path, 'w') as f:
+            if self.instructions and self.action_sequences:
+                for instruct, action in zip(self.instructions, self.action_sequences):
+                    f.write(str(instruct) + '\n')
+                    f.write(str(action) + '\n')
