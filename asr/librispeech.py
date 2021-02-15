@@ -88,7 +88,7 @@ def data_processing(data):
                     wav_file = os.path.join(working_directory, filename)
                     #print(filename)
                     waveform, sample_rate = torchaudio.load(wav_file)
-                    spec = train_audio_transforms(waveform).transpose(0, 1)
+                    spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
                     print(spec.shape)
                     spectrograms.append(spec)
                 if filename.endswith(".normalized.txt"):
@@ -105,16 +105,17 @@ def data_processing(data):
 
         #label_lengths.append(len(label))
 
-   # spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True)
-   # print("spectrograms shape")
-   # print(spectrograms.shape)
+    spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True)
+    print("spectrograms shape")
+    print(spectrograms.shape)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
-    #print("labels shape")
-    #print(labels.shape)
+    print("labels shape")
+    print(labels.shape)
    # print("padded labels")
    # print(labels.shape)
 
     return spectrograms, labels
+
 
 data_processing(train_local_dataset)
 '''
@@ -199,8 +200,8 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                              anneal_strategy='linear')
 
 epochs = 10
-#for epoch in range(1, epochs + 1):
-    #train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+for epoch in range(1, epochs + 1):
+    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 
 
 
