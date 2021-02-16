@@ -17,6 +17,7 @@ from gru import BidirectionalGRU
 from cnn import CNNLayerNorm, ResidualCNN
 from model import SpeechRecognitionModel
 from cnn_2 import CNN
+from lenet import LeNet5
 torch.manual_seed(1)
 '''
 This script serves as a foundational aspect of development for the ASR unit for a voice controlled video game
@@ -29,15 +30,15 @@ The cited website is primarily serving as the preprocessing of the data and the 
 Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, respectively. The most recent torch version available for download is 1.7.0.
 '''
 torch.set_printoptions(profile="full")
-#declare paths for both the training and testing datasets
-train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100"
-#test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
+#path for LibriTTS training dataset
+train_dataset = "/local/morganw/LibriTTS/train-clean-100"
 
+#path for LibriSpeech dataset (model works for both sets, preprocessing only works for LibriTTS)
 train_local_dataset_librispeech = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop"
 
 train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS/train-laptop"
 
-path_to_model = "/local/morganw/speech_recognition_saved_models/server.pt"
+path_to_model = "/local/morganw/speech_recognition_saved_models/libritts_server.pt"
 
 path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/libritts_laptop.pt"
 #check to see if the datasets have already been downloaded. If not, download them.
@@ -121,36 +122,16 @@ def data_processing(data):
                     transcription_file = re.sub("[^\w\s]", "", transcription_file)
                     # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
                     label = torch.tensor(text_transform.text_to_int(transcription_file.lower()))
-                    #labels.append(label)
-                   # label_lengths.append(len(label))
+
 
         spectrograms.append(spec)
         labels.append(label)
-        print(spec.shape[0])
-        print("numpy ceiling")
-        print(int(np.ceil(spec.shape[0] / 2)))
         input_lengths.append(int(np.ceil(spec.shape[0] / 2)))
         label_lengths.append(len(label))
-        print("input lengths")
-        print(input_lengths)
 
-
-    #padding = maxPadLength(labels)
-
-    #padded_labels = padLabels(labels, label_lengths)
-
-
-
-    #max_pad_length
-   # for label_length in labels:
-     #   if len(label_length) <= 191:
-        #    label_length = label_length + [0]*(max_pad_length - len(label_length))
-         #   label_lengths.append(torch.tensor(label_length))
 
 
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
-   # print("spectrograms shape")
-   # print(spectrograms.shape)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
     #print(labels.shape)
 
@@ -165,7 +146,7 @@ def data_processing(data):
 LSTM
 '''
 
-train_loader = data.DataLoader(dataset=train_local_dataset,
+train_loader = data.DataLoader(dataset=train_local_dataset_librispeech,
                                 batch_size=10,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
@@ -173,8 +154,10 @@ train_loader = data.DataLoader(dataset=train_local_dataset,
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
-criterion = nn.CTCLoss(blank=28).to(device)
+criterion = nn.CTCLoss(blank=22).to(device)
+#criterion = nn.CTCLoss(blank=28).to(device)
 #criterion = nn.NLLLoss().to(device)
+#criterion = nn.CrossEntropyLoss()
 
 
 def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
@@ -182,21 +165,17 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
     data_len = len(train_loader.dataset)
     for batch_idx, _data in enumerate(train_loader):
         spectrograms, labels, input_lengths, label_lengths = _data
-        print("spectrograms")
-        print(spectrograms.shape)
-        print("labels")
-        print(labels.shape)
-        spectrograms, labels = spectrograms.to(device), labels.to(device)
 
+        spectrograms, labels = spectrograms.to(device), labels.to(device)
+        #print("spectrograms")
+        #print(spectrograms.shape)
 
         optimizer.zero_grad()
         print("model")
         output = model(spectrograms)
-        print("output of model")
-        print(output.shape)
 
-        print("input lengths")
-        print(input_lengths)
+        output = output.transpose(0,1)
+
 
         loss = criterion(output, labels, input_lengths, label_lengths)
         loss.backward()
@@ -230,14 +209,14 @@ n_feats = 128
 cnn_layers = 3
 stride = 2
 rnn_layers = 5
-n_class = 29
+n_class = 23
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
 model = nn.DataParallel(model, device_ids=[0, 1])
-#model = CNN()
+#model = LeNet5(n_class)
 model.to(device)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-6)
 scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                               steps_per_epoch=int(len(train_loader)),
                                               epochs=10,
