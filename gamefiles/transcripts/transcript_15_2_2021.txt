@@ -1,6 +1,18 @@
+hello apple
+[]
+go left
+[[0], [1]]
+now go to the right
+[[0], [2]]
+good job where are you
+[[8]]
 go to the tree
 [[0], [7]]
-going
-[]
-go
-[[0]]
+yes you did it
+[[5], [8]]
+ok now go to the tree again
+[[0, 7]]
+go to the tree move down
+[[0, 7], [0], [4]]
+go up
+[[0], [3]]

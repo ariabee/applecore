@@ -1,2 +1,3 @@
 # ignore python caching files
 *.pyc
+transcripts/
