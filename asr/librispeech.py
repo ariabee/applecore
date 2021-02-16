@@ -28,7 +28,7 @@ This script is partially based on: https://www.assemblyai.com/blog/end-to-end-sp
 The cited website is primarily serving as the preprocessing of the data and the data itself
 Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, respectively. The most recent torch version available for download is 1.7.0.
 '''
-
+torch.set_printoptions(profile="full")
 #declare paths for both the training and testing datasets
 train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100"
 #test_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/asr/LibriSpeech/test-clean"
@@ -78,8 +78,6 @@ def data_processing(data):
     labels = []
     input_lengths = []
     label_lengths = []
-    flac_files = []
-    transcription_files = []
     for top_directory in os.listdir(train_local_dataset):
         for second_directory in os.listdir(os.path.join(train_local_dataset, top_directory)):
             working_directory = os.path.join(train_local_dataset, top_directory, second_directory)
@@ -89,41 +87,61 @@ def data_processing(data):
                     #print(filename)
                     waveform, sample_rate = torchaudio.load(wav_file)
                     spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
-                    print(spec.shape)
                     spectrograms.append(spec)
+                    input_lengths.append(spec.shape[0] // 2)
                 if filename.endswith(".normalized.txt"):
                     transcription_file = open(os.path.join(working_directory, filename))
                     transcription_file = transcription_file.read()
                     transcription_file = re.sub("[^\w\s]", "", transcription_file)
-                    label = torch.tensor(text_transform.text_to_int(transcription_file.lower()))
+                    # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
+                    label = text_transform.text_to_int(transcription_file.lower())
                     labels.append(label)
 
+   max_pad_length = 0
+   for i in labels:
+       # if len(i) > max_pad_length:
+         #   max_pad_length = len(i)
 
-        #create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
+    #max_pad_length
+   # for label_length in labels:
+     #   if len(label_length) <= 191:
+        #    label_length = label_length + [0]*(max_pad_length - len(label_length))
+         #   label_lengths.append(torch.tensor(label_length))
+
+    #targets = torch.stack(label_lengths)
+    #print(targets.shape)
+    spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
+    #print("spectrograms shape")
+    #print(spectrograms.shape)
+    #labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
     #print(labels)
-        #input_lengths.append(spec.shape[0]//2)
+   # for label in labels:
+      #  print(type(label))
+    #max_pad_length = 191
+   # for label in labels:
+       # for length in label.shape:
+            #if length > max_pad_length:
+              #  max_pad_length = length
 
-        #label_lengths.append(len(label))
-
-    spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True)
-    print("spectrograms shape")
-    print(spectrograms.shape)
-    labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
-    print("labels shape")
-    print(labels.shape)
+    #labels = torch.nn.functional.pad(labels, (1,1))
+    #print(labels.shape)
+   # print("labels")
+    #for label in labels:
+      #  print(len(label))
+   # print(labels.shape)
    # print("padded labels")
    # print(labels.shape)
 
-    return spectrograms, labels
-
+    return spectrograms, targets
 
 data_processing(train_local_dataset)
+
 '''
 LSTM
 '''
 
 train_loader = data.DataLoader(dataset=train_local_dataset,
-                                batch_size=10,
+                                batch_size=191,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
                                 )
@@ -131,7 +149,8 @@ use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
 #criterion = nn.CTCLoss(blank=28).to(device)
-criterion = nn.CrossEntropyLoss().to(device)
+criterion = nn.NLLLoss().to(device)
+
 
 def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
     model.train()
@@ -148,13 +167,10 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
         optimizer.zero_grad()
         print("model")
         output = model(spectrograms)
+        print("output of model")
+        print(output.shape)
 
-        #output = F.log_softmax(output, dim=2)
-
-       # output = output.transpose(0, 1)
-
-
-        loss = criterion(output, labels)
+        loss = criterion(torch.log(output), labels)
         loss.backward()
 
         optimizer.step()
@@ -176,7 +192,7 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
             # print(param_tensor, "\t", model.state_dict()[param_tensor].size())
 
             #print("saving model")
-            #torch.save(model.state_dict(), path_to_local_model)
+           # torch.save(model.state_dict(), path_to_local_model)
 
 rnn_dim = 512
 hidden_dim = 512
@@ -190,7 +206,7 @@ n_class = 29
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
-#model = nn.DataParallel(model, device_ids=[0, 1])
+model = nn.DataParallel(model, device_ids=[0, 1])
 #model = CNN()
 model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -199,9 +215,9 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                               epochs=10,
                                              anneal_strategy='linear')
 
-epochs = 10
-for epoch in range(1, epochs + 1):
-    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+epochs = 1
+#for epoch in range(1, epochs + 1):
+    #train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 
 
 
