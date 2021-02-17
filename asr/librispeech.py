@@ -170,6 +170,7 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
         optimizer.zero_grad()
         print("model")
         output = model(spectrograms)
+        output = F.log_softmax(output, dim=2)
 
         output = output.transpose(0,1)
 
