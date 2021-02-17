@@ -75,8 +75,8 @@ def data_processing(data):
                     for transcription in transcription_file:
                         # preprocess using a regex to remove the identifying labels and just have the transcribed speech
                         transcription_file = re.sub("[\d-]", "", transcription)
-                        label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
                         # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
+                        label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
                         labels.append(label)
                         #create a list of label lengths for the CTC loss function
                         label_lengths.append(len(label))
@@ -146,8 +146,8 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
             A state_dict can be easily saved, updated, altered, and restored.
             '''
 
-            print("saving model")
-            torch.save(model.state_dict(), path_to_local_model)
+           # print("saving model")
+           # torch.save(model.state_dict(), path_to_local_model)
 
 #parameters for the model
 rnn_dim = 512
