@@ -17,7 +17,7 @@ from gru import BidirectionalGRU
 from cnn import CNNLayerNorm, ResidualCNN
 from model import SpeechRecognitionModel
 from cnn_2 import CNN
-from lenet import LeNet5
+#from lenet import LeNet5
 torch.manual_seed(1)
 '''
 This script serves as a foundational aspect of development for the ASR unit for a voice controlled video game
@@ -33,7 +33,7 @@ torch.set_printoptions(profile="full")
 #path for LibriSpeech training dataset
 train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100"
 
-train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS/train-laptop"
+train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop/"
 
 path_to_model = "/local/morganw/speech_recognition_saved_models/libritts_server.pt"
 
@@ -102,9 +102,9 @@ def data_processing(data):
     label_lengths = []
     flac_files = []
     transcription_files = []
-    for top_directory in os.listdir(train_dataset):
-        for second_directory in os.listdir(os.path.join(train_dataset, top_directory)):
-            working_directory = os.path.join(train_dataset, top_directory, second_directory)
+    for top_directory in os.listdir(train_local_dataset):
+        for second_directory in os.listdir(os.path.join(train_local_dataset, top_directory)):
+            working_directory = os.path.join(train_local_dataset, top_directory, second_directory)
             for filename in os.listdir(working_directory):
                 if filename.endswith(".flac"):
                     flac_file = os.path.join(working_directory, filename)
@@ -118,11 +118,14 @@ def data_processing(data):
                         transcription_file = re.sub("[\d-]", "", transcription)
                         #print(transcription_file)
                         label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
+                        # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
+                        labels.append(label)
 
         spectrograms.append(spec)
 
-        #create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
-        labels.append(label)
+
+        #print("labels")
+        #print(labels)
         input_lengths.append(spec.shape[0]//2)
 
         label_lengths.append(len(label))
@@ -132,18 +135,22 @@ def data_processing(data):
     #print("spectrograms")
    # print(spectrograms)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
+    #print("labels")
+    #print(labels)
    # input_lengths = input_lengths[:10]
    # labels = labels[:10]
 
     return spectrograms, labels, input_lengths, label_lengths
 
-#data_processing(train_local_dataset)
+spectrograms, labels, input_lengths, label_lengths = data_processing(train_local_dataset)
+#print("labels")
+#print(labels)
 
 '''
 LSTM
 '''
 
-train_loader = data.DataLoader(dataset=train_local_dataset_librispeech,
+train_loader = data.DataLoader(dataset=train_local_dataset,
                                 batch_size=10,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
@@ -221,8 +228,8 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                              anneal_strategy='linear')
 
 epochs = 10
-for epoch in range(1, epochs + 1):
-    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+#for epoch in range(1, epochs + 1):
+    #train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 
 
 
