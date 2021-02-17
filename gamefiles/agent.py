@@ -10,6 +10,7 @@ import math
 from os import path
 
 vec = pg.math.Vector2
+vec_dest = pg.math.Vector2
 
 
 class Agent(pg.sprite.Sprite):
@@ -24,8 +25,7 @@ class Agent(pg.sprite.Sprite):
         self.hit_rect.center = self.rect.center
         self.vel = vec(0, 0)
         self.position = vec(x, y)
-        self.dest_x = x
-        self.dest_y = y
+        self.dest = vec_dest(x, y)
         self.instruction = ""
         self.orientation = "front" # left, right, front, back
         self.name = "Young Apple"
@@ -46,8 +46,7 @@ class Agent(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]:
             self.vel = vec(0, 0)
-            self.dest_x = self.position.x
-            self.dest_y = self.position.y
+            self.dest = vec_dest(self.position.x, self.position.y)
             with sr.Microphone() as source:
                 audio = r.listen(source)
                 try:
@@ -67,8 +66,7 @@ class Agent(pg.sprite.Sprite):
 
         elif keys[pg.K_m]:
             self.vel = vec(0, 0)
-            self.dest_x = self.position.x
-            self.dest_y = self.position.y
+            self.dest = vec_dest(self.position.x, self.position.y)
             # call STT (speech to text) class to get the wav file to predict
             try:
                 user_input = SpeechToText.userInput(path_to_wav)
@@ -178,8 +176,8 @@ class Agent(pg.sprite.Sprite):
         self.listen_attempt()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
-        if not math.isclose(self.position.x, self.dest_x, rel_tol=1e-09, abs_tol=0.5) or not math.isclose(self.position.y,
-                                                                                                      self.dest_y, rel_tol=1e-09, abs_tol=0.5):
+        if not math.isclose(self.position.x, self.dest.x, rel_tol=1e-09, abs_tol=0.5) or not math.isclose(self.position.y,
+                                                                                                      self.dest.y, rel_tol=1e-09, abs_tol=0.5):
             self.position += self.vel * self.game.dt
             self.hit_rect.centerx = self.position.x
             collide_with_walls(self, self.game.walls, 'x')

@@ -79,6 +79,18 @@ class Knowledge:
 
         return("moving somewhere")
 
+    def set_direction(self):
+        """
+        based on current position of the agent and its destination coordinates, determine in which direction (x, -x
+        y, -y) to move to reach the destination effectively.
+        """
+        difference = self.agent.dest - self.agent.position 
+        if abs(difference.x) >= abs(difference.y):
+            pass
+        else:
+            pass
+
+
     def left(self):
         self.agent.dest_x -= 100
         self.agent.vel.x, self.agent.vy = 0, 0
