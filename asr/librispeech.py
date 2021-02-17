@@ -20,11 +20,11 @@ The cited website is primarily serving as the model for the data and also the de
 '''
 torch.set_printoptions(profile="full")
 #path for LibriSpeech training dataset
-train_dataset = "/local/morganw/librispeech/LibriSpeech/train-half"
+train_dataset = "/local/morganw/librispeech/LibriSpeech/train-server"
 
 train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop/"
 
-path_to_model = "/local/morganw/speech_recognition_saved_models/libritts_server.pt"
+path_to_model = "/local/morganw/applecore/speech_commands_model/librispeech/librispeech_server.pt"
 
 path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/libritts_laptop.pt"
 
@@ -54,9 +54,9 @@ def data_processing(data):
     labels = []
     input_lengths = []
     label_lengths = []
-    for top_directory in os.listdir(train_local_dataset):
-        for second_directory in os.listdir(os.path.join(train_local_dataset, top_directory)):
-            working_directory = os.path.join(train_local_dataset, top_directory, second_directory)
+    for top_directory in os.listdir(train_dataset):
+        for second_directory in os.listdir(os.path.join(train_dataset, top_directory)):
+            working_directory = os.path.join(train_dataset, top_directory, second_directory)
             for filename in os.listdir(working_directory):
                 if filename.endswith(".flac"):
                     #get path of flac file
@@ -97,18 +97,18 @@ data_processing(train_local_dataset)
 LSTM
 '''
 
-train_loader = data.DataLoader(dataset=train_local_dataset,
-                                batch_size=10,
+train_loader = data.DataLoader(dataset=train_dataset,
+                                batch_size=20,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
                                 )
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
-criterion = nn.CTCLoss(blank=28).to(device)
+criterion = nn.CTCLoss(blank=28, zero_infinity=True).to(device)
 
 
-def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
+def train(model, device, train_loader, criterion, optimizer, epoch):
     model.train()
     data_len = len(train_loader.dataset)
     for batch_idx, _data in enumerate(train_loader):
@@ -127,12 +127,11 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
 
         output = output.transpose(0,1)
 
-
         loss = criterion(output, labels, input_lengths, label_lengths)
         loss.backward()
 
         optimizer.step()
-        scheduler.step()
+        #scheduler.step()
 
         if batch_idx % 100 == 0 or batch_idx == data_len:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
@@ -146,8 +145,8 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
             A state_dict can be easily saved, updated, altered, and restored.
             '''
 
-           # print("saving model")
-           # torch.save(model.state_dict(), path_to_local_model)
+	     print("saving model")
+	     torch.save(model.state_dict(), path_to_model)
 
 #parameters for the model
 rnn_dim = 512
@@ -166,16 +165,16 @@ model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats
 model = nn.DataParallel(model)
 model.to(device)
 #define optimizer and scheduler
-optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-6)
-scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
-                                              steps_per_epoch=int(len(train_loader)),
-                                              epochs=10,
-                                             anneal_strategy='linear')
+optimizer = optim.Adam(model.parameters(), lr=5e-4)
+#scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
+                                             # steps_per_epoch=int(len(train_loader)),
+                                             # epochs=10,
+                                             #anneal_strategy='linear')
 
 #train the model
-epochs = 10
+epochs = 30
 for epoch in range(1, epochs + 1):
-    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+    train(model, device, train_loader, criterion, optimizer, epoch)
 
 
 
