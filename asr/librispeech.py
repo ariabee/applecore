@@ -144,9 +144,8 @@ def train(model, device, train_loader, criterion, optimizer, epoch):
             A state_dict is a Python dictionary object that maps each layer to its parameters tensor.
             A state_dict can be easily saved, updated, altered, and restored.
             '''
-
-	     print("saving model")
-	     torch.save(model.state_dict(), path_to_model)
+            print("saving model")
+            torch.save(model.state_dict(), path_to_model)
 
 #parameters for the model
 rnn_dim = 512
