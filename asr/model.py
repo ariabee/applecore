@@ -29,11 +29,15 @@ class SpeechRecognitionModel(nn.Module):
 
     def forward(self, x):
         x = self.cnn(x)
+        print("cnn x")
+        print(x.shape)
         x = self.rescnn_layers(x)
+        print('rescnn x')
+        print(x.shape)
         sizes = x.size()
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # (batch, feature, time)
         x = x.transpose(1, 2)  # (batch, time, feature)
         x = self.fully_connected(x)
-        x = self.birnn_layers(x)
+       # x = self.birnn_layers(x)
         x = self.classifier(x)
         return x
