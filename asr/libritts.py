@@ -30,8 +30,11 @@ The cited website is primarily serving as the preprocessing of the data and the 
 Caution: this script works with torch and torchaudio versions 0.4.0 and 1.4.0, respectively. The most recent torch version available for download is 1.7.0.
 '''
 torch.set_printoptions(profile="full")
-#path for LibriSpeech training dataset
-train_dataset = "/local/morganw/librispeech/LibriSpeech/train-clean-100"
+#path for LibriTTS training dataset
+train_dataset = "/local/morganw/LibriTTS/train-clean-100"
+
+#path for LibriSpeech dataset (model works for both sets, preprocessing only works for LibriTTS)
+train_local_dataset_librispeech = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop"
 
 train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS/train-laptop"
 
@@ -100,40 +103,40 @@ def data_processing(data):
     labels = []
     input_lengths = []
     label_lengths = []
-    flac_files = []
-    transcription_files = []
-    for top_directory in os.listdir(train_dataset):
-        for second_directory in os.listdir(os.path.join(train_dataset, top_directory)):
-            working_directory = os.path.join(train_dataset, top_directory, second_directory)
+    for top_directory in os.listdir(train_local_dataset):
+        for second_directory in os.listdir(os.path.join(train_local_dataset, top_directory)):
+            working_directory = os.path.join(train_local_dataset, top_directory, second_directory)
             for filename in os.listdir(working_directory):
-                if filename.endswith(".flac"):
-                    flac_file = os.path.join(working_directory, filename)
-                    waveform, sample_rate = torchaudio.load(flac_file)
+                if filename.endswith(".wav"):
+                    wav_file = os.path.join(working_directory, filename)
+                    #print(filename)
+                    waveform, sample_rate = torchaudio.load(wav_file)
                     spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
-                if filename.endswith(".txt"):
+                    #print("spec shape")
+                    #print(spec.shape)
+                    #spectrograms.append(spec)
+                    #input_lengths.append(spec.shape[0] // 2)
+                if filename.endswith(".normalized.txt"):
                     transcription_file = open(os.path.join(working_directory, filename))
-                    transcription_file = transcription_file.read().split("\n")
-                    for transcription in transcription_file:
-                        # preprocess using a regex to remove the identifying labels and just have the transcribed speech
-                        transcription_file = re.sub("[\d-]", "", transcription)
-                        #print(transcription_file)
-                        label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
+                    transcription_file = transcription_file.read()
+                    transcription_file = re.sub("[^\w\s]", "", transcription_file)
+                    # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
+                    label = torch.tensor(text_transform.text_to_int(transcription_file.lower()))
+
 
         spectrograms.append(spec)
-
-        #create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
         labels.append(label)
-        input_lengths.append(spec.shape[0]//2)
-
+        input_lengths.append(int(np.ceil(spec.shape[0] / 2)))
         label_lengths.append(len(label))
 
+
+
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
-    #spectrograms = spectrograms[:10]
-    #print("spectrograms")
-   # print(spectrograms)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
-   # input_lengths = input_lengths[:10]
-   # labels = labels[:10]
+    #print(labels.shape)
+
+
+
 
     return spectrograms, labels, input_lengths, label_lengths
 
