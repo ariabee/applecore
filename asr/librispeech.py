@@ -110,6 +110,8 @@ def data_processing(data):
                     flac_file = os.path.join(working_directory, filename)
                     waveform, sample_rate = torchaudio.load(flac_file)
                     spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
+                    spectrograms.append(spec)
+                    input_lengths.append(spec.shape[0] // 2)
                 if filename.endswith(".txt"):
                     transcription_file = open(os.path.join(working_directory, filename))
                     transcription_file = transcription_file.read().split("\n")
@@ -120,29 +122,17 @@ def data_processing(data):
                         label = torch.Tensor(text_transform.text_to_int(transcription_file.lower()))
                         # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
                         labels.append(label)
+                        label_lengths.append(len(label))
 
-        spectrograms.append(spec)
-
-
-        #print("labels")
-        #print(labels)
-        input_lengths.append(spec.shape[0]//2)
-
-        label_lengths.append(len(label))
 
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
-    #spectrograms = spectrograms[:10]
-    #print("spectrograms")
-   # print(spectrograms)
+
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
-    #print("labels")
-    #print(labels)
-   # input_lengths = input_lengths[:10]
-   # labels = labels[:10]
 
     return spectrograms, labels, input_lengths, label_lengths
 
-spectrograms, labels, input_lengths, label_lengths = data_processing(train_local_dataset)
+data_processing(train_local_dataset)
+#spectrograms, labels, input_lengths, label_lengths = data_processing(train_local_dataset)
 #print("labels")
 #print(labels)
 
@@ -169,10 +159,12 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
     data_len = len(train_loader.dataset)
     for batch_idx, _data in enumerate(train_loader):
         spectrograms, labels, input_lengths, label_lengths = _data
+        print("input lengths")
+        print(len(input_lengths))
 
         spectrograms, labels = spectrograms.to(device), labels.to(device)
-        #print("spectrograms")
-        #print(spectrograms.shape)
+        print("labels")
+        print(labels.shape)
 
         optimizer.zero_grad()
         print("model")
@@ -218,7 +210,7 @@ n_class = 23
 
 #model = BidirectionalGRU(input_dim, hidden_dim, dropout, batch_first)
 model = SpeechRecognitionModel(cnn_layers, rnn_layers, rnn_dim, n_class, n_feats, stride, dropout)
-model = nn.DataParallel(model, device_ids=[0, 1])
+model = nn.DataParallel(model)
 #model = LeNet5(n_class)
 model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-6)
@@ -228,8 +220,8 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                              anneal_strategy='linear')
 
 epochs = 10
-#for epoch in range(1, epochs + 1):
-    #train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+for epoch in range(1, epochs + 1):
+    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 
 
 
