@@ -3,7 +3,7 @@ from settings import *
 from map import collide_hit_rect
 from sprites import *
 import speech_recognition as sr
-from asr.speech_to_text import SpeechToText
+#from asr.speech_to_text import SpeechToText
 from knowledge import Knowledge
 from transcript import Transcript
 import math
@@ -176,8 +176,10 @@ class Agent(pg.sprite.Sprite):
         self.listen_attempt()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
-        if not math.isclose(self.position.x, self.dest.x, rel_tol=1e-09, abs_tol=0.5) or not math.isclose(self.position.y,
-                                                                                                      self.dest.y, rel_tol=1e-09, abs_tol=0.5):
+        if not math.isclose(self.position.x, self.dest.x, rel_tol=1e-09, abs_tol=0.5) or \
+                not math.isclose(self.position.y, self.dest.y, rel_tol=1e-09, abs_tol=0.5):
+            self.knowledge.set_direction()
+            print(self.position, self.dest)
             self.position += self.vel * self.game.dt
             self.hit_rect.centerx = self.position.x
             collide_with_walls(self, self.game.walls, 'x')

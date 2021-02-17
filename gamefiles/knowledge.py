@@ -7,7 +7,10 @@
 from transcript import Transcript
 from settings import *
 from random import randint
+import math
+import pygame as pg
 
+vec = pg.math.Vector2
 
 class Knowledge:
 
@@ -65,18 +68,11 @@ class Knowledge:
 
 
     def move(self):
-        # # future: pick random destination or move a little
-        # # for now: pick random direction function
-        # random = randint(1,4)
-        # if random == 1:
-        #     self.left()
-        # elif random == 2:
-        #     self.right()
-        # elif random == 3:
-        #     self.up()
-        # else:
-        #     self.down()
-
+        """
+        moves in random direction
+        """
+        random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
+        self.agent.dest = random_coords
         return("moving somewhere")
 
     def set_direction(self):
@@ -84,13 +80,34 @@ class Knowledge:
         based on current position of the agent and its destination coordinates, determine in which direction (x, -x
         y, -y) to move to reach the destination effectively.
         """
-        difference = self.agent.dest - self.agent.position 
-        if abs(difference.x) >= abs(difference.y):
-            pass
-        else:
-            pass
+        difference = self.agent.dest - self.agent.position
+        self.agent.vel.x, self.agent.vel.y = 0, 0
+        if not math.isclose(difference.x, 0, rel_tol=1e-09, abs_tol=0.5):
+            if difference.x > 0:
+                self.agent.vel.x = AGENT_SPEED
+            else:
+                self.agent.vel.x = - AGENT_SPEED
+        if not math.isclose(difference.y, 0, rel_tol=1e-09, abs_tol=0.5):
+            if difference.y > 0:
+                self.agent.vel.y = AGENT_SPEED
+            else:
+                self.agent.vel.y = - AGENT_SPEED
+        self.agent.vel.x *= 0.7071
+        self.agent.vel.y *= 0.7071
 
+    def right(self):
+        self.agent.dest.x += 100
 
+    def left(self):
+        self.agent.dest.x -= 100
+
+    def up(self):
+        self.agent.dest.y -= 100
+
+    def down(self):
+        self.agent.dest.y += 100
+
+    """
     def left(self):
         self.agent.dest_x -= 100
         self.agent.vel.x, self.agent.vy = 0, 0
@@ -130,6 +147,7 @@ class Knowledge:
             self.agent.vel.y *= 0.7071
         #self.agent.position.y += 50
         return("going down")
+    """
 
     def yes(self):
         response = self.link_prev_command() if not self.is_transcript_empty() else ""
@@ -139,9 +157,10 @@ class Knowledge:
         return("oops :(")
 
     def tree(self):
-        # tree_coords = self.objects['tree']
-        # self.agent.dest_x, self.agent.dest_y = tree_coords
+        tree_coords = self.objects['tree']
+        self.agent.dest = vec(tree_coords)
         return self.objects['tree'] # Return tree coordinates
+
 
     def me(self):
         return self.objects['me'] # Return agent coordinates

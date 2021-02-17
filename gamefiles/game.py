@@ -12,10 +12,10 @@ from map import *
 from agent import *
 
 import random, time
-import torch
-import torchaudio
-from asr.m5 import M5
-from asr.speech_to_text import SpeechToText
+#import torch
+#import torchaudio
+#from asr.m5 import M5
+#from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
 
 
@@ -35,8 +35,8 @@ class Game:
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
 
-        self.load_asr()
-
+        #self.load_asr()
+    """
     def load_asr(self):
         # initialize path to the wav file to be predicted
         path_to_wav = "user_input.wav"
@@ -59,7 +59,7 @@ class Game:
 
         # load trained model
         model.load_state_dict(torch.load(path_to_local_model))
-
+    """
 
     def new(self):
         # initialize all variables and do all the setup for a new game
