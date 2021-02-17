@@ -54,9 +54,9 @@ def data_processing(data):
     labels = []
     input_lengths = []
     label_lengths = []
-    for top_directory in os.listdir(train_dataset):
-        for second_directory in os.listdir(os.path.join(train_dataset, top_directory)):
-            working_directory = os.path.join(train_dataset, top_directory, second_directory)
+    for top_directory in os.listdir(train_local_dataset):
+        for second_directory in os.listdir(os.path.join(train_local_dataset, top_directory)):
+            working_directory = os.path.join(train_local_dataset, top_directory, second_directory)
             for filename in os.listdir(working_directory):
                 if filename.endswith(".flac"):
                     #get path of flac file
@@ -172,8 +172,8 @@ optimizer = optim.Adam(model.parameters(), lr=5e-4)
 
 #train the model
 epochs = 30
-for epoch in range(1, epochs + 1):
-    train(model, device, train_loader, criterion, optimizer, epoch)
+#for epoch in range(1, epochs + 1):
+   # train(model, device, train_loader, criterion, optimizer, epoch)
 
 
 
