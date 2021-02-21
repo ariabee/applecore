@@ -34,6 +34,7 @@ class Game:
         self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
+        self.title_font = path.join(self.img_folder, 'arial.ttf')
 
         self.load_asr()
 
@@ -104,13 +105,29 @@ class Game:
         for y in range(0, HEIGHT, TILESIZE):
             pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
 
+    def draw_text(self, text, font_name, size, color, x, y, align="topleft"):
+        font = pg.font.Font(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect(**{align: (x, y)})
+        self.screen.blit(text_surface, text_rect)
+
     def draw(self):
-        #self.screen.fill(GREEN)
-        #self.draw_grid()
         self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
         pg.display.flip()
+
+    def wait_for_key(self):
+        pg.event.wait()
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.quit()
+                if event.type == pg.KEYUP:
+                    waiting = False
 
     def events(self):
         # catch all events here
@@ -123,7 +140,17 @@ class Game:
                     self.quit()
 
     def show_start_screen(self):
-        self.intro()
+        #self.intro()
+        self.screen.fill(DARKGREEN)
+        self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 35, WHITE, WIDTH / 2,
+                       HEIGHT / 2, align="center")
+        self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 35, WHITE, WIDTH / 2,
+                       HEIGHT * 2 / 3, align="center")
+        self.draw_text("Press a key to start", self.title_font, 20, WHITE,
+                       WIDTH / 2, HEIGHT * 3 / 4, align="center")
+        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2, 100))
+        pg.display.flip()
+        self.wait_for_key()
 
     def show_go_screen(self):
         pass
