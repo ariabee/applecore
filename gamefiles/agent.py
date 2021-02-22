@@ -92,10 +92,9 @@ class Agent(pg.sprite.Sprite):
 
     def interpret(self):
         """
-        The Agent processes the instruction into
-        1) words "it understands" / that are retrievable in the knowledge base
+        The Agent processes the instruction (temporarily stored in self) into
+        1) words from its lexicon and learned phrases
         2) a list of actions to carry out
-        param: instruction, the input string from the user
         return: composition, the recognized string of words
         return: actions, the list of corresponding actions
         """
@@ -103,7 +102,7 @@ class Agent(pg.sprite.Sprite):
         composition = ""
         actions = []
         unknowns = ""
-        instruction = self.instruction
+        instruction = self.instruction # the input string from the user
 
         instruction_split = instruction.split()  # split sentence into list of words
         lexicon = self.knowledge.lexicon()
@@ -132,7 +131,6 @@ class Agent(pg.sprite.Sprite):
         self.store_parsed_actions(actions)
 
         return (composition, actions)
-        # return(composition, self.try_actions(actions))
 
     def try_actions(self, parsed_actions):
         """
@@ -176,10 +174,11 @@ class Agent(pg.sprite.Sprite):
         self.listen_attempt()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
+        #TODO: put the below code into a method, call the method inside update
         if not math.isclose(self.position.x, self.dest.x, rel_tol=1e-09, abs_tol=0.5) or \
                 not math.isclose(self.position.y, self.dest.y, rel_tol=1e-09, abs_tol=0.5):
             self.knowledge.set_direction()
-            print(self.position, self.dest)
+            #print(self.position, self.dest)
             self.position += self.vel * self.game.dt
             self.hit_rect.centerx = self.position.x
             collide_with_walls(self, self.game.walls, 'x')
