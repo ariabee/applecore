@@ -12,10 +12,10 @@ from map import *
 from agent import *
 
 import random, time
-import torch
-import torchaudio
-from asr.m5 import M5
-from asr.speech_to_text import SpeechToText
+#import torch
+#import torchaudio
+#from asr.m5 import M5
+#from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
 
 
@@ -36,8 +36,8 @@ class Game:
         self.map_rect = self.map_img.get_rect()
         self.title_font = path.join(self.img_folder, 'arial.ttf')
 
-        self.load_asr()
-
+        #self.load_asr()
+    """
     def load_asr(self):
         # initialize path to the wav file to be predicted
         path_to_wav = "user_input.wav"
@@ -60,7 +60,7 @@ class Game:
 
         # load trained model
         model.load_state_dict(torch.load(path_to_local_model))
-
+    """
 
     def new(self):
         # initialize all variables and do all the setup for a new game
@@ -152,6 +152,26 @@ class Game:
         pg.display.flip()
         self.wait_for_key()
 
+    def show_intro_screen(self):
+        self.screen.fill(DARKGREEN)
+        self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 35, WHITE, WIDTH / 2,
+                       HEIGHT / 2, align="center")
+        self.draw_text("I listen to you while you press 'SPACE' or 'm'!", self.title_font, 35, WHITE, WIDTH / 2,
+                       HEIGHT * 2 / 3, align="center")
+        pg.display.flip()
+        with sr.Microphone() as source:
+            audio = r.listen(source)
+            try:
+                name = r.recognize_google(audio)
+                #self.draw_text("Do you want to call me "+name+"?", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                self.draw_text("Terrific. '"+name+"' is my name!", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align = "center")
+                pg.display.flip()
+            except:
+                #self.instruction = ''
+                print("\nYou: *silence*")
+                print("(Hm? Can you please say that again?)")
+        self.wait_for_key()
+
     def show_go_screen(self):
         pass
 
@@ -177,14 +197,15 @@ class Game:
 # create the game object
 g = Game()
 g.show_start_screen()
+g.show_intro_screen()
 
 while True:
     g.new()
 
     # Give Young Apple a name
-    name = g.name_agent()
-    g.agent.give_name(name.lower())
-    print("Teach me, " + name + ", to: climb the tree.")
+    #name = g.name_agent()
+    #g.agent.give_name(name.lower())
+    #print("Teach me, " + name + ", to: climb the tree.")
 
     g.run()
     g.show_go_screen()

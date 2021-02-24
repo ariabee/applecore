@@ -3,7 +3,7 @@ from settings import *
 from map import collide_hit_rect
 from sprites import *
 import speech_recognition as sr
-from asr.speech_to_text import SpeechToText
+#from asr.speech_to_text import SpeechToText
 from knowledge import Knowledge
 from transcript import Transcript
 import math
