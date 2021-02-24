@@ -95,11 +95,11 @@ class Knowledge:
         self.agent.vel.x *= 0.7071
         self.agent.vel.y *= 0.7071
 
-    def right(self):
-        self.agent.dest.x += 100
-
     def left(self):
         self.agent.dest.x -= 100
+
+    def right(self):
+        self.agent.dest.x += 100
 
     def up(self):
         self.agent.dest.y -= 100
@@ -160,7 +160,6 @@ class Knowledge:
         tree_coords = self.objects['tree']
         self.agent.dest = vec(tree_coords)
         return self.objects['tree'] # Return tree coordinates
-
 
     def me(self):
         return self.objects['me'] # Return agent coordinates
