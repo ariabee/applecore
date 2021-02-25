@@ -37,7 +37,6 @@ class Transcript:
         time = datetime.now().strftime("%H_%M")
         return date + '_' + time
 
-
     
     def store_instruction(self, instruct):
         self.instructions.append(instruct)
@@ -63,7 +62,6 @@ class Transcript:
         return self.instructions[next_to_last_index]
 
 
-
     def current_instruction(self):
         '''
         Returns the current instruction from the transcript.
@@ -86,6 +84,7 @@ class Transcript:
         index_current_input = len(self.instructions)-1
         return self.action_sequences[index_current_input]
 
+
     def previous(self):
         '''
         Returns the previous instruction and action sequence in the transcript as a tuple.
@@ -98,6 +97,13 @@ class Transcript:
         Returns the most recent instruction and action sequence in the transcript as a tuple.
         '''
         return (self.current_instruction(), self.current_actions())
+
+
+    def is_empty(self):
+        instruct_is_empty = not self.instructions
+        actions_is_empty = not self.action_sequences
+        return instruct_is_empty or actions_is_empty
+
 
     def save(self):
         '''

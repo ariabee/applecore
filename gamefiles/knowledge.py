@@ -17,22 +17,21 @@ class Knowledge:
     def __init__(self, agent):
         self.agent = agent
         # TODO: might need to make every word have a function. or a value of category, index in category
-        self._lexicon = {'move': [0], 'run': [0], 'go': [0], 'walk': [0], \
+        self._lexicon = {'move': [0], 'run': [0], 'go': [0], 'walk': [0], 'come': [0], \
                          'left': [1], \
 						 'right': [2], \
                          'up': [3], \
                          'down': [4], \
                          'yes': [5], 'no': [6], \
 						 'tree': [7], \
-                         'you': [8], agent.name: [8] }
+                         'you': [8], agent.name: [8], \
+                         'back': [9] }
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
-        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me]
-        self.objects = {'tree': (10,10), \
-                         'me': agent.position} # x, y posiiton on map
-        self.objects = {'tree': (self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
-                     'me': agent.position} # x, y posiiton on map
+        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous]
+        self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
+                        'me': agent.position} # vector of x, y posiiton on map
         # self.confirmations = [self.yes, self.no]
         # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
 
@@ -61,24 +60,23 @@ class Knowledge:
         response = self.add_to_learned(prior_input, prior_actions) 
         return response
 
-    def is_transcript_empty(self):
-        instruct_is_empty = not self.agent.transcript.instructions
-        actions_is_empty = not self.agent.transcript.action_sequences
-        return instruct_is_empty or actions_is_empty
-
-
-    def move(self):
+    def move(self, destination=None):
         """
         moves in random direction
         """
-        random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
-        self.agent.dest = random_coords
-        return("moving somewhere")
+        if destination:
+            self.agent.dest = destination
+        elif self.agent.dest != self.agent.position:
+            pass
+        else:
+            random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
+            self.agent.dest = random_coords
+            return("moving somewhere")
 
     def set_direction(self):
         """
-        based on current position of the agent and its destination coordinates, determine in which direction (x, -x
-        y, -y) to move to reach the destination effectively.
+        based on current position of the agent and its destination coordinates, determine 
+        in which direction (x, -x, y, -y) to move to reach the destination effectively.
         """
         difference = self.agent.dest - self.agent.position
         self.agent.vel.x, self.agent.vel.y = 0, 0
@@ -97,15 +95,19 @@ class Knowledge:
 
     def left(self):
         self.agent.dest.x -= 100
+        return("going left")
 
     def right(self):
         self.agent.dest.x += 100
+        return("going right")
 
     def up(self):
         self.agent.dest.y -= 100
+        return("going up")
 
     def down(self):
         self.agent.dest.y += 100
+        return("going down")
 
     """
     def left(self):
@@ -150,19 +152,25 @@ class Knowledge:
     """
 
     def yes(self):
-        response = self.link_prev_command() if not self.is_transcript_empty() else ""
+        # TODO: make this increase the weight of the action for a previous command? 
+        response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
         return("yes! " + str(response))
 
     def no(self):
+        # TODO: make this decrease the weight of the action for a previous command?
         return("oops :(")
 
     def tree(self):
         tree_coords = self.objects['tree']
-        self.agent.dest = vec(tree_coords)
-        return self.objects['tree'] # Return tree coordinates
+        self.agent.dest = tree_coords
+        return self.objects['tree'] # Return tree vector coordinates
 
     def me(self):
-        return self.objects['me'] # Return agent coordinates
+        return self.objects['me'] # Return agent vector coordinates
+
+    def previous(self):
+        self.agent.dest = self.agent.previous_pos
+        return self.agent.previous_pos # Return previous agent vector coordinates
 
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]
