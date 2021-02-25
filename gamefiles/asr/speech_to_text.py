@@ -4,13 +4,15 @@ from asr.m5 import M5
 import torchaudio
 
 class SpeechToText():
-    def __init__(self, model, tensor, path_to_wav, labels, device, transform):
-        self.model = model
+    def __init__(self, tensor, labels):
+        self.model = M5(n_input=1, n_output=35)
+
+        self.model.load_state_dict(torch.load("speech_commands_model/speech_commands_model.pt"))
         self.tensor = tensor
-        self.path_to_wav = path_to_wav
+        self.path_to_wav = "user_input.wav"
         self.labels = labels
-        self.device = device
-        self.transform = transform
+        self.device = torch.device("cuda" if use_cuda else "cpu")
+        self.transform = torchaudio.transforms.Resample(orig_freq=1600, new_freq=8000)
 
     def userInput(self, path_to_wav):
         r = sr.Recognizer()
@@ -41,8 +43,8 @@ class SpeechToText():
         tensor = self.transform(tensor)
         tensor = model(tensor.unsqueeze(0))
         tensor = get_likely_index(tensor)
-        tensor = index_to_label(tensor.squeeze())
-        return tensor
+        str_label = index_to_label(tensor.squeeze())
+        return str_label
 
     def get_prediction(self):
         pass

@@ -45,26 +45,26 @@ class Game:
 
     def load_asr(self):
         # initialize path to the wav file to be predicted
-        path_to_wav = "user_input.wav"
+        # path_to_wav = "user_input.wav"
 
         # initialize device for cpu or gpu
         use_cuda = torch.cuda.is_available()
         torch.manual_seed(7)
-        device = torch.device("cuda" if use_cuda else "cpu")
+        # device = torch.device("cuda" if use_cuda else "cpu")
 
         # resample the wav files from 1600 to 8000
-        sample_rate = 1600
-        new_sample_rate = 8000
-        transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
+        # sample_rate = 1600
+        # new_sample_rate = 8000
+        # transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
 
         # # initialize model, M5, with proper parameters
         # model = M5(n_input=1, n_output=35)
 
         # initialize path to local (local machine) model
-        path_to_local_model = "speech_commands_model/speech_commands_model.pt"
+        # path_to_local_model = "speech_commands_model/speech_commands_model.pt"
 
         # load trained model
-        self.model.load_state_dict(torch.load(path_to_local_model))
+        # self.model.load_state_dict(torch.load(path_to_local_model))
 
         #self.morgantotext = SpeechToText()
 
