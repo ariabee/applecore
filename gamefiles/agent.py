@@ -70,9 +70,9 @@ class Agent(pg.sprite.Sprite):
             self.dest = vec_dest(self.position.x, self.position.y)
             # call STT (speech to text) class to get the wav file to predict
             try:
-                user_input = SpeechToText.userInput(path_to_wav)
-                waveform = SpeechToText.inputLoad(path_to_wav)
-                self.instruction = SpeechToText.get_prediction(waveform, device, transform, model)
+                user_input = SpeechToText.userInput("user_input.wav")
+                waveform = SpeechToText.inputLoad("user_input.wav")
+                self.instruction = SpeechToText.get_prediction(waveform, device, self.game.model)
                 print("You: " + str(self.instruction))
             except:
                 print("Hm? Can you please say that again?")

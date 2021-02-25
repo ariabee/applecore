@@ -35,11 +35,14 @@ class SpeechToText():
         # find most likely label index for each element in the batch
         return tensor.argmax(dim=-1)
 
-    def get_prediction(self, tensor, device, transform, model, get_likely_index, index_to_label):
+    def get_prediction(self, tensor, device, model, get_likely_index, index_to_label):
         # Use the model to predict the label of the waveform
         tensor = tensor.to(device)
-        tensor = transform(tensor)
+        tensor = self.transform(tensor)
         tensor = model(tensor.unsqueeze(0))
         tensor = get_likely_index(tensor)
         tensor = index_to_label(tensor.squeeze())
         return tensor
+
+    def get_prediction(self):
+        pass

@@ -25,6 +25,11 @@ class Game:
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
+        
+
+        # initialize model, M5, with proper parameters
+        self.model = M5(n_input=1, n_output=35)
+
         self.load_data()
 
     def load_data(self):
@@ -52,14 +57,16 @@ class Game:
         new_sample_rate = 8000
         transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
 
-        # initialize model, M5, with proper parameters
-        model = M5(n_input=1, n_output=35)
+        # # initialize model, M5, with proper parameters
+        # model = M5(n_input=1, n_output=35)
 
         # initialize path to local (local machine) model
         path_to_local_model = "speech_commands_model/speech_commands_model.pt"
 
         # load trained model
-        model.load_state_dict(torch.load(path_to_local_model))
+        self.model.load_state_dict(torch.load(path_to_local_model))
+
+        #self.morgantotext = SpeechToText()
 
 
     def new(self):
