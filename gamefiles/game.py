@@ -153,24 +153,39 @@ class Game:
         self.wait_for_key()
 
     def show_intro_screen(self):
-        self.screen.fill(DARKGREEN)
-        self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 35, WHITE, WIDTH / 2,
-                       HEIGHT / 2, align="center")
-        self.draw_text("I listen to you while you press 'SPACE' or 'm'!", self.title_font, 35, WHITE, WIDTH / 2,
-                       HEIGHT * 2 / 3, align="center")
-        pg.display.flip()
-        with sr.Microphone() as source:
-            audio = r.listen(source)
-            try:
-                name = r.recognize_google(audio)
-                #self.draw_text("Do you want to call me "+name+"?", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
-                self.draw_text("Terrific. '"+name+"' is my name!", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align = "center")
+        name = ""
+        confirm = False
+        while not confirm:
+            self.screen.fill(DARKGREEN)
+            self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 35, WHITE, WIDTH / 2,
+                           HEIGHT / 2, align="center")
+            self.draw_text("I listen to you while you press 'SPACE' or 'm'!", self.title_font, 35, WHITE, WIDTH / 2,
+                           HEIGHT * 2 / 3, align="center")
+            pg.display.flip()
+            keys = pg.key.get_pressed()
+            if keys[pg.K_SPACE]:
+                with sr.Microphone() as source:
+                    audio = r.listen(source)
+                    try:
+                        name = r.recognize_google(audio)
+                    except:
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                   HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+            if name:
+                self.draw_text("Do you want to call me "+name+"?", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
                 pg.display.flip()
-            except:
-                #self.instruction = ''
-                print("\nYou: *silence*")
-                print("(Hm? Can you please say that again?)")
-        self.wait_for_key()
+                pg.event.wait()
+                self.clock.tick(FPS)
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        self.quit()
+                    if event.type == pg.K_y.KEYUP:
+                        confirm = True
+                        self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
+                                       WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+        return name
 
     def show_go_screen(self):
         pass
@@ -197,14 +212,14 @@ class Game:
 # create the game object
 g = Game()
 g.show_start_screen()
-g.show_intro_screen()
+name = g.show_intro_screen()
 
 while True:
     g.new()
 
     # Give Young Apple a name
     #name = g.name_agent()
-    #g.agent.give_name(name.lower())
+    g.agent.give_name(name.lower())
     #print("Teach me, " + name + ", to: climb the tree.")
 
     g.run()
