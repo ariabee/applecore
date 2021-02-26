@@ -71,7 +71,7 @@ class Agent(pg.sprite.Sprite):
             try:
                 user_input = SpeechToText.userInput(path_to_wav)
                 waveform = SpeechToText.inputLoad(path_to_wav)
-                self.instruction = SpeechToText.get_prediction(waveform, device, transform, model)
+                self.instruction = SpeechToText.get_prediction(waveform, device, transform, self.game.model)
                 print("You: " + str(self.instruction))
             except:
                 print("Hm? Can you please say that again?")
