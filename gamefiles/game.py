@@ -25,11 +25,7 @@ class Game:
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
-        
-
-        # initialize model, M5, with proper parameters
-        self.model = M5(n_input=1, n_output=35)
-
+        self.morgan_speech = SpeechToText()
         self.load_data()
 
     def load_data(self):
@@ -40,33 +36,6 @@ class Game:
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
         self.title_font = path.join(self.img_folder, 'arial.ttf')
-
-        self.load_asr()
-
-    def load_asr(self):
-        # initialize path to the wav file to be predicted
-        # path_to_wav = "user_input.wav"
-
-        # initialize device for cpu or gpu
-        use_cuda = torch.cuda.is_available()
-        torch.manual_seed(7)
-        # device = torch.device("cuda" if use_cuda else "cpu")
-
-        # resample the wav files from 1600 to 8000
-        # sample_rate = 1600
-        # new_sample_rate = 8000
-        # transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
-
-        # # initialize model, M5, with proper parameters
-        # model = M5(n_input=1, n_output=35)
-
-        # initialize path to local (local machine) model
-        # path_to_local_model = "speech_commands_model/speech_commands_model.pt"
-
-        # load trained model
-        # self.model.load_state_dict(torch.load(path_to_local_model))
-
-        #self.morgantotext = SpeechToText()
 
 
     def new(self):
