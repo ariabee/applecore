@@ -12,10 +12,10 @@ from map import *
 from agent import *
 
 import random, time
-#import torch
-#import torchaudio
-#from asr.m5 import M5
-#from asr.speech_to_text import SpeechToText
+import torch
+import torchaudio
+from asr.m5 import M5
+from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
 
 
@@ -25,8 +25,8 @@ class Game:
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
-        self.load_data()
         self.model = M5(n_input=1, n_output=35)
+        self.load_data()
 
     def load_data(self):
         game_folder = path.dirname(__file__)
@@ -37,8 +37,8 @@ class Game:
         self.map_rect = self.map_img.get_rect()
         self.title_font = path.join(self.img_folder, 'arial.ttf')
 
-        #self.load_asr()
-    """
+        self.load_asr()
+
     def load_asr(self):
         # initialize path to the wav file to be predicted
         path_to_wav = "user_input.wav" # settings
@@ -58,7 +58,7 @@ class Game:
 
         # load trained model
         self.model.load_state_dict(torch.load(path_to_local_model))
-    """
+
 
     def new(self):
         # initialize all variables and do all the setup for a new game
@@ -154,35 +154,41 @@ class Game:
         name = ""
         confirm = False
         while not confirm:
+            print("start test")
             self.screen.fill(DARKGREEN)
             self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 35, WHITE, WIDTH / 2,
                            HEIGHT / 2, align="center")
             self.draw_text("I listen to you while you press 'SPACE' or 'm'!", self.title_font, 35, WHITE, WIDTH / 2,
                            HEIGHT * 2 / 3, align="center")
             pg.display.flip()
+            pg.event.wait()
+            self.clock.tick(FPS)
             keys = pg.key.get_pressed()
             if keys[pg.K_SPACE]:
+                print("listening...")
                 with sr.Microphone() as source:
                     audio = r.listen(source)
                     try:
                         name = r.recognize_google(audio)
+                        print("name assigned")
                     except:
+                        print("I did not hear anything")
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
                                    HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
-            if name:
+            while name:
+                print("confirmation step")
                 self.draw_text("Do you want to call me "+name+"?", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
                 pg.display.flip()
                 pg.event.wait()
                 self.clock.tick(FPS)
-                for event in pg.event.get():
-                    if event.type == pg.QUIT:
-                        self.quit()
-                    if event.type == pg.K_y.KEYUP:
-                        confirm = True
-                        self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
-                                       WIDTH / 2, HEIGHT * 3 / 4, align="center")
-                        pg.display.flip()
+                keys = pg.key.get_pressed()
+                if keys[pg.K_y]:
+                    print("yooo")
+                    confirm = True
+                    self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
+                                   WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                    pg.display.flip()
         return name
 
     def show_go_screen(self):
