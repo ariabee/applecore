@@ -23,8 +23,10 @@ torch.set_printoptions(profile="full")
 train_dataset = "/local/morganw/LibriTTS/train-clean-100"
 
 #path for LibriTTS local training dataset
-train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS/train-laptop"
+#train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS/train-laptop"
 
+train_url="train-clean-100"
+train_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS", url=train_url, download=True)
 #path to model on server
 path_to_model = "/local/morganw/speech_recognition_saved_models/libritts_server.pt"
 
@@ -55,34 +57,19 @@ def data_processing(data):
     labels = []
     input_lengths = []
     label_lengths = []
-    for top_directory in os.listdir(train_local_dataset):
-        for second_directory in os.listdir(os.path.join(train_local_dataset, top_directory)):
-            working_directory = os.path.join(train_local_dataset, top_directory, second_directory)
-            for filename in os.listdir(working_directory):
-                if filename.endswith(".wav"):
-                    # get path of wav file
-                    wav_file = os.path.join(working_directory, filename)
-                    # use torch audio to load the wav file to get the waveform and sample rate
-                    waveform, sample_rate = torchaudio.load(wav_file)
-                    # transform the waveform using the train_audio_transforms as defined above
-                    spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
-                    # append all of the newly created spectrograms to a list
-                    spectrograms.append(spec)
-                    # create a list of input lengths for the CTC loss function
-                    input_lengths.append(int(np.ceil(spec.shape[0] / 2)))
-                if filename.endswith(".normalized.txt"):
-                    transcription_file = open(os.path.join(working_directory, filename))
-                    transcription_file = transcription_file.read()
-                    transcription_file = re.sub("[^\w\s]", "", transcription_file)
-                    # create the labels by taking the preprocessed transcriptions and using the text_transform class to map the characters to numbers
-                    label = torch.tensor(text_transform.text_to_int(transcription_file.lower()))
-                    labels.append(label)
-                    # create a list of label lengths for the CTC loss function
-                    label_lengths.append(len(label))
+    for (waveform, _, utterance, _, _, _) in data:
+        spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
+        spectrograms.append(spec)
+        label = torch.Tensor(text_transform.text_to_int(utterance.lower()))
+        labels.append(label)
+        input_lengths.append(spec.shape[0]//2)
+        label_lengths.append(len(label))
 
-    # pad both the spectrograms and labels
+
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
+
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
+
 
     return spectrograms, labels, input_lengths, label_lengths
 
@@ -93,7 +80,7 @@ LSTM
 '''
 
 train_loader = data.DataLoader(dataset=train_local_dataset,
-                                batch_size=10,
+                                batch_size=20,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x)
                                 )
@@ -159,7 +146,7 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                               epochs=10,
                                              anneal_strategy='linear')
 
-epochs = 10
+epochs = 1
 for epoch in range(1, epochs + 1):
     train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 

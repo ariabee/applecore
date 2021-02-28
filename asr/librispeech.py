@@ -9,8 +9,7 @@ import torchaudio
 import numpy as np
 from text_transform import TextTransform
 from model import SpeechRecognitionModel
-import warnings
-warnings.filterwarnings("ignore")
+torchaudio.set_audio_backend("sox_io")
 '''
 This script serves as a foundational aspect of development for the ASR unit for a voice controlled video game
 for the Language, Action, and Perception software project. 
@@ -25,6 +24,7 @@ torch.set_printoptions(profile="full")
 #train_dataset = "/local/morganw/librispeech/LibriSpeech/train-server"
 train_url="train-clean-100"
 
+torchaudio.set_audio_backend("sox_io")
 train_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech", url=train_url, download=True)
 #train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-clean-100"
 
