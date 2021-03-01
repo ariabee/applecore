@@ -135,7 +135,7 @@ class Game:
         '''
         User names the game agent. Returns string name of agent. 
         '''
-        name = input("What would you like to call me when teaching me tricks? ")
+        name = input("\nWhat would you like to call me when teaching me tricks? ")
         confirm = input("Call me, a young apple, '" + name + "'? (y/n) ")
         while confirm.lower()=="n":
             name = input("Okay, what would you like to call me? ")
