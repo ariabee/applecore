@@ -71,8 +71,8 @@ class Agent(pg.sprite.Sprite):
             self.vel = vec(0, 0)
             self.dest = vec_dest(self.position.x, self.position.y)
             with sr.Microphone() as source:
-                audio = r.listen(source)
                 try:
+                    audio = r.listen(source, timeout=5)
                     self.instruction = r.recognize_google(audio)
                     print("\nYou: " + str(self.instruction))
                 except:
