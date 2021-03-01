@@ -25,7 +25,7 @@ class Knowledge:
                          'yes': [5], 'no': [6], \
 						 'tree': [7], \
                          'you': [8], agent.name: [8], \
-                         'back': [9] }
+                         'back': [9], 'again': [9] }
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
@@ -69,6 +69,8 @@ class Knowledge:
         elif self.agent.dest != self.agent.position:
             pass
         else:
+            # self.agent.previous_pos = self.agent.position
+            # print("previous_pos: " + str(self.agent.previous_pos))
             random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
             self.agent.dest = random_coords
             return("moving somewhere")
@@ -161,6 +163,8 @@ class Knowledge:
         return("oops :(")
 
     def tree(self):
+        self.agent.previous_pos = self.agent.position
+        print("previous_pos: " + str(self.agent.previous_pos))
         tree_coords = self.objects['tree']
         self.agent.dest = tree_coords
         return self.objects['tree'] # Return tree vector coordinates

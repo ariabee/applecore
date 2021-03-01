@@ -8,6 +8,7 @@ from knowledge import Knowledge
 from transcript import Transcript
 import math
 from os import path
+import time
 
 vec = pg.math.Vector2
 vec_dest = pg.math.Vector2
@@ -18,7 +19,13 @@ class Agent(pg.sprite.Sprite):
         self.groups = game.all_sprites
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.image.load(path.join(game.img_folder, "apple_64px.png"))
+        self.images = [pg.image.load(path.join(game.img_folder, "apple_64px.png")), \
+                       pg.image.load(path.join(game.img_folder, "apple_64px_blink.png"))]
+        self.blinks = False
+        self.blink_time = .25
+        self.staring_time = 3
+        self.start_time = time.time()
+        self.image = self.images[0]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.hit_rect = self.rect
@@ -42,6 +49,21 @@ class Agent(pg.sprite.Sprite):
         # self.image.blit(self.img_0/90/180/270, ((x, y)))
         pass
 
+    def blink(self):
+        """
+        Changes the apple's image to make the agent blink. 
+        """
+        end_time = time.time()
+        elapsed = end_time - self.start_time
+        if not self.blinks and elapsed > self.staring_time:
+            self.image = self.images[1]
+            self.blinks = True
+            self.start_time = end_time
+        elif self.blinks and elapsed > self.blink_time:
+            self.image = self.images[0]
+            self.blinks = False
+            self.start_time = end_time
+            
     def listen_attempt(self):
         #UNCOMMENT FOR SPEECH VERSION
         keys = pg.key.get_pressed()
@@ -197,11 +219,12 @@ class Agent(pg.sprite.Sprite):
 
     def update(self):
         self.listen_attempt()
+        self.blink()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
        
         #TODO: put this in the right spot so it stores the previous position before moving!
-        self.previous_pos = self.position
+        #self.previous_pos = self.position
         #print("previous_pos: " + str(self.previous_pos))
 
         #TODO: put the below code into a method, call the method inside update
