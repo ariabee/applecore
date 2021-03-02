@@ -162,13 +162,13 @@ class Game:
                            HEIGHT * 2 / 3, align="center")
             pg.display.flip()
             pg.event.wait()
-            self.clock.tick(FPS)
+            #self.clock.tick(FPS)
             keys = pg.key.get_pressed()
             if keys[pg.K_SPACE]:
                 print("listening...")
                 with sr.Microphone() as source:
-                    audio = r.listen(source)
                     try:
+                        audio = r.listen(source, timeout=5)
                         name = r.recognize_google(audio)
                         print("name assigned")
                     except:
@@ -176,19 +176,23 @@ class Game:
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
                                    HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
-            while name:
+                        pg.time.delay(2000)
+            while name and not confirm:
                 print("confirmation step")
-                self.draw_text("Do you want to call me "+name+"?", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
                 pg.display.flip()
                 pg.event.wait()
                 self.clock.tick(FPS)
                 keys = pg.key.get_pressed()
-                if keys[pg.K_y]:
-                    print("yooo")
+                if keys[pg.K_RETURN]:
                     confirm = True
+                    self.screen.fill(DARKGREEN)
                     self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
                                    WIDTH / 2, HEIGHT * 3 / 4, align="center")
                     pg.display.flip()
+                    pg.time.delay(2000)
+                elif keys[pg.K_n]:
+                    name = ""
         return name
 
     def show_go_screen(self):
