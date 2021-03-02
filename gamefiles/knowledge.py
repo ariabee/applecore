@@ -25,7 +25,7 @@ class Knowledge:
                          'yes': [5], 'no': [6], \
 						 'tree': [7], \
                          'you': [8], agent.name: [8], \
-                         'back': [9], 'again': [9] }
+                         'back': [9] }
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
@@ -64,16 +64,15 @@ class Knowledge:
         """
         moves in random direction
         """
-        if destination:
-            self.agent.dest = destination
-        elif self.agent.dest != self.agent.position:
-            pass
-        else:
-            # self.agent.previous_pos = self.agent.position
-            # print("previous_pos: " + str(self.agent.previous_pos))
-            random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
-            self.agent.dest = random_coords
-            return("moving somewhere")
+        # if destination:
+        #     self.agent.dest = destination
+        # elif self.agent.dest != self.agent.position:
+        #     pass
+        # else:
+        #     random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
+        #     self.agent.dest = random_coords
+        #     return("moving somewhere")
+        return("move")
 
     def set_direction(self):
         """
@@ -92,22 +91,28 @@ class Knowledge:
                 self.agent.vel.y = AGENT_SPEED
             else:
                 self.agent.vel.y = - AGENT_SPEED
-        self.agent.vel.x *= 0.7071
-        self.agent.vel.y *= 0.7071
+        # self.agent.vel.x *= 0.7071
+        # self.agent.vel.y *= 0.7071
+        self.agent.vel.x *= 0.5
+        self.agent.vel.y *= 0.5
 
     def left(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.x -= 100
         return("going left")
 
     def right(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.x += 100
         return("going right")
 
     def up(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.y -= 100
         return("going up")
 
     def down(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.y += 100
         return("going down")
 
@@ -163,8 +168,7 @@ class Knowledge:
         return("oops :(")
 
     def tree(self):
-        self.agent.previous_pos = self.agent.position
-        print("previous_pos: " + str(self.agent.previous_pos))
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         tree_coords = self.objects['tree']
         self.agent.dest = tree_coords
         return self.objects['tree'] # Return tree vector coordinates
@@ -173,7 +177,8 @@ class Knowledge:
         return self.objects['me'] # Return agent vector coordinates
 
     def previous(self):
-        self.agent.dest = self.agent.previous_pos
+        print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))        
+        self.agent.dest = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)
         return self.agent.previous_pos # Return previous agent vector coordinates
 
     # def an_object(self, object_name):

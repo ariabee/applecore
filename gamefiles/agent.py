@@ -12,6 +12,7 @@ import time
 
 vec = pg.math.Vector2
 vec_dest = pg.math.Vector2
+vec_prev = pg.math.Vector2
 
 
 class Agent(pg.sprite.Sprite):
@@ -39,7 +40,7 @@ class Agent(pg.sprite.Sprite):
         self.knowledge = Knowledge(self)
         self.transcript = Transcript()
         self.current_actions = []  # working memory
-        self.previous_pos = self.position
+        self.previous_pos = vec_prev(x, y)
 
 
     def turn(self, direction):
@@ -185,6 +186,7 @@ class Agent(pg.sprite.Sprite):
         for actions in parsed_actions:
             for action in actions:
                 action_response = self.knowledge.actions[action]()  # do the action, get the response
+
                 responses.append(action_response)  # todo: update responses to be specific to user's words
             # (through a function parameter or through function itself)
 
@@ -203,9 +205,6 @@ class Agent(pg.sprite.Sprite):
 
         # 2) Compose the actions into a meaningful sequence and save to working memory
         self.current_actions = self.compose_actions(parsed_actions)
-
-        # # Save the parsed actions to working memory
-        # self.current_actions = parsed_actions
         
         # 3) Save the instruction and current actions to transcript
         if self.instruction:
@@ -222,10 +221,6 @@ class Agent(pg.sprite.Sprite):
         self.blink()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
-       
-        #TODO: put this in the right spot so it stores the previous position before moving!
-        #self.previous_pos = self.position
-        #print("previous_pos: " + str(self.previous_pos))
 
         #TODO: put the below code into a method, call the method inside update
         if not math.isclose(self.position.x, self.dest.x, rel_tol=1e-09, abs_tol=0.5) or \
