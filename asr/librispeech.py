@@ -22,6 +22,11 @@ The cited website is primarily serving as the model for the data and also the de
 torch.set_printoptions(profile="full")
 #path for LibriSpeech training dataset
 #train_dataset = "/local/morganw/librispeech/LibriSpeech/train-server"
+
+test_url="test-clean"
+
+test_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech", url=test_url, download=True)
+
 train_url="train-clean-100"
 
 torchaudio.set_audio_backend("sox_io")
@@ -90,6 +95,13 @@ train_loader = data.DataLoader(dataset=train_local_dataset,
                                 collate_fn=lambda x: data_processing(x),
                                 **kwargs)
 
+
+test_loader = data.DataLoader(dataset=test_local_dataset,
+                                batch_size=20,
+                                shuffle=True,
+                                collate_fn=lambda x: data_processing(x),
+                                **kwargs)
+
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
 criterion = nn.CTCLoss(blank=28).to(device)
@@ -130,6 +142,28 @@ def train(model, device, train_loader, criterion, optimizer, epoch):
             print("saving model")
             torch.save(model.state_dict(), path_to_model)
 
+
+
+def test(model, device, test_loader, criterion, epoch):
+    print("\nevaluating...")
+    model.eval()
+    test_loss = 0
+    test_cer, test_wer = [], []
+    with torch.no_grad():
+        for i, _data in enumerate(test_loader):
+            spectrograms, labels, input_lengths, label_lengths = _data
+            spectrograms, labels = spectrograms.to(device), labels.to(device)
+
+            output = model(spectrograms)  # (batch, time, n_class)
+            output = F.log_softmax(output, dim=2)
+            output = output.transpose(0, 1)  # (time, batch, n_class)
+
+            loss = criterion(output, labels, input_lengths, label_lengths)
+            test_loss += loss.item() / len(test_loader)
+
+    print("Test set: Average loss: {:.4f}".format(test_loss))
+
+
 #parameters for the model
 rnn_dim = 512
 hidden_dim = 512
@@ -157,6 +191,7 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
 epochs = 10
 for epoch in range(1, epochs + 1):
     train(model, device, train_loader, criterion, optimizer, epoch)
+    test(model, device, test_loader, criterion, epoch)
 
 
 

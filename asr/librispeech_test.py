@@ -4,13 +4,14 @@ import torch.nn.functional as F
 import torchaudio
 from model import SpeechRecognitionModel
 from text_transform import TextTransform
-from librispeech import data_processing
 
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
 
-train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-laptop/"
+test_url="test-clean"
+
+test_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech", url=test_url, download=True)
 
 path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/librispeech_server.pt"
 
@@ -18,11 +19,22 @@ test_wav_file = "/home/morgan/Documents/saarland/fourth_semester/lap_software_pr
 
 test_flac_file = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/applecore/asr/test.flac"
 
+text_transform = TextTransform()
+
+def data_processing(data):
+    labels = []
+    label_lengths = []
+    for (waveform, _, utterance, _, _, _) in data:
+        label = torch.Tensor(text_transform.text_to_int(utterance.lower()))
+        labels.append(label)
+        label_lengths.append(len(label))
+
+    labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
 
 
-spectrograms, labels, input_lengths, label_lengths = data_processing(train_local_dataset)
-print("labels")
-print(labels)
+    return labels, label_lengths
+
+labels, label_lengths = data_processing(test_local_dataset)
 
 train_audio_transforms = nn.Sequential(
     torchaudio.transforms.MelSpectrogram(sample_rate=16000, n_mels=128),
@@ -32,7 +44,6 @@ train_audio_transforms = nn.Sequential(
     torchaudio.transforms.TimeMasking(time_mask_param=100)
 )
 
-text_transform = TextTransform()
 
 
 rnn_dim = 512
@@ -57,23 +68,27 @@ spec = train_audio_transforms(waveform)
 spec = spec.unsqueeze(0)
 spec = spec.transpose(0,1)
 #spec = spec.unsqueeze(1)
-#print(spec.shape)
+print(spec)
 
 #model.eval()
 output = model(spec)
 
-decode = []
-decodes = []
+def GreedyDecoder(output, labels, label_lengths, blank_label=28):
+    arg_maxes = torch.argmax(output, dim=2)
+    decodes = []
+    targets = []
+    for i, args in enumerate(arg_maxes):
+        decode = []
+        targets.append(text_transform.int_to_text(labels[i][:label_lengths[i]].tolist()))
+        for j, index in enumerate(args):
+            if index != blank_label:
+                if j != 0 and index == args[j -1]:
+                    continue
+                decode.append(index.item())
+        decodes.append(text_transform.int_to_text(decode))
+    print(decodes, targets)
+    return decodes, targets
 
-arg_maxes = torch.argmax(output, dim=1)
-#print(arg_maxes)
-for i, args in enumerate(arg_maxes):
-    print("i")
-    print(i)
-  #  for j, index in enumerate(args):
-        #print("index")
-        #print(index)
-       # decode.append(index.item())
-   # decodes.append(text_transform.int_to_text(decode))
 
+GreedyDecoder(output, labels, label_lengths)
 

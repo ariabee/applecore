@@ -26,7 +26,7 @@ train_dataset = "/local/morganw/LibriTTS/train-clean-100"
 #train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS/train-laptop"
 
 train_url="train-clean-100"
-train_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS", url=train_url, download=True)
+train_local_dataset = torchaudio.datasets.LIBRITTS("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS", url=train_url, download=True)
 #path to model on server
 path_to_model = "/local/morganw/speech_recognition_saved_models/libritts_server.pt"
 
@@ -57,7 +57,9 @@ def data_processing(data):
     labels = []
     input_lengths = []
     label_lengths = []
-    for (waveform, _, utterance, _, _, _) in data:
+    for (waveform, _, _, utterance, _, _, _) in data:
+        print(waveform)
+        print(utterance)
         spec = train_audio_transforms(waveform).squeeze(0).transpose(0, 1)
         spectrograms.append(spec)
         label = torch.Tensor(text_transform.text_to_int(utterance.lower()))
@@ -73,7 +75,7 @@ def data_processing(data):
 
     return spectrograms, labels, input_lengths, label_lengths
 
-#data_processing(train_local_dataset)
+data_processing(train_local_dataset)
 
 '''
 LSTM
@@ -147,8 +149,8 @@ scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                              anneal_strategy='linear')
 
 epochs = 1
-for epoch in range(1, epochs + 1):
-    train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
+#for epoch in range(1, epochs + 1):
+ #   train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 
 
 
