@@ -22,7 +22,7 @@ torch.set_printoptions(profile="full")
 train_url="train-clean-100"
 #path for LibriTTS training dataset
 
-train_dataset = torchaudio.datasets.LIBRITTS("/local/morganw/libritts/LibriTTS", url=train_url, download=True)
+train_dataset = torchaudio.datasets.LIBRITTS("/local/morganw/libritts", url=train_url, download=True)
 
 
 #train_local_dataset = torchaudio.datasets.LIBRITTS("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS", url=train_url, download=True)
@@ -72,7 +72,7 @@ def data_processing(data):
 
     return spectrograms, labels, input_lengths, label_lengths
 
-#data_processing(train_local_dataset)
+#data_processing(train_dataset)
 
 '''
 LSTM
