@@ -27,7 +27,7 @@ train_dataset = torchaudio.datasets.LIBRITTS("/local/morganw/libritts", url=trai
 
 #train_local_dataset = torchaudio.datasets.LIBRITTS("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriTTS", url=train_url, download=True)
 #path to model on server
-path_to_model = "/local/morganw/applecore/asr/trained_models/libritts_server.pt"
+path_to_model = "/local/morganw/applecore/asr/trained_models/libritts_server_20.pt"
 
 #path to model on local machine
 path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/libritts_laptop.pt"
@@ -86,7 +86,7 @@ train_loader = data.DataLoader(dataset=train_dataset,
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(7)
 device = torch.device("cuda" if use_cuda else "cpu")
-criterion = nn.CTCLoss(blank=22).to(device)
+criterion = nn.CTCLoss(blank=22, zero_infinity=True).to(device)
 
 
 def train(model, device, train_loader, criterion, optimizer, scheduler, epoch):
@@ -142,10 +142,10 @@ model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                               steps_per_epoch=int(len(train_loader)),
-                                              epochs=10,
+                                              epochs=20,
                                              anneal_strategy='linear')
 
-epochs = 10
+epochs = 20
 for epoch in range(1, epochs + 1):
     train(model, device, train_loader, criterion, optimizer, scheduler, epoch)
 
