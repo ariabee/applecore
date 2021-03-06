@@ -32,6 +32,7 @@ class Agent(pg.sprite.Sprite):
         self.knowledge = Knowledge(self)
         self.transcript = Transcript()
         self.current_actions = []  # working memory
+        self.response = ""
 
 
     def turn(self, direction):
@@ -169,9 +170,22 @@ class Agent(pg.sprite.Sprite):
 
         return (composition, responses)
 
+    def give_text_feedback(self):
+        textRect = pg.Rect(0, 0, 0, 0)
+        font = pg.font.Font(self.game.title_font, 35)
+        textSurf = font.render(self.response, True, BLACK).convert_alpha()
+        textSize = textSurf.get_size()
+        bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+        textRect = bubbleSurf.get_rect()
+        bubbleSurf.fill(WHITE)
+        bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+        textRect.center = ((WIDTH/2), (HEIGHT/2))
+        self.game.screen.blit(bubbleSurf, textRect)
+        pg.display.flip()
 
     def update(self):
         self.listen_attempt()
+        self.give_text_feedback()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
         #TODO: put the below code into a method, call the method inside update

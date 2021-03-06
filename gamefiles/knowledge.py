@@ -100,6 +100,7 @@ class Knowledge:
 
     def left(self):
         self.agent.dest.x -= 100
+        self.agent.response = "Going left..."
 
     def up(self):
         self.agent.dest.y -= 100
