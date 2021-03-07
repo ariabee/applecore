@@ -113,6 +113,7 @@ class Game:
         self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
+        self.agent.give_text_feedback()
         pg.display.flip()
 
     def wait_for_key(self):

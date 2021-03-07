@@ -54,7 +54,7 @@ class Knowledge:
         """
         self._learned.update({words : [a[0] for a in action_sequence]}) # [0, 3, 1, 2]
         print("~~learned: " + str(self._learned))
-        return "I learned to: " + str(words)
+        self.agent.response = "I learned to: " + str(words)
 
     def link_prev_command(self):
         prior_input, prior_actions = self.agent.transcript.previous()
@@ -73,7 +73,7 @@ class Knowledge:
         """
         random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
         self.agent.dest = random_coords
-        return("moving somewhere")
+        self.agent.response = "moving somewhere"
 
     def set_direction(self):
         """
@@ -97,6 +97,7 @@ class Knowledge:
 
     def right(self):
         self.agent.dest.x += 100
+        self.agent.response = "Going right..."
 
     def left(self):
         self.agent.dest.x -= 100
@@ -104,9 +105,11 @@ class Knowledge:
 
     def up(self):
         self.agent.dest.y -= 100
+        self.agent.response = "Going up..."
 
     def down(self):
         self.agent.dest.y += 100
+        self.agent.response = "Going down..."
 
     """
     def left(self):
@@ -152,10 +155,10 @@ class Knowledge:
 
     def yes(self):
         response = self.link_prev_command() if not self.is_transcript_empty() else ""
-        return("yes! " + str(response))
+        self.agent.response = "yes! " + str(response)
 
     def no(self):
-        return("oops :(")
+        self.agent.response = "oops :("
 
     def tree(self):
         tree_coords = self.objects['tree']
