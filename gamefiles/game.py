@@ -91,6 +91,8 @@ class Game:
         self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
+        self.agent.display_tasks()
+        self.agent.give_text_feedback()
         pg.display.flip()
 
     def wait_for_key(self):
@@ -128,6 +130,50 @@ class Game:
         pg.display.flip()
         self.wait_for_key()
 
+    def show_intro_screen(self):
+        name = ""
+        confirm = False
+        while not confirm:
+            print("start test")
+            self.screen.fill(DARKGREEN)
+            self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 35, WHITE, WIDTH / 2,
+                           HEIGHT / 2, align="center")
+            self.draw_text("I listen to you while you press 'SPACE' or 'm'!", self.title_font, 35, WHITE, WIDTH / 2,
+                           HEIGHT * 2 / 3, align="center")
+            pg.display.flip()
+            pg.event.wait()
+            keys = pg.key.get_pressed()
+            if keys[pg.K_SPACE]:
+                print("listening...")
+                with sr.Microphone() as source:
+                    try:
+                        audio = r.listen(source, timeout=5)
+                        name = r.recognize_google(audio)
+                        print("name assigned")
+                    except:
+                        print("I did not hear anything")
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                   HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+                        pg.time.delay(2000)
+            while name and not confirm:
+                print("confirmation step")
+                self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                pg.display.flip()
+                pg.event.wait()
+                self.clock.tick(FPS)
+                keys = pg.key.get_pressed()
+                if keys[pg.K_RETURN]:
+                    confirm = True
+                    self.screen.fill(DARKGREEN)
+                    self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
+                                   WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                    pg.display.flip()
+                    pg.time.delay(2000)
+                elif keys[pg.K_n]:
+                    name = ""
+        return name
+
     def show_go_screen(self):
         pass
 
@@ -153,14 +199,11 @@ class Game:
 # create the game object
 g = Game()
 g.show_start_screen()
+name = g.show_intro_screen()
 
 while True:
     g.new()
-
-    # Give Young Apple a name
-    name = g.name_agent()
     g.agent.give_name(name.lower())
-    print("Teach me, " + name + ", to: climb the tree.")
 
     g.run()
     g.show_go_screen()

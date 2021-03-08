@@ -53,7 +53,7 @@ class Knowledge:
         """
         self._learned.update({words : [a[0] for a in action_sequence]}) # [0, 3, 1, 2]
         print("~~learned: " + str(self._learned))
-        return "I learned to: " + str(words)
+        self.agent.response = "I learned to: " + str(words)
 
     def link_prev_command(self):
         prior_input, prior_actions = self.agent.transcript.previous()
@@ -71,6 +71,7 @@ class Knowledge:
         else:
             random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
             self.agent.dest = random_coords
+            self.agent.response = "moving somewhere"
             return("moving somewhere")
 
     def set_direction(self):
@@ -93,72 +94,39 @@ class Knowledge:
         self.agent.vel.x *= 0.7071
         self.agent.vel.y *= 0.7071
 
+
     def left(self):
         self.agent.dest.x -= 100
+        self.agent.response = "Going left..."
         return("going left")
 
     def right(self):
         self.agent.dest.x += 100
+        self.agent.response = "Going right..."
         return("going right")
 
     def up(self):
         self.agent.dest.y -= 100
+        self.agent.response = "Going up..."
         return("going up")
 
     def down(self):
         self.agent.dest.y += 100
+        self.agent.response = "Going down..."
         return("going down")
 
-    """
-    def left(self):
-        self.agent.dest_x -= 100
-        self.agent.vel.x, self.agent.vy = 0, 0
-        self.agent.vel.x = -AGENT_SPEED
-        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
-            self.agent.vel.x *= 0.7071
-            self.agent.vel.y *= 0.7071
-        #self.agent.position.x -= 50
-        return("going left")
-
-    def right(self):
-        self.agent.dest_x += 100
-        self.agent.vel.x, self.agent.vel.y = 0, 0
-        self.agent.vel.x = AGENT_SPEED
-        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
-            self.agent.vel.x *= 0.7071
-            self.agent.vel.y *= 0.7071
-        #self.agent.position.x += 50
-        return("going right")
-
-    def up(self):
-        self.agent.dest_y -= 100
-        self.agent.vel.x, self.agent.vel.y = 0, 0
-        self.agent.vel.y = -AGENT_SPEED
-        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
-            self.agent.vel.x *= 0.7071
-            self.agent.vel.y *= 0.7071
-        #self.agent.position.y -= 50
-        return("going up")
-
-    def down(self):
-        self.agent.dest_y += 100
-        self.agent.vel.x, self.agent.vel.y = 0, 0
-        self.agent.vel.y = AGENT_SPEED
-        if self.agent.vel.x != 0 and self.agent.vel.y != 0:
-            self.agent.vel.x *= 0.7071
-            self.agent.vel.y *= 0.7071
-        #self.agent.position.y += 50
-        return("going down")
-    """
 
     def yes(self):
-        # TODO: make this increase the weight of the action for a previous command? 
+        # TODO: make this increase the weight of the action for a previous command?
         response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
+        self.agent.response = "yes! " + str(response)
         return("yes! " + str(response))
 
     def no(self):
         # TODO: make this decrease the weight of the action for a previous command?
+        self.agent.response = "oops :("
         return("oops :(")
+
 
     def tree(self):
         tree_coords = self.objects['tree']

@@ -32,6 +32,8 @@ class Agent(pg.sprite.Sprite):
         self.knowledge = Knowledge(self)
         self.transcript = Transcript()
         self.current_actions = []  # working memory
+        self.response = ""
+        self.tasks = ["Climb the tree!", "TEST", "TEST"]
         self.previous_pos = self.position
 
 
@@ -193,6 +195,34 @@ class Agent(pg.sprite.Sprite):
         responses = self.try_actions(parsed_actions)
 
         return (composition, responses)
+
+    def display_tasks(self):
+        textRect = pg.Rect(0, 0, 0, 0)
+        font = pg.font.Font(self.game.title_font, 15)
+        height = 0
+        for task in self.tasks:
+            textSurf = font.render(task, True, BLACK).convert_alpha()
+            textSize = textSurf.get_size()
+            height += textSize[0]
+            bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+            textRect = bubbleSurf.get_rect()
+            bubbleSurf.fill(LIGHTGREY)
+            bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+            textRect.center = ((700), (height))
+            self.game.screen.blit(bubbleSurf, textRect)
+
+
+    def give_text_feedback(self):
+        textRect = pg.Rect(0, 0, 0, 0)
+        font = pg.font.Font(self.game.title_font, 15)
+        textSurf = font.render(self.response, True, BLACK).convert_alpha()
+        textSize = textSurf.get_size()
+        bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+        textRect = bubbleSurf.get_rect()
+        bubbleSurf.fill(WHITE)
+        bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+        textRect.center = ((WIDTH/2), (450))
+        self.game.screen.blit(bubbleSurf, textRect)
 
 
     def update(self):
