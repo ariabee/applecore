@@ -1,4 +1,4 @@
-name: lap2
+name: applecore
 channels:
   - pytorch
   - conda-forge
@@ -38,4 +38,4 @@ dependencies:
   - pip:
     - pygame==1.9.3
     - pytmx==3.24
-prefix: E:\anaconda3\envs\lap2
+prefix: E:\anaconda3\envs\applecore
