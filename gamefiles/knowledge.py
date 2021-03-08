@@ -42,7 +42,7 @@ class Knowledge:
         return self._learned
 
     def add_to_lexicon(self, word, action):
-        self._lexicon.update({word : action})
+        self._lexicon.update({word.lower() : action})
         # might change action to self._actions[action]
         print(self._lexicon)
     
@@ -177,9 +177,11 @@ class Knowledge:
         return self.objects['me'] # Return agent vector coordinates
 
     def previous(self):
-        print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))        
-        self.agent.dest = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)
-        return self.agent.previous_pos # Return previous agent vector coordinates
+        print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
+        previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
+        self.agent.dest = previous
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+        return previous # Return previous agent vector coordinates
 
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]
