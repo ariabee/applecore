@@ -164,7 +164,6 @@ class Game:
                            HEIGHT * 2 / 3, align="center")
             pg.display.flip()
             pg.event.wait()
-            #self.clock.tick(FPS)
             keys = pg.key.get_pressed()
             if keys[pg.K_SPACE]:
                 print("listening...")
@@ -226,11 +225,7 @@ name = g.show_intro_screen()
 
 while True:
     g.new()
-
-    # Give Young Apple a name
-    #name = g.name_agent()
     g.agent.give_name(name.lower())
-    #print("Teach me, " + name + ", to: climb the tree.")
 
     g.run()
     g.show_go_screen()
