@@ -42,7 +42,7 @@ class Knowledge:
         return self._learned
 
     def add_to_lexicon(self, word, action):
-        self._lexicon.update({word : action})
+        self._lexicon.update({word.lower() : action})
         # might change action to self._actions[action]
         print(self._lexicon)
     
@@ -73,6 +73,7 @@ class Knowledge:
             self.agent.dest = random_coords
             self.agent.response = "moving somewhere"
             return("moving somewhere")
+          
 
     def set_direction(self):
         """
@@ -91,26 +92,32 @@ class Knowledge:
                 self.agent.vel.y = AGENT_SPEED
             else:
                 self.agent.vel.y = - AGENT_SPEED
-        self.agent.vel.x *= 0.7071
-        self.agent.vel.y *= 0.7071
+        # self.agent.vel.x *= 0.7071
+        # self.agent.vel.y *= 0.7071
+        self.agent.vel.x *= 0.5
+        self.agent.vel.y *= 0.5
 
 
     def left(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.x -= 100
         self.agent.response = "Going left..."
         return("going left")
 
     def right(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.x += 100
         self.agent.response = "Going right..."
         return("going right")
 
     def up(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.y -= 100
         self.agent.response = "Going up..."
         return("going up")
 
     def down(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.dest.y += 100
         self.agent.response = "Going down..."
         return("going down")
@@ -129,6 +136,7 @@ class Knowledge:
 
 
     def tree(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         tree_coords = self.objects['tree']
         self.agent.dest = tree_coords
         return self.objects['tree'] # Return tree vector coordinates
@@ -137,8 +145,11 @@ class Knowledge:
         return self.objects['me'] # Return agent vector coordinates
 
     def previous(self):
-        self.agent.dest = self.agent.previous_pos
-        return self.agent.previous_pos # Return previous agent vector coordinates
+        print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
+        previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
+        self.agent.dest = previous
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+        return previous # Return previous agent vector coordinates
 
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]

@@ -7,7 +7,7 @@ class SpeechToText():
     def __init__(self):
         use_cuda = False
         self.model = M5(n_input=1, n_output=35)
-        self.model.load_state_dict(torch.load("speech_commands_model/speech_commands_model.pt"))
+        self.model.load_state_dict(torch.load("speech_commands_model/speech_commands_model.pt")) #FileNotFoundError
         self.path_to_wav = "asr/user_input.wav"
         with open('asr/labels.txt') as f:
             self.labels = f.read().strip().splitlines()
