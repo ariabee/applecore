@@ -26,16 +26,16 @@ torch.set_printoptions(profile="full")
 test_url="test-clean"
 train_url="train-clean-100"
 
-test_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech", url=test_url, download=True)
+#test_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech", url=test_url, download=True)
 
 train_dataset = torchaudio.datasets.LIBRISPEECH("/local/morganw/librispeech/LibriSpeech",url=train_url, download=True)
 
 test_dataset = train_dataset = torchaudio.datasets.LIBRISPEECH("/local/morganw/librispeech/LibriSpeech",url=test_url, download=True)
 
-train_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech", url=train_url, download=True)
+#train_local_dataset = torchaudio.datasets.LIBRISPEECH("/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech", url=train_url, download=True)
 #train_local_dataset = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/corpora/LibriSpeech/train-clean-100"
 
-path_to_model = "/local/morganw/applecore/speech_commands_model/librispeech/librispeech_server.pt"
+path_to_model = "/local/morganw/applecore/trained_models/librispeech_server.pt"
 
 path_to_local_model = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/librispeech_models/libritts_laptop.pt"
 
@@ -91,14 +91,14 @@ LSTM
 '''
 use_cuda = torch.cuda.is_available()
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-train_loader = data.DataLoader(dataset=train_local_dataset,
+train_loader = data.DataLoader(dataset=train_dataset,
                                 batch_size=20,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x),
                                 **kwargs)
 
 
-test_loader = data.DataLoader(dataset=test_local_dataset,
+test_loader = data.DataLoader(dataset=test_dataset,
                                 batch_size=20,
                                 shuffle=True,
                                 collate_fn=lambda x: data_processing(x),
@@ -186,11 +186,11 @@ model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=5e-4)
 scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-4,
                                              steps_per_epoch=int(len(train_loader)),
-                                             epochs=10,
+                                             epochs=20,
                                              anneal_strategy='linear')
 
 #train the model
-epochs = 10
+epochs = 20
 for epoch in range(1, epochs + 1):
     train(model, device, train_loader, criterion, optimizer, epoch)
     test(model, device, test_loader, criterion, epoch)
