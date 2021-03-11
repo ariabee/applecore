@@ -1,8 +1,10 @@
 import speech_recognition as sr
 import torch
 import torch.nn as nn
-from asr.m5 import M5
+from wav2letter_model import WaveToLetter
 import torchaudio
+from scipy.io.wavfile import read
+from ctcdecode import CTCBeamDecoder
 
 class SpeechToText():
     def __init__(self, model, tensor, path_to_wav, labels, device, transform):
@@ -24,23 +26,44 @@ class SpeechToText():
             return path_to_wav
 
     def inputLoad(self, userInput, path_to_wav):
-        waveform, sample_rate = torchaudio.load(userInput(path_to_wav))
-        return waveform
+        sample_rate, sound = read(userInput(path_to_wav))
+        sound = sound.astype('float32') / 32767
+        if len(sound.shape) > 1:
+            if sound.shape[1] == 1:
+                sound = sound.squeeze()
+            else:
+                sound = sound.mean(axis=1)
 
-    def index_to_label(self, labels, index):
-        # Return the word corresponding to the index in labels
-        # This is the inverse of label_to_index
-        return labels[index]
+        return sound
 
-    def get_likely_index(tensor):
-        # find most likely label index for each element in the batch
-        return tensor.argmax(dim=-1)
 
-    def get_prediction(self, tensor, device, transform, model, get_likely_index, index_to_label):
-        # Use the model to predict the label of the waveform
-        tensor = tensor.to(device)
-        tensor = transform(tensor)
-        tensor = model(tensor.unsqueeze(0))
-        tensor = get_likely_index(tensor)
-        tensor = index_to_label(tensor.squeeze())
-        return tensor
+    def getLabels(self):
+        labels = WaveToLetter.get_labels(self.model)
+        int_to_char = dict([(i, c) for (i, c) in enumerate(labels)])
+        return int_to_char
+
+    def beamDecoder(self):
+        decoder = CTCBeamDecoder(
+            labels=self.labels,
+            model_path=None,
+            alpha=0.75,
+            beta=1.0,
+            cutoff_top_n=40,
+            cutoff_prob=1.0,
+            beam_width=10,
+            num_processes=4,
+            blank_id=0
+        )
+        return decoder
+
+    def getTranscription(self, model, inputLoad, userInput, path_to_wav, beamDecoder):
+        model = WaveToLetter.load_model(model)
+        model.eval()
+        seqlength = inputLoad(userInput(path_to_wav))
+        batch_size = 1
+        inputs = torch.zeros(batch_size, 1, seqlength)
+        output = model(inputs)
+        decoder = beamDecoder()
+        beam_results, beam_scores, timesteps, out_lens = decoder.decode(output)
+        transcription = "".join([self.labels[n] for n in beam_results[0][0][:out_lens[0][0]]])
+        return transcription

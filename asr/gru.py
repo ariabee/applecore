@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,4 +27,3 @@ class BidirectionalGRU(nn.Module):
         x, _ = self.BiGRU(x)
         x = self.dropout(x)
         return x
-
