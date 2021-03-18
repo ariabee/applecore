@@ -1,165 +1,226 @@
-import pygame, sys
-from pygame.locals import *
+# Apple Core-dination game.
+# KidsCanCode - Game Development with Pygame video series
+# Tile-based game - Part 4
+# Scrolling Map/Camera
+# Video link: https://youtu.be/3zV2ewk-IGU
+import pygame as pg
+import sys
+from os import path
+from settings import *
+from sprites import *
+from map import *
+from agent import *
+
 import random, time
+import torch
+import torchaudio
+from asr.m5 import M5
+from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
 
-# Initialzing
-pygame.init()
 
-# Setting up FPS
-FPS = 60
-FramePerSec = pygame.time.Clock()
-
-# Creating colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-
-# Setting up Fonts
-font = pygame.font.SysFont("Verdana", 60)
-font_small = pygame.font.SysFont("Verdana", 20)
-
-# Other Variables for use in the program
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 600
-
-r = sr.Recognizer()
-
-TASKS = "TASKS"
-
-#background = pygame.image.load("grass.jpg")
-
-# Create a white screen
-DISPLAYSURF = pygame.display.set_mode((400, 600))
-DISPLAYSURF.fill(WHITE)
-
-
-class Camera:
+class Game:
     def __init__(self):
-        self.bgimage = pygame.image.load('grass.jpg')
-        self.rectBGimg = self.bgimage.get_rect()
+        pg.init()
+        self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        pg.display.set_caption(TITLE)
+        self.clock = pg.time.Clock()
+        self.morgan_speech = SpeechToText()
+        self.load_data()
 
-        self.bgY1 = 0
-        self.bgX1 = 0
-
-        self.bgY2 = self.rectBGimg.height
-        self.bgX2 = self.rectBGimg.width
-
-        self.moving_speed = 5
-
-    def update_upwards(self):
-        self.bgY1 = 0
-        self.bgX2 = 0
-        self.bgY1 += self.moving_speed
-        self.bgY2 += self.moving_speed
-        if self.bgY1 >= self.rectBGimg.height:
-            self.bgY1 = -self.rectBGimg.height
-        if self.bgY2 >= self.rectBGimg.height:
-            self.bgY2 = -self.rectBGimg.height
-
-    def update_downwards(self):
-        self.bgY1 = 0
-        self.bgX2 = 0
-        self.bgY1 -= self.moving_speed
-        self.bgY2 -= self.moving_speed
-        if self.bgY1 <= -self.rectBGimg.height:
-            self.bgY1 = self.rectBGimg.height
-        if self.bgY2 <= -self.rectBGimg.height:
-            self.bgY2 = self.rectBGimg.height
-
-    def update_left(self):
-        self.bgX1 += self.moving_speed
-        self.bgX2 += self.moving_speed
-        self.bgY1 = 0
-        self.bgY2 = 0
-        if self.bgX1 >= self.rectBGimg.width:
-            self.bgX1 = -self.rectBGimg.width
-        if self.bgX2 >= self.rectBGimg.width:
-            self.bgX2 = -self.rectBGimg.width
-
-    def update_right(self):
-        self.bgX1 -= self.moving_speed
-        self.bgX2 -= self.moving_speed
-        self.bgY1 = 0
-        self.bgY2 = 0
-        if self.bgX1 <= -self.rectBGimg.width:
-            self.bgX1 = self.rectBGimg.width
-        if self.bgX2 <= -self.rectBGimg.width:
-            self.bgX2 = self.rectBGimg.width
-
-    def render(self):
-        DISPLAYSURF.blit(self.bgimage, (self.bgX1, self.bgY1))
-        DISPLAYSURF.blit(self.bgimage, (self.bgX2, self.bgY2))
+    def load_data(self):
+        game_folder = path.dirname(__file__)
+        self.img_folder = path.join(game_folder, "img")
+        self.map_folder = path.join(game_folder, "maps")
+        self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
+        self.map_img = self.map.make_map()
+        self.map_rect = self.map_img.get_rect()
+        self.title_font = path.join(self.img_folder, 'arial.ttf')
 
 
-class Avatar(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("apple.png")
-        self.surf = pygame.Surface((200, 200))
-        self.rect = self.surf.get_rect(center=(340, 420))
+    def new(self):
+        # initialize all variables and do all the setup for a new game
+        self.all_sprites = pg.sprite.Group()
+        self.walls = pg.sprite.Group()
+        for tile_object in self.map.map_data.objects:
+            if tile_object.name == "game_border":
+                self.game_border = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "water":
+                self.water = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "tree_top":
+                self.tree_top = Tree_top(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "tree_trunk":
+                self.tree_trunk = Tree(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height,
+                                           self.tree_top)
+        for tile_object in self.map.map_data.objects:
+            if tile_object.name == "agent":
+                self.agent = Agent(self, tile_object.x, tile_object.y)
+        self.camera = Camera(self.map.width, self.map.height)
 
-    def move(self):
-        pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[K_UP]:
-            with sr.Microphone() as source:
-                audio = r.listen(source)
-                try:
-                    text = r.recognize_google(audio)
-                    print(text)
-                    if text == 'up':
-                        if self.rect.top > 0:
-                            self.rect.move_ip(0, -100)
-                        else:
-                            camera.update_upwards()
-                    if text == 'down':
-                        if self.rect.bottom < SCREEN_HEIGHT:
-                            self.rect.move_ip(0, 100)
-                        else:
-                            camera.update_downwards()
-                    if text == 'left':
-                        if self.rect.left > 0:
-                            self.rect.move_ip(-100, 0)
-                        else:
-                            camera.update_left()
-                    if text == 'right':
-                        if self.rect.right < SCREEN_WIDTH:
-                            self.rect.move_ip(100, 0)
-                        else:
-                            camera.update_right()
-                except:
-                    print('Did not get that try Again')
-                    text = ''
+    def run(self):
+        # game loop - set self.playing = False to end the game
+        self.playing = True
+        while self.playing:
+            self.dt = self.clock.tick(FPS) / 1000
+            self.events()
+            self.update()
+            self.draw()
+
+    def quit(self):
+        pg.quit()
+        sys.exit()
+
+    def update(self):
+        # update portion of the game loop
+        self.all_sprites.update()
+        self.camera.update(self.agent)
+
+    def draw_grid(self):
+        for x in range(0, WIDTH, TILESIZE):
+            pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
+        for y in range(0, HEIGHT, TILESIZE):
+            pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
+
+    def draw_text(self, text, font_name, size, color, x, y, align="topleft"):
+        font = pg.font.Font(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect(**{align: (x, y)})
+        self.screen.blit(text_surface, text_rect)
+
+    def draw(self):
+        self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
+        for sprite in self.all_sprites:
+            self.screen.blit(sprite.image, self.camera.apply(sprite))
+        self.agent.display_tasks()
+        self.agent.give_text_feedback()
+        pg.display.flip()
+
+    def wait_for_key(self):
+        pg.event.wait()
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.quit()
+                if event.type == pg.KEYUP:
+                    waiting = False
+
+    def events(self):
+        # catch all events here
+        # speech input
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.quit()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    self.quit()
+
+    def show_start_screen(self):
+        #self.intro()
+        self.screen.fill(DARKGREEN)
+        self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 35, WHITE, WIDTH / 2,
+                       HEIGHT / 2, align="center")
+        self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 35, WHITE, WIDTH / 2,
+                       HEIGHT * 2 / 3, align="center")
+        self.draw_text("Press a key to start", self.title_font, 20, WHITE,
+                       WIDTH / 2, HEIGHT * 3 / 4, align="center")
+        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2, 100))
+        pg.display.flip()
+        self.wait_for_key()
 
 
-# Setting up Sprites
-camera = Camera()
-P1 = Avatar()
+#     def name_agent_screen(self): # with text
+#         # Give Young Apple a name
+#         # name = g.name_agent()
+#         # g.agent.give_name(name.lower())
+#         confirm = "n"
+#         while confirm.lower()=="n":
+#             name = input("\nWhat would you like to call me when teaching me tricks? ")
+#             confirm = input("Call me, '" + name + "'? (y/n) ")
+#         print("Terrific. '" + name +"' is my name!" )
 
-# Creating Sprites Groups
-all_sprites = pygame.sprite.Group()
-all_sprites.add(P1)
+#         self.agent.give_name(name.lower())
+#         print("Teach me, " + name + ", to: climb the tree.")
 
-# Game Loop
+    def name_agent_screen(self):
+        name = ""
+        confirm = False
+        while not confirm:
+            print("start test")
+            self.screen.fill(DARKGREEN)
+            self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 35, WHITE, WIDTH / 2,
+                           HEIGHT / 2, align="center")
+            self.draw_text("I listen to you while you press 'SPACE' or 'm'!", self.title_font, 35, WHITE, WIDTH / 2,
+                           HEIGHT * 2 / 3, align="center")
+            pg.display.flip()
+            pg.event.wait()
+            keys = pg.key.get_pressed()
+            if keys[pg.K_SPACE]:
+                print("listening...")
+                with sr.Microphone() as source:
+                    try:
+                        audio = r.listen(source, timeout=5)
+                        name = r.recognize_google(audio)
+                        print("name assigned")
+                    except:
+                        print("I did not hear anything")
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                   HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+                        pg.time.delay(2000)
+            while name and not confirm:
+                print("confirmation step")
+                self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                pg.display.flip()
+                pg.event.wait()
+                self.clock.tick(FPS)
+                keys = pg.key.get_pressed()
+                if keys[pg.K_RETURN]:
+                    confirm = True
+                    self.screen.fill(DARKGREEN)
+                    self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
+                                   WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                    pg.display.flip()
+                    pg.time.delay(2000)
+                elif keys[pg.K_n]:
+                    name = ""
+        return name
+
+
+    def show_go_screen(self):
+        pass
+
+    def name_agent(self):
+        '''
+        User names the game agent. Returns string name of agent. 
+        '''
+        name = input("\nWhat would you like to call me when teaching me tricks? ")
+        confirm = input("Call me, a young apple, '" + name + "'? (y/n) ")
+        while confirm.lower()=="n":
+            name = input("Okay, what would you like to call me? ")
+            confirm = input("Call me, '" + name + "'? (y/n) ")
+        print("Terrific. '" + name +"' is my name!" )
+
+        return(name)
+    
+    def intro(self):
+        print("\n            *******************************************************\n\
+            * Hello, and welcome to the world of me, Young Apple. *\n\
+            * I'm ready to move around and learn new tricks.      *\n\
+            *******************************************************\n")
+
+# create the game object
+g = Game()
+#g.new()
+g.show_start_screen()
+
+name = g.name_agent_screen()
+
 while True:
+    g.new()
+    g.agent.give_name(name.lower())
 
-    # Cycles through all events occuring
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-
-    #DISPLAYSURF.blit(background, (0, 0))
-    #camera.update()
-    camera.render()
-
-    tasks = font_small.render(str(TASKS), True, RED)
-    DISPLAYSURF.blit(tasks, (10, 10))
-
-    # Moves and Re-draws all Sprites
-    for entity in all_sprites:
-        DISPLAYSURF.blit(entity.image, entity.rect)
-        entity.move()
-
-    pygame.display.update()
-    FramePerSec.tick(FPS)
+    g.run()
+    g.show_go_screen()
