@@ -56,6 +56,7 @@ class Game:
             if tile_object.name == "agent":
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
+        #self.caption = pg.Rect(WIDTH / 2, HEIGHT * 3 / 4, WIDTH, 50)
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -161,6 +162,7 @@ class Game:
             pg.event.wait()
             keys = pg.key.get_pressed()
             if keys[pg.K_SPACE]:
+                #self.draw_text("Listening...", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
                 print("listening...")
                 with sr.Microphone() as source:
                     try:
@@ -169,6 +171,7 @@ class Game:
                         print("name assigned")
                     except:
                         print("I did not hear anything")
+                        #self.screen.fill(DARKGREEN, rect=self.caption)
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
                                    HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
@@ -218,13 +221,13 @@ class Game:
 
 # create the game object
 g = Game()
-#g.new()
+g.new()
 g.show_start_screen()
 
 name = g.name_agent_screen()
 
 while True:
-    g.new()
+    #g.new()
     g.agent.give_name(name.lower())
 
     g.run()
