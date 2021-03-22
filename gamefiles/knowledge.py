@@ -44,7 +44,7 @@ class Knowledge:
     def add_to_lexicon(self, word, action):
         self._lexicon.update({word.lower() : action})
         # might change action to self._actions[action]
-        print(self._lexicon)
+        #print(self._lexicon)
     
     def add_to_learned(self, words, action_sequence):
         """
@@ -52,7 +52,7 @@ class Knowledge:
         E.g.: "go up there", [[0],[1],[3]] stored as "go up there" : [0,1,3]
         """
         self._learned.update({words : [a[0] for a in action_sequence]}) # [0, 3, 1, 2]
-        print("~~learned: " + str(self._learned))
+        #print("~~learned: " + str(self._learned))
         self.agent.response = "I learned to: " + str(words)
 
     def link_prev_command(self):
@@ -145,7 +145,7 @@ class Knowledge:
         return self.objects['me'] # Return agent vector coordinates
 
     def previous(self):
-        print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
+        #print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
         previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
         self.agent.dest = previous
         self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)

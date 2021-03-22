@@ -152,7 +152,7 @@ class Game:
         name = ""
         confirm = False
         while not confirm:
-            print("start test")
+            #print("start test")
             self.screen.fill(DARKGREEN)
             self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 30, WHITE, WIDTH / 2,
                            HEIGHT / 3, align="center")
@@ -164,14 +164,14 @@ class Game:
             keys = pg.key.get_pressed()
             if keys[pg.K_SPACE]:
                 #self.draw_text("Listening...", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
-                print("listening...")
+                #print("listening...")
                 with sr.Microphone() as source:
                     try:
                         audio = r.listen(source, timeout=5)
                         name = r.recognize_google(audio)
-                        print("name assigned")
+                        #print("name assigned")
                     except:
-                        print("I did not hear anything")
+                        #print("I did not hear anything")
                         #self.screen.fill(DARKGREEN, rect=self.caption)
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
                                    HEIGHT * 3 / 4, align="center")
@@ -186,9 +186,9 @@ class Game:
                         self.morgan_speech.saveAudio(audio)
                         name = self.morgan_speech.getTranscription()
                         #name = self.game.morgan_speech.get_prediction(input)
-                        print("name assigned")
+                        #print("name assigned")
                     except:
-                        print("I did not hear anything")
+                        #print("I did not hear anything")
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
                                        HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
@@ -196,7 +196,7 @@ class Game:
             elif keys[pg.K_ESCAPE]:
                 self.quit()
             while name and not confirm:
-                print("confirmation step")
+                #print("confirmation step")
                 self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
                 pg.display.flip()
                 pg.event.wait()
