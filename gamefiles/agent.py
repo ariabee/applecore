@@ -43,7 +43,7 @@ class Agent(pg.sprite.Sprite):
         self.action_queue = []  # working memory of current, complete list of actions e.g. [[1],[0],[2]]
         self.responses = []
         self.response = ""
-        self.tasks = ["Climb the tree!", "TEST", "TEST"]
+        self.tasks = ["Go to the tree!"]
 
     def turn(self, direction):
         """

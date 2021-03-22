@@ -173,6 +173,19 @@ class Game:
                                    HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
                         pg.time.delay(2000)
+            elif keys[pg.K_m]:
+                with sr.Microphone() as source:
+                    try:
+                        audio = r.listen(source, timeout=5)
+                        input = self.game.morgan_speech.inputLoad(audio)
+                        name = self.game.morgan_speech.get_prediction(input)
+                        print("name assigned")
+                    except:
+                        print("I did not hear anything")
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                       HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+                        pg.time.delay(2000)
             elif keys[pg.K_ESCAPE]:
                 self.quit()
             while name and not confirm:
