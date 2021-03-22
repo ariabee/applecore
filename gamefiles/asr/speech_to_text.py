@@ -5,8 +5,8 @@ import speech_recognition as sr
 #path_to_wav = "/home/morgan/Documents/saarland/fourth_semester/lap_software_project/project/applecore/gamefiles/tree.wav"
 
 class SpeechToText():
-    def __init__(self):
-        self.path_to_wav = "transcript.wav"
+    def __init__(self, path_to_wav):
+        self.path_to_wav = path_to_wav
 
     def saveAudio(self, audio):
         with open(self.path_to_wav, "wb") as f:

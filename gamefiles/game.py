@@ -25,17 +25,18 @@ class Game:
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
-        self.morgan_speech = SpeechToText()
         self.load_data()
 
     def load_data(self):
         game_folder = path.dirname(__file__)
         self.img_folder = path.join(game_folder, "img")
         self.map_folder = path.join(game_folder, "maps")
+        self.asr_folder = path.join(game_folder, "asr")
         self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
         self.title_font = path.join(self.img_folder, 'arial.ttf')
+        self.morgan_speech = SpeechToText(path.join(self.asr_folder, "audio.wav"))
 
 
     def new(self):
