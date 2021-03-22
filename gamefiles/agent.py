@@ -122,11 +122,12 @@ class Agent(pg.sprite.Sprite):
             self.vel = vec(0, 0)
             self.dest = vec_dest(self.position.x, self.position.y)
             with sr.Microphone() as source:
-                audio = r.listen(source)
             # call STT (speech to text) class to get the wav file to predict
+                print("listening...")
                 try:
-                    input = self.game.morgan_speech.inputLoad(audio)
-                    self.instruction = self.game.morgan_speech.get_prediction(input)
+                    audio = r.listen(source, timeout=5)
+                    self.game.morgan_speech.saveAudio(audio)
+                    self.instruction = self.game.morgan_speech.getTranscription()
                     print("You: " + str(self.instruction))
                 except:
                     print("Hm? Can you please say that again?")
