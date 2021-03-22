@@ -120,13 +120,15 @@ class Game:
     def show_start_screen(self):
         #self.intro()
         self.screen.fill(DARKGREEN)
-        self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 35, WHITE, WIDTH / 2,
-                       HEIGHT / 2, align="center")
-        self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 35, WHITE, WIDTH / 2,
+        self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 30, WHITE, WIDTH / 2,
+                       HEIGHT / 3, align="center")
+        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 30, WHITE, WIDTH / 2,
                        HEIGHT * 2 / 3, align="center")
-        self.draw_text("Press a key to start", self.title_font, 20, WHITE,
-                       WIDTH / 2, HEIGHT * 3 / 4, align="center")
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2, 100))
+        self.draw_text("Press any key to start.", self.title_font, 20, LIGHTLIGHTGREY,
+                       WIDTH / 2, HEIGHT * 13 / 16, align="center")
+        self.draw_text("Press 'escape' to exit.", self.title_font, 15, LIGHTLIGHTGREY,
+                       WIDTH / 2, HEIGHT * 14 / 16, align="center")
         pg.display.flip()
         self.wait_for_key()
 
@@ -150,9 +152,10 @@ class Game:
         while not confirm:
             print("start test")
             self.screen.fill(DARKGREEN)
-            self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 35, WHITE, WIDTH / 2,
-                           HEIGHT / 2, align="center")
-            self.draw_text("I listen to you while you press 'SPACE' or 'm'!", self.title_font, 35, WHITE, WIDTH / 2,
+            self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 30, WHITE, WIDTH / 2,
+                           HEIGHT / 3, align="center")
+            self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+            self.draw_text("I can listen to you while you press 'SPACE' or 'm'!", self.title_font, 30, WHITE, WIDTH / 2,
                            HEIGHT * 2 / 3, align="center")
             pg.display.flip()
             pg.event.wait()
@@ -170,6 +173,8 @@ class Game:
                                    HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
                         pg.time.delay(2000)
+            elif keys[pg.K_ESCAPE]:
+                self.quit()
             while name and not confirm:
                 print("confirmation step")
                 self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
