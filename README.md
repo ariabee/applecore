@@ -19,5 +19,6 @@ Winter 2020-2021
 		* `conda env create -f applecore.yml`
 		* `conda activate applecore`
 
-4. Navigate to `gamefiles/` on local machine.
-5. Run `python3 game.py` or `python game.py` to play the game.
+4. Install SpeechBrain from their github: https://github.com/speechbrain/speechbrain
+5. Navigate to `gamefiles/` on local machine.
+6. Run `python3 game.py` or `python game.py` to play the game.
