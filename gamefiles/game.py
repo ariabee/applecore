@@ -14,9 +14,9 @@ from agent import *
 import random, time
 import torch
 import torchaudio
-from asr.m5 import M5
 from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
+
 
 
 class Game:
@@ -31,35 +31,12 @@ class Game:
         game_folder = path.dirname(__file__)
         self.img_folder = path.join(game_folder, "img")
         self.map_folder = path.join(game_folder, "maps")
+        self.asr_folder = path.join(game_folder, "asr")
         self.map = TiledMap(path.join(self.map_folder, "tiled_map.tmx"))
         self.map_img = self.map.make_map()
         self.map_rect = self.map_img.get_rect()
         self.title_font = path.join(self.img_folder, 'arial.ttf')
-
-        self.load_asr()
-
-    def load_asr(self):
-        # initialize path to the wav file to be predicted
-        path_to_wav = "user_input.wav"
-
-        # initialize device for cpu or gpu
-        use_cuda = torch.cuda.is_available()
-        torch.manual_seed(7)
-        device = torch.device("cuda" if use_cuda else "cpu")
-
-        # resample the wav files from 1600 to 8000
-        sample_rate = 1600
-        new_sample_rate = 8000
-        transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
-
-        # initialize model, M5, with proper parameters
-        model = M5(n_input=1, n_output=35)
-
-        # initialize path to local (local machine) model
-        path_to_local_model = "speech_commands_model/speech_commands_model.pt"
-
-        # load trained model
-        model.load_state_dict(torch.load(path_to_local_model))
+        self.morgan_speech = SpeechToText(path.join(self.asr_folder, "audio.wav"))
 
 
     def new(self):
@@ -80,6 +57,7 @@ class Game:
             if tile_object.name == "agent":
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
+        #self.caption = pg.Rect(WIDTH / 2, HEIGHT * 3 / 4, WIDTH, 50)
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -115,6 +93,8 @@ class Game:
         self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
+        self.agent.display_tasks()
+        self.agent.give_text_feedback()
         pg.display.flip()
 
     def wait_for_key(self):
@@ -142,15 +122,97 @@ class Game:
     def show_start_screen(self):
         #self.intro()
         self.screen.fill(DARKGREEN)
-        self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 35, WHITE, WIDTH / 2,
-                       HEIGHT / 2, align="center")
-        self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 35, WHITE, WIDTH / 2,
+        self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 30, WHITE, WIDTH / 2,
+                       HEIGHT / 3, align="center")
+        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 30, WHITE, WIDTH / 2,
                        HEIGHT * 2 / 3, align="center")
-        self.draw_text("Press a key to start", self.title_font, 20, WHITE,
-                       WIDTH / 2, HEIGHT * 3 / 4, align="center")
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2, 100))
+        self.draw_text("Press any key to start.", self.title_font, 20, LIGHTLIGHTGREY,
+                       WIDTH / 2, HEIGHT * 13 / 16, align="center")
+        self.draw_text("Press 'escape' to exit.", self.title_font, 15, LIGHTLIGHTGREY,
+                       WIDTH / 2, HEIGHT * 14 / 16, align="center")
         pg.display.flip()
         self.wait_for_key()
+
+
+#     def name_agent_screen(self): # with text
+#         # Give Young Apple a name
+#         # name = g.name_agent()
+#         # g.agent.give_name(name.lower())
+#         confirm = "n"
+#         while confirm.lower()=="n":
+#             name = input("\nWhat would you like to call me when teaching me tricks? ")
+#             confirm = input("Call me, '" + name + "'? (y/n) ")
+#         print("Terrific. '" + name +"' is my name!" )
+
+#         self.agent.give_name(name.lower())
+#         print("Teach me, " + name + ", to: climb the tree.")
+
+    def name_agent_screen(self):
+        name = ""
+        confirm = False
+        while not confirm:
+            #print("start test")
+            self.screen.fill(DARKGREEN)
+            self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 30, WHITE, WIDTH / 2,
+                           HEIGHT / 3, align="center")
+            self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+            self.draw_text("I can listen to you while you press 'SPACE' or 'm'!", self.title_font, 30, WHITE, WIDTH / 2,
+                           HEIGHT * 2 / 3, align="center")
+            pg.display.flip()
+            pg.event.wait()
+            keys = pg.key.get_pressed()
+            if keys[pg.K_SPACE]:
+                #self.draw_text("Listening...", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                #print("listening...")
+                with sr.Microphone() as source:
+                    try:
+                        audio = r.listen(source, timeout=5)
+                        name = r.recognize_google(audio)
+                        #print("name assigned")
+                    except:
+                        #print("I did not hear anything")
+                        #self.screen.fill(DARKGREEN, rect=self.caption)
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                   HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+                        pg.time.delay(2000)
+            elif keys[pg.K_m]:
+            	print("listening...")
+            	with sr.Microphone() as source:
+                    try:
+                        audio = r.listen(source, timeout=5)
+                        #print("audio")
+                        self.morgan_speech.saveAudio(audio)
+                        name = self.morgan_speech.getTranscription()
+                        #name = self.game.morgan_speech.get_prediction(input)
+                        #print("name assigned")
+                    except:
+                        #print("I did not hear anything")
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                       HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+                        pg.time.delay(2000)
+            elif keys[pg.K_ESCAPE]:
+                self.quit()
+            while name and not confirm:
+                #print("confirmation step")
+                self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                pg.display.flip()
+                pg.event.wait()
+                self.clock.tick(FPS)
+                keys = pg.key.get_pressed()
+                if keys[pg.K_RETURN]:
+                    confirm = True
+                    self.screen.fill(DARKGREEN)
+                    self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
+                                   WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                    pg.display.flip()
+                    pg.time.delay(2000)
+                elif keys[pg.K_n]:
+                    name = ""
+        return name
+
 
     def show_go_screen(self):
         pass
@@ -159,7 +221,7 @@ class Game:
         '''
         User names the game agent. Returns string name of agent. 
         '''
-        name = input("What would you like to call me when teaching me tricks? ")
+        name = input("\nWhat would you like to call me when teaching me tricks? ")
         confirm = input("Call me, a young apple, '" + name + "'? (y/n) ")
         while confirm.lower()=="n":
             name = input("Okay, what would you like to call me? ")
@@ -176,15 +238,14 @@ class Game:
 
 # create the game object
 g = Game()
+g.new()
 g.show_start_screen()
 
-while True:
-    g.new()
+name = g.name_agent_screen()
 
-    # Give Young Apple a name
-    name = g.name_agent()
+while True:
+    #g.new()
     g.agent.give_name(name.lower())
-    print("Teach me, " + name + ", to: climb the tree.")
 
     g.run()
     g.show_go_screen()

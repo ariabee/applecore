@@ -5,9 +5,9 @@
 # for a single game.
 #
 # Transcript will be accessed by agent to recall previous "experience".
-# TODO: think about time stamps / time stamp approaches in future dev. iterations.
 # TODO: after baseline, expand and refine linguistic feedback property
-from datetime import *
+from datetime import datetime
+import csv
 
 class Transcript:
 
@@ -22,10 +22,22 @@ class Transcript:
         self.instructions = []
         self.action_sequences = []
         self.feedback = [] # Will be added after baseline.
-        self.dt = datetime.today()
-        self.file = 'transcript_'+str(self.dt.day)+'_'+str(self.dt.month)+'_'+str(self.dt.year)+'.txt'
+        self.timestamp = self.__init_timestamp()
+        self.file = 'transcript_' + self.timestamp + '.csv'
         self.file_path = 'transcripts/' + self.file
 
+    
+    def __init_timestamp(self):
+        '''
+        Creates the current timestamp for the transcript file name.
+        Returns a string in the form dd_mm_yyyy_HH_MM.
+        '''
+        today = datetime.today()
+        date = str(today.day)+'_'+str(today.month)+'_'+str(today.year)
+        time = datetime.now().strftime("%H_%M")
+        return date + '_' + time
+
+    
     def store_instruction(self, instruct):
         self.instructions.append(instruct)
 
@@ -50,7 +62,6 @@ class Transcript:
         return self.instructions[next_to_last_index]
 
 
-
     def current_instruction(self):
         '''
         Returns the current instruction from the transcript.
@@ -73,6 +84,7 @@ class Transcript:
         index_current_input = len(self.instructions)-1
         return self.action_sequences[index_current_input]
 
+
     def previous(self):
         '''
         Returns the previous instruction and action sequence in the transcript as a tuple.
@@ -86,10 +98,22 @@ class Transcript:
         '''
         return (self.current_instruction(), self.current_actions())
 
+
+    def is_empty(self):
+        instruct_is_empty = not self.instructions
+        actions_is_empty = not self.action_sequences
+        return instruct_is_empty or actions_is_empty
+
+
     def save(self):
-        #TODO: make this save to a csv file
-        with open(self.file_path, 'w') as f:
+        '''
+        Saves transcript to a csv file.
+        '''
+        # TODO: update to also save responses/feedback
+        with open(self.file_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Instruction', 'Actions', 'Response'])
+
             if self.instructions and self.action_sequences:
                 for instruct, action in zip(self.instructions, self.action_sequences):
-                    f.write(str(instruct) + '\n')
-                    f.write(str(action) + '\n')
+                    writer.writerow([str(instruct), str(action), ''])
