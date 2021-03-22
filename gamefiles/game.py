@@ -14,9 +14,9 @@ from agent import *
 import random, time
 import torch
 import torchaudio
-from asr.m5 import M5
 from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
+
 
 
 class Game:
@@ -177,11 +177,14 @@ class Game:
                         pg.display.flip()
                         pg.time.delay(2000)
             elif keys[pg.K_m]:
-                with sr.Microphone() as source:
+            	print("listening...")
+            	with sr.Microphone() as source:
                     try:
                         audio = r.listen(source, timeout=5)
-                        input = self.game.morgan_speech.inputLoad(audio)
-                        name = self.game.morgan_speech.get_prediction(input)
+                        #print("audio")
+                        self.morgan_speech.saveAudio(audio)
+                        name = self.morgan_speech.getTranscription()
+                        #name = self.game.morgan_speech.get_prediction(input)
                         print("name assigned")
                     except:
                         print("I did not hear anything")
