@@ -1,3 +1,5 @@
 # ignore python caching files
 *.pyc
 transcripts/
+audio.wav
+pretrained_ASR/

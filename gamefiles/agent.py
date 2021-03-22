@@ -316,3 +316,4 @@ class Agent(pg.sprite.Sprite):
         self.move_if_clear_path()
 
         self.transcript.save()
+        
