@@ -105,13 +105,13 @@ class Agent(pg.sprite.Sprite):
                 try:
                     audio = r.listen(source, timeout=5)
                     self.instruction = r.recognize_google(audio)
-                    #print("\nYou: " + str(self.instruction))
+                    printif("\nYou: " + str(self.instruction))
                 except:
                     self.instruction = ''
-                    #print("\nYou: *silence*")
-                    #print("(Hm? Can you please say that again?)")
+                    printif("\nYou: *silence*")
+                    printif("(Hm? Can you please say that again?)")
             attempt = self.attempt()
-            #print(self.name + ": " + str(attempt))
+            printif(self.name + ": " + str(attempt))
 
         # ## TEXT-ONLY INPUT
         # self.instruction = input("\nType something: ").lower()
@@ -123,17 +123,17 @@ class Agent(pg.sprite.Sprite):
             self.dest = vec_dest(self.position.x, self.position.y)
             with sr.Microphone() as source:
             # call STT (speech to text) class to get the wav file to predict
-                #print("listening...")
+                printif("listening...")
                 try:
                     audio = r.listen(source, timeout=5)
                     self.game.morgan_speech.saveAudio(audio)
                     self.instruction = self.game.morgan_speech.getTranscription()
-                    #print("You: " + str(self.instruction))
+                    printif("You: " + str(self.instruction))
                 except:
-                    #print("Hm? Can you please say that again?")
+                    printif("Hm? Can you please say that again?")
                     self.instruction = ''
             attempt = self.attempt()
-            #print(self.name + ": " + str(attempt))
+            printif(self.name + ": " + str(attempt))
 
         return self.instruction
 
@@ -158,7 +158,7 @@ class Agent(pg.sprite.Sprite):
         # First check for learned phrases
         for phrase in learned:
             if phrase in instruction:
-                #print("found the phrase: " + str(phrase))
+                printif("found the phrase: " + str(phrase))
                 composition += (phrase + " ")
                 actions.append(learned[phrase])
 

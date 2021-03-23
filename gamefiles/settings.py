@@ -35,3 +35,10 @@ r = sr.Recognizer()
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
+
+# Debug settings
+DEBUG = True
+
+def printif(text):
+    if DEBUG:
+        print(text)
