@@ -203,7 +203,7 @@ class Game:
                         pg.display.flip()
                         #print("name assigned")
                     except:
-                        print("I did not hear anything")
+                        #print("I did not hear anything")
                         self.screen.fill(DARKGREEN, rect=self.caption)
                         pg.display.flip()
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
@@ -213,7 +213,7 @@ class Game:
             elif keys[pg.K_ESCAPE]:
                 self.quit()
             while name and not confirm:
-                print("confirmation step")
+                #print("confirmation step")
                 self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
                 pg.display.flip()
                 pg.event.wait()
