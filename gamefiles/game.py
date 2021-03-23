@@ -178,7 +178,7 @@ class Game:
                         pg.display.flip()
                         pg.time.delay(2000)
             elif keys[pg.K_m]:
-            	print("listening...")
+            	#print("listening...")
             	with sr.Microphone() as source:
                     try:
                         audio = r.listen(source, timeout=5)
