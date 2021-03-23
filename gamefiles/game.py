@@ -57,7 +57,7 @@ class Game:
             if tile_object.name == "agent":
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
-        #self.caption = pg.Rect(WIDTH / 2, HEIGHT * 3 / 4, WIDTH, 50)
+        self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -69,6 +69,16 @@ class Game:
             self.draw()
 
     def quit(self):
+        self.screen.fill(DARKGREEN)
+        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        pg.display.flip()
+        pg.time.delay(200)
+        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px_wink.png")), (WIDTH / 2 - 25, 210))
+        pg.display.flip()
+        pg.time.delay(200)
+        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        pg.display.flip()
+        pg.time.delay(50)
         pg.quit()
         sys.exit()
 
@@ -163,32 +173,39 @@ class Game:
             pg.event.wait()
             keys = pg.key.get_pressed()
             if keys[pg.K_SPACE]:
-                #self.draw_text("Listening...", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                self.draw_text("Listening...", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                pg.display.flip()
                 #print("listening...")
                 with sr.Microphone() as source:
                     try:
                         audio = r.listen(source, timeout=5)
                         name = r.recognize_google(audio)
                         #print("name assigned")
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
                     except:
                         #print("I did not hear anything")
-                        #self.screen.fill(DARKGREEN, rect=self.caption)
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
                                    HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
                         pg.time.delay(2000)
             elif keys[pg.K_m]:
-            	print("listening...")
+            	#print("listening...")
             	with sr.Microphone() as source:
                     try:
                         audio = r.listen(source, timeout=5)
                         #print("audio")
                         self.morgan_speech.saveAudio(audio)
                         name = self.morgan_speech.getTranscription()
-                        #name = self.game.morgan_speech.get_prediction(input)
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
                         #print("name assigned")
                     except:
-                        #print("I did not hear anything")
+                        print("I did not hear anything")
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
                         self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
                                        HEIGHT * 3 / 4, align="center")
                         pg.display.flip()
@@ -196,7 +213,7 @@ class Game:
             elif keys[pg.K_ESCAPE]:
                 self.quit()
             while name and not confirm:
-                #print("confirmation step")
+                print("confirmation step")
                 self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
                 pg.display.flip()
                 pg.event.wait()
@@ -211,7 +228,7 @@ class Game:
                     pg.time.delay(2000)
                 elif keys[pg.K_n]:
                     name = ""
-        return name
+        return name.lower()
 
 
     def show_go_screen(self):
@@ -245,7 +262,7 @@ name = g.name_agent_screen()
 
 while True:
     #g.new()
-    g.agent.give_name(name.lower())
+    g.agent.give_name(name)
 
     g.run()
     g.show_go_screen()
