@@ -40,8 +40,13 @@ class Agent(pg.sprite.Sprite):
         self.name = "Young Apple"
         self.knowledge = Knowledge(self)
         self.transcript = Transcript()
-        self.action_queue = []  # working memory of current, complete list of actions e.g. [[1],[0],[2]]
-        self.responses = []
+
+        # Working memory properties
+        self.recognized_words = []
+        self.actions = [] # current, complete list of action sequences e.g. [[1],[[0],[2]]]
+        self.action_queue = [] # remaining actions to be completed
+        self.current_action = -1
+        #self.responses = []
         self.response = ""
         self.tasks = ["Go to the tree!"]
 
@@ -94,13 +99,17 @@ class Agent(pg.sprite.Sprite):
         #print("checked for clear path: "+str(clear_path))
         return clear_path
             
-    def listen_attempt(self):
+    def listen(self):
+        '''
+        Listens for a speech command, while either the 'SPACE' key or 'M' key is pressed.
+        If given, command is stored in self.instruction property of the agent.
+        '''
         #UNCOMMENT FOR SPEECH VERSION
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]:
+            self.action_queue = []
             self.vel = vec(0, 0)
             self.dest = vec_dest(self.position.x, self.position.y)
-            self.action_queue = []
             with sr.Microphone() as source:
                 try:
                     audio = r.listen(source, timeout=5)
@@ -110,15 +119,11 @@ class Agent(pg.sprite.Sprite):
                     self.instruction = ''
                     printif("\nYou: *silence*")
                     printif("(Hm? Can you please say that again?)")
-            attempt = self.attempt()
-            printif(self.name + ": " + str(attempt))
-
-        # ## TEXT-ONLY INPUT
-        # self.instruction = input("\nType something: ").lower()
-        # attempt = self.attempt()
-        # print(attempt)
+            # attempt = self.attempt()
+            # printif(self.name + ": " + str(attempt))
 
         elif keys[pg.K_m]:
+            self.action_queue = []
             self.vel = vec(0, 0)
             self.dest = vec_dest(self.position.x, self.position.y)
             with sr.Microphone() as source:
@@ -132,8 +137,13 @@ class Agent(pg.sprite.Sprite):
                 except:
                     printif("Hm? Can you please say that again?")
                     self.instruction = ''
-            attempt = self.attempt()
-            printif(self.name + ": " + str(attempt))
+            # attempt = self.attempt()
+            # printif(self.name + ": " + str(attempt))
+
+        # ## TEXT-ONLY INPUT
+        # self.instruction = input("\nType something: ").lower()
+        # attempt = self.attempt()
+        # printif(self.name + ": " + str(attempt))
 
         return self.instruction
 
@@ -145,7 +155,7 @@ class Agent(pg.sprite.Sprite):
         return: composition, the recognized string of words
         return: actions, the list of corresponding actions
         """
-        composition = ""
+        recognized_words = ""
         actions = []
         unknowns = ""
         instruction = self.instruction # the input string from the user
@@ -159,7 +169,7 @@ class Agent(pg.sprite.Sprite):
         for phrase in learned:
             if phrase in instruction:
                 printif("found the phrase: " + str(phrase))
-                composition += (phrase + " ")
+                recognized_words += (phrase + " ")
                 actions.append(learned[phrase])
 
                 # If found, remove phrase from instruction
@@ -170,11 +180,22 @@ class Agent(pg.sprite.Sprite):
         # Then check for remaining recognized words in the lexicon
         for word in instruction_split:
             if word in lexicon:
-                composition += (word + " ")
+                recognized_words += (word + " ")
                 actions.append(lexicon[word])
                 # print(actions)
 
-        return (composition, actions)
+        self.recognized_words = recognized_words
+        self.actions = actions
+
+        return (recognized_words, actions)
+
+    def store_action_queue(self):
+        '''
+        Stores the current parsed actions into the action queue. 
+        First composes actions into single list of actions e.g. from [[[0], [1]], [[1]]] to [[0],[1]]
+        '''
+        self.action_queue = self.compose_actions(self.actions)
+        return self.action_queue
 
     def compose_actions(self, actions):
         """
@@ -183,23 +204,48 @@ class Agent(pg.sprite.Sprite):
         Composes the actions into a meaningful sequence. 
         Returns the composed action sequence (a list of integer lists) e.g. [[1],[0,3,1],[2]]
         """
-        # single_actions = []
-
-        # for action_list in actions:
-        #     if len(action_list)==1:
-        #         single_actions.append(action_list[0])
-        
-        # if 0 in single_actions:
-        #     for action in single_actions:
-        #         print(str(type(action)))
-               
-        # print("actions: " + str(actions))
-
         single_actions = []
         for action_list in actions:
             for action in action_list:
                 single_actions.append([action]) # note that action is still inside a list e.g. [1]
         return single_actions
+
+    def compose_feedback(self):
+        """
+        Temporary basic text feedback version below.
+        TODO: Composes feedback into input-based response.
+        """
+        single_actions = self.compose_actions(self.actions)
+
+        responses = ""
+
+        for actions in single_actions:
+            for action in actions:
+                action_response = self.knowledge.actions[action](response_only=True)
+                responses = action_response + ". "
+        
+        self.response = responses
+
+        return self.response
+
+    def attempt(self):
+        '''
+        Attempts the first action in the queue.
+        '''
+        if self.action_queue: # if there are still actions to complete
+            action = [self.action_queue[0][0]]
+            #TODO: make sure this allows for repeated actions in new queues! or the same action twice
+            if action != self.current_action: # keeps the agent from re-calling the current action
+                self.current_action = [action]
+                self.knowledge.actions[action]()
+
+    def pop_action(self):
+        '''
+        Pop first action from queue.
+        '''
+        popped = self.action_queue.pop(0)
+        printif("popped: " + str(popped))
+        return popped
 
     def try_actions(self, action_queue):
         """
@@ -216,14 +262,12 @@ class Agent(pg.sprite.Sprite):
 
         return (responses)
 
-    def attempt(self):
+    def attempt_old(self):
         """
         Make an attempt to interpret and parse actions from the given input.
         return: compositon, the composed and recognized string of words
         return: responses, the responses generated by doing the actions
         """
-        instruction = self.instruction
-
         # 1) Interpret the instruction
         composition, parsed_actions = self.interpret()
 
@@ -300,9 +344,24 @@ class Agent(pg.sprite.Sprite):
         
 
     def update(self):
-        self.listen_attempt()
-        #self.try_action_in_queue()
+        self.listen()
+        if self.instruction and not self.action_queue:
+            printif("there is an instruction and no action queue")
+            # Interpret instruction
+            self.interpret()
+            # Store action queue
+            self.store_action_queue()
+            # Compose feedback into response text
+            self.compose_feedback()
+            # Save to transcript
+            self.transcript.store(self.instruction, self.action_queue)
+            # Reset instruction
+            self.instruction = ""
+            # TODO: update transcript.py so that: self.transcript.store(self.instruction, self.action_queue, self.response)
 
+        # Attempt action in queue
+        self.attempt()
+    
         self.blink()
         self.rect = self.image.get_rect()
         self.rect.center = self.position
@@ -313,7 +372,9 @@ class Agent(pg.sprite.Sprite):
         #     self.responses.append(response)
         #     self.action_queue.pop(0)
 
-        self.move_if_clear_path()
+        still_moving = self.move_if_clear_path()
+        if not still_moving and self.action_queue:
+            self.pop_action()
 
         self.transcript.save()
         
