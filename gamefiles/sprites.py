@@ -59,7 +59,16 @@ class Tree_top(pg.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+class Tasks():
+    def __init__(self, task_list, goals):
+        self.task_list = task_list
+        self.goals = goals
+        self.current_task = self.task_list[0]
+        self.current_goal = self.goals[0]
 
-
-
-
+    def check_goal_state(self):
+        # if agent position = goal state:
+        # remove current task/goal from list
+        # set next task/goal
+        # do smth with the transcript
+        pass
