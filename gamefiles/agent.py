@@ -85,19 +85,27 @@ class Agent(pg.sprite.Sprite):
         #TODO: adjust math.isclose to also check for x and y board limit value?
         clear_path = not math.isclose(self.position.x, self.dest.x, rel_tol=1e-09, abs_tol=0.5) or \
                      not math.isclose(self.position.y, self.dest.y, rel_tol=1e-09, abs_tol=0.5)
+        no_walls = True
 
         if clear_path:
             self.knowledge.set_direction()
             #print(self.position, self.dest)
             self.position += self.vel * self.game.dt
             self.hit_rect.centerx = self.position.x
-            collide_with_walls(self, self.game.walls, 'x')
+            walls_x = collide_with_walls(self, self.game.walls, 'x')
             self.hit_rect.centery = self.position.y
-            collide_with_walls(self, self.game.walls, 'y')
+            walls_y = collide_with_walls(self, self.game.walls, 'y')
             self.rect.center = self.hit_rect.center
+        
+            if walls_x or walls_y:
+                no_walls = False
+                #print("walls: " + str(self.position) + ", " + str(self.dest))
+
+        #if clear_path and no_walls:
+            #printif("all clear: " + str(self.position) + ", " + str(self.dest))
 
         #print("checked for clear path: "+str(clear_path))
-        return clear_path
+        return clear_path and no_walls
             
     def listen(self):
         '''
@@ -384,8 +392,9 @@ class Agent(pg.sprite.Sprite):
         #     self.action_queue.pop(0)
 
         still_moving = self.move_if_clear_path()
-        printif("still moving: " + str(still_moving))
+        #printif("still moving: " + str(still_moving))
         if not still_moving and self.action_queue:
+            printif("pop action now")
             self.pop_action()
 
         self.transcript.save()
