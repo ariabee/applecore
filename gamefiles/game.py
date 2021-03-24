@@ -12,8 +12,8 @@ from map import *
 from agent import *
 
 import random, time
-import torch
-import torchaudio
+# import torch
+# import torchaudio
 from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
 
