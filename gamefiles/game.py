@@ -59,9 +59,8 @@ class Game:
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
-        task_list = ["Climb the tree!"]
-        task_goals = [[self.tree_top]]
-        self.agent.tasks = Tasks(task_list, task_goals)
+        task_goals = [self.tree_top.rect]
+        self.tasks = Tasks(task_list, task_goals)
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -90,6 +89,9 @@ class Game:
         # update portion of the game loop
         self.all_sprites.update()
         self.camera.update(self.agent)
+        if self.tasks.task_list:
+            self.tasks.check_goal_state(self.agent.rect)
+
 
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
@@ -107,9 +109,24 @@ class Game:
         self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
-        self.agent.display_tasks()
+        self.display_tasks()
         self.agent.give_text_feedback()
         pg.display.flip()
+
+    def display_tasks(self):
+        textRect = pg.Rect(0, 0, 0, 0)
+        font = pg.font.Font(self.title_font, 15)
+        height = 0
+        for task in self.tasks.task_list:
+            textSurf = font.render(task, True, BLACK).convert_alpha()
+            textSize = textSurf.get_size()
+            height += textSize[0]
+            bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+            textRect = bubbleSurf.get_rect()
+            bubbleSurf.fill(LIGHTGREY)
+            bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+            textRect.center = ((700), (height))
+            self.screen.blit(bubbleSurf, textRect)
 
     def wait_for_key(self):
         pg.event.wait()
