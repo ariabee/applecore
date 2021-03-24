@@ -66,7 +66,12 @@ class Tasks():
         self.current_task = self.task_list[0]
         self.current_goal = self.goals[0]
 
-    def check_goal_state(self):
+    def check_goal_state(self, cur_state):
+        if cur_state in self.current_goal:
+            self.task_list.pop(0)
+            self.goals.pop(0)
+            self.current_task = self.task_list[0]
+            self.current_goal = self.goals[0]
         # if agent position = goal state:
         # remove current task/goal from list
         # set next task/goal

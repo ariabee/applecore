@@ -43,7 +43,6 @@ class Agent(pg.sprite.Sprite):
         self.action_queue = []  # working memory of current, complete list of actions e.g. [[1],[0],[2]]
         self.responses = []
         self.response = ""
-        self.tasks = ["Go to the tree!"]
 
     def turn(self, direction):
         """
@@ -274,7 +273,7 @@ class Agent(pg.sprite.Sprite):
         textRect = pg.Rect(0, 0, 0, 0)
         font = pg.font.Font(self.game.title_font, 15)
         height = 0
-        for task in self.tasks:
+        for task in self.tasks.task_list:
             textSurf = font.render(task, True, BLACK).convert_alpha()
             textSize = textSurf.get_size()
             height += textSize[0]
@@ -314,6 +313,7 @@ class Agent(pg.sprite.Sprite):
         #     self.action_queue.pop(0)
 
         self.move_if_clear_path()
+        self.tasks.check_goal_state(self.position)
 
         self.transcript.save()
         

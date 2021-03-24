@@ -50,14 +50,18 @@ class Game:
                 self.water = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
             if tile_object.name == "tree_top":
                 self.tree_top = Tree_top(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+        for tile_object in self.map.map_data.objects:
             if tile_object.name == "tree_trunk":
                 self.tree_trunk = Tree(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height,
-                                           self.tree_top)
+                                       self.tree_top)
         for tile_object in self.map.map_data.objects:
             if tile_object.name == "agent":
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
+        task_list = ["Climb the tree!"]
+        task_goals = [[self.tree_top]]
+        self.agent.tasks = Tasks(task_list, task_goals)
 
     def run(self):
         # game loop - set self.playing = False to end the game

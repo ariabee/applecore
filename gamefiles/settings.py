@@ -31,6 +31,7 @@ AGENT_SPEED = 30
 
 r = sr.Recognizer()
 
+
 # Hide torchaudio future package warning
 if not sys.warnoptions:
     import warnings
