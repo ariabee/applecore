@@ -41,4 +41,4 @@ DEBUG = True
 
 def printif(text):
     if DEBUG:
-        print(text)
+        print(str(text))

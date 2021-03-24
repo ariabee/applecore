@@ -45,7 +45,7 @@ class Agent(pg.sprite.Sprite):
         self.recognized_words = []
         self.actions = [] # current, complete list of action sequences e.g. [[1],[[0],[2]]]
         self.action_queue = [] # remaining actions to be completed
-        self.current_action = -1
+        self.current_action = []
         #self.responses = []
         self.response = ""
         self.tasks = ["Go to the tree!"]
@@ -195,6 +195,7 @@ class Agent(pg.sprite.Sprite):
         First composes actions into single list of actions e.g. from [[[0], [1]], [[1]]] to [[0],[1]]
         '''
         self.action_queue = self.compose_actions(self.actions)
+        printif("stored action queue: " + str(self.action_queue))
         return self.action_queue
 
     def compose_actions(self, actions):
@@ -215,7 +216,7 @@ class Agent(pg.sprite.Sprite):
         Temporary basic text feedback version below.
         TODO: Composes feedback into input-based response.
         """
-        single_actions = self.compose_actions(self.actions)
+        single_actions = self.action_queue
 
         responses = ""
 
@@ -232,12 +233,12 @@ class Agent(pg.sprite.Sprite):
         '''
         Attempts the first action in the queue.
         '''
-        if self.action_queue: # if there are still actions to complete
-            action = [self.action_queue[0][0]]
-            #TODO: make sure this allows for repeated actions in new queues! or the same action twice
-            if action != self.current_action: # keeps the agent from re-calling the current action
-                self.current_action = [action]
-                self.knowledge.actions[action]()
+        action = self.action_queue[0][0]
+        action_info = [action, self.transcript.entry_number()] # allows repeated actions in new queues
+        #TODO: make sure this allows for the same action twice
+        if action_info != self.current_action: # keeps the agent from re-calling the current action
+            self.current_action = action_info
+            self.knowledge.actions[action]()
 
     def pop_action(self):
         '''
@@ -245,6 +246,10 @@ class Agent(pg.sprite.Sprite):
         '''
         popped = self.action_queue.pop(0)
         printif("popped: " + str(popped))
+
+        if len(self.action_queue) == 0:
+            printif("actions completed (" + str(self.action_queue) + ")")
+        
         return popped
 
     def try_actions(self, action_queue):
@@ -347,20 +352,26 @@ class Agent(pg.sprite.Sprite):
         self.listen()
         if self.instruction and not self.action_queue:
             printif("there is an instruction and no action queue")
+            
             # Interpret instruction
             self.interpret()
+            
             # Store action queue
             self.store_action_queue()
+            
             # Compose feedback into response text
             self.compose_feedback()
+            
             # Save to transcript
             self.transcript.store(self.instruction, self.action_queue)
+            
             # Reset instruction
             self.instruction = ""
             # TODO: update transcript.py so that: self.transcript.store(self.instruction, self.action_queue, self.response)
 
         # Attempt action in queue
-        self.attempt()
+        if self.action_queue:
+            self.attempt()
     
         self.blink()
         self.rect = self.image.get_rect()
@@ -373,6 +384,7 @@ class Agent(pg.sprite.Sprite):
         #     self.action_queue.pop(0)
 
         still_moving = self.move_if_clear_path()
+        printif("still moving: " + str(still_moving))
         if not still_moving and self.action_queue:
             self.pop_action()
 
