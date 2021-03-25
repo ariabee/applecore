@@ -53,7 +53,7 @@ class Knowledge:
         """
         self._learned.update({words : [a[0] for a in action_sequence]}) # [0, 3, 1, 2]
         #print("~~learned: " + str(self._learned))
-        self.agent.response = "I learned to: " + str(words)
+        self.agent.response = "I learned to: " + str(words) # TODO: make this a return string instead, test it
 
     def link_prev_command(self):
         prior_input, prior_actions = self.agent.transcript.previous()

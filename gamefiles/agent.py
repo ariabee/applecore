@@ -156,8 +156,6 @@ class Agent(pg.sprite.Sprite):
         The Agent processes the instruction (temporarily stored in self) into
         1) words from its lexicon and learned phrases
         2) a list of actions to carry out
-        return: composition, the recognized string of words
-        return: actions, the list of corresponding actions
         """
         recognized_words = ""
         actions = []
@@ -202,8 +200,16 @@ class Agent(pg.sprite.Sprite):
         """
         single_actions = []
         for action_list in actions:
-            for action in action_list:
+            for action in action_list:            
                 single_actions.append([action]) # note that action is still inside a list e.g. [1]
+
+        # # remove move action if a destination is given
+        # move = None
+        # if action == 0:
+        #             move = (action, 
+        #         if move and action in [1,2,3,4,7,9]:
+        #             # check for a destination with move
+        
         return single_actions
 
     def store_action_queue(self):
