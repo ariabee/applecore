@@ -37,3 +37,10 @@ task_list = ["Go to the tree!", "Climb the tree!"]
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
+
+# Debug settings
+DEBUG = True
+
+def printif(text):
+    if DEBUG:
+        print(str(text))

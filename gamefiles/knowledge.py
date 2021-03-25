@@ -53,27 +53,12 @@ class Knowledge:
         """
         self._learned.update({words : [a[0] for a in action_sequence]}) # [0, 3, 1, 2]
         #print("~~learned: " + str(self._learned))
-        self.agent.response = "I learned to: " + str(words)
+        self.agent.response = "I learned to: " + str(words) # TODO: make this a return string instead, test it
 
     def link_prev_command(self):
         prior_input, prior_actions = self.agent.transcript.previous()
         response = self.add_to_learned(prior_input, prior_actions) 
         return response
-
-    def move(self, destination=None):
-        """
-        moves in random direction
-        """
-        if destination:
-            self.agent.dest = destination
-        elif self.agent.dest != self.agent.position:
-            pass
-        else:
-            random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
-            self.agent.dest = random_coords
-            self.agent.response = "I'm moving somewhere..."
-            return("moving somewhere")
-          
 
     def set_direction(self):
         """
@@ -97,62 +82,102 @@ class Knowledge:
         self.agent.vel.x *= 0.5
         self.agent.vel.y *= 0.5
 
+    def move(self, destination=None, response_only=False):
+        """
+        moves in random direction
+        """
+        if response_only:
+            return("moving somewhere")
+        else:
+            if destination:
+                self.agent.dest = destination
+            elif self.agent.dest != self.agent.position:
+                pass
+            else:
+                #TODO: update vec to be in a smaller radius/square relative to agent position 
+                random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
+                self.agent.dest = random_coords
+                #self.agent.response = "moving somewhere"
+                return("moving somewhere")
+          
+    def left(self, response_only=False):
+        if response_only:
+            return("going left")
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            self.agent.dest.x -= 100
+            #self.agent.response = "Going left..."
+            return("going left")
 
-    def left(self):
-        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-        self.agent.dest.x -= 100
-        self.agent.response = "Going left..."
-        return("going left")
+    def right(self, response_only=False):
+        if response_only:
+            return("going right")
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            self.agent.dest.x += 100
+            #self.agent.response = "Going right..."
+            return("going right")
 
-    def right(self):
-        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-        self.agent.dest.x += 100
-        self.agent.response = "Going right..."
-        return("going right")
+    def up(self, response_only=False):
+        if response_only:
+            return("going up")
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            self.agent.dest.y -= 100
+            #self.agent.response = "Going up..."
+            return("going up")
 
-    def up(self):
-        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-        self.agent.dest.y -= 100
-        self.agent.response = "Going up..."
-        return("going up")
+    def down(self, response_only=False):
+        if response_only:
+            return("going down")
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            self.agent.dest.y += 100
+            #self.agent.response = "Going down..."
+            return("going down")
 
-    def down(self):
-        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-        self.agent.dest.y += 100
-        self.agent.response = "Going down..."
-        return("going down")
+    def yes(self, response_only=False):
+        if response_only:
+            response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
+            return("yes! " + str(response))
+        else:
+            # TODO: make this increase the weight of the action for a previous command?
+            response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
+            #self.agent.response = "yes! " + str(response)
+            return("yes! " + str(response))
 
+    def no(self, response_only=False):
+        if response_only:
+            return("oops :(")
+        else:
+            # TODO: make this decrease the weight of the action for a previous command?
+            #self.agent.response = "oops :("
+            return("oops :(")
 
-    def yes(self):
-        # TODO: make this increase the weight of the action for a previous command?
-        response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
-        self.agent.response = "yes! " + str(response)
-        return("yes! " + str(response))
+    def tree(self, response_only=False):
+        if response_only:
+            return "I'm going to the tree..." # Return tree vector coordinates
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            tree_coords = self.objects['tree']
+            self.agent.dest = tree_coords
+            return self.objects['tree'] # Return tree vector coordinates
 
-    def no(self):
-        # TODO: make this decrease the weight of the action for a previous command?
-        self.agent.response = "oops :("
-        return("oops :(")
+    def me(self, response_only=False):
+        if response_only:
+            return "me" # Return agent vector coordinates
+        else:
+            return self.objects['me'] # Return agent vector coordinates
 
-
-    def tree(self):
-        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-        tree_coords = self.objects['tree']
-        self.agent.dest = tree_coords
-        self.agent.response = "I'm going to the tree..."
-        return self.objects['tree'] # Return tree vector coordinates
-
-    def me(self):
-        self.agent.response = str(self.objects['me'])
-        return self.objects['me'] # Return agent vector coordinates
-
-    def previous(self):
-        #print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
-        previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
-        self.agent.dest = previous
-        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-        self.agent.response = "I'm going back..."
-        return previous # Return previous agent vector coordinates
+    def previous(self, response_only=False):
+        if response_only:
+            return "I'm going back..."
+        else:
+            #print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
+            previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
+            self.agent.dest = previous
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            return previous # Return previous agent vector coordinates
 
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]
@@ -160,7 +185,7 @@ class Knowledge:
 
     # Define complex actions / game tasks:
 
-    def climb_tree(self):
+    def climb_tree(self, response_only=False):
     # def climb_the_tree(self, position, action_sequence):
         # (should perform actions, either predefined or passed into the function)
         # move agent to position
