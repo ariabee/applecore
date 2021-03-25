@@ -30,8 +30,6 @@ GRIDHEIGHT = HEIGHT / TILESIZE
 AGENT_SPEED = 30
 
 r = sr.Recognizer()
-# Tasks
-task_list = ["Go to the tree!", "Climb the tree!"]
 
 # Hide torchaudio future package warning
 if not sys.warnoptions:

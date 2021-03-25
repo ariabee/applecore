@@ -60,7 +60,10 @@ class Game:
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
-        task_goals = [self.tree_trunk.rect, self.tree_top.rect]
+        #task_list = ["Go to the tree!", "Climb the tree!"]
+        task_list = ["Climb the tree!"]
+        #task_goals = [self.tree_trunk.rect, self.tree_top.rect]
+        task_goals = [self.tree_top.rect]
         self.tasks = Tasks(task_list, task_goals)
 
     def run(self):
@@ -91,7 +94,10 @@ class Game:
         self.all_sprites.update()
         self.camera.update(self.agent)
         if self.tasks.task_list:
-            self.tasks.check_goal_state(self.agent.rect)
+            goal_completed = self.tasks.check_goal_state(self.agent.rect)
+            if goal_completed:
+                self.agent.knowledge.add_to_learned(goal_completed, [[10]]) # NOTE: check on the index in actions
+                #TODO: hi susi. Tuple for (task string, [[10]]) in settings ("go to the tree", [[7]])
 
 
     def draw_grid(self):

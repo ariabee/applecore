@@ -76,6 +76,7 @@ class Tasks():
             completed_task = self.task_list.pop(0)
             self.goals.pop(0)
             self.completed.append(completed_task)
+            return completed_task
         # if agent position = goal state:
         # remove current task/goal from list
         # set next task/goal

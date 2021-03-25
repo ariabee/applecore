@@ -29,9 +29,10 @@ class Knowledge:
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
-        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous]
+        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous, self.climb_tree]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
-                        'me': agent.position} # vector of x, y posiiton on map
+                        'me': agent.position, \
+                        'treetop': vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)} # vector of x, y posiiton on map
         # self.confirmations = [self.yes, self.no]
         # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
 
@@ -197,6 +198,10 @@ class Knowledge:
 
         # if standing in front of the trunk
         # just climb the tree
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+        top_of_tree = self.objects['treetop']
+        self.agent.dest = top_of_tree
+        #return self.objects['treetop']
 
 
         #self.agent.position = vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)
