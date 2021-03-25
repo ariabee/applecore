@@ -262,7 +262,8 @@ g.new()
 g.show_start_screen()
 
 # Name the agent
-name = g.name_agent_screen() if DEBUG == False else "pie"
+name = g.name_agent_screen() 
+# name = g.name_agent_screen() if DEBUG == False else "pie"
 g.agent.give_name(name)
 
 while True:

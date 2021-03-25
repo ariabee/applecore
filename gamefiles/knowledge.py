@@ -138,6 +138,7 @@ class Knowledge:
 
     def yes(self, response_only=False):
         if response_only:
+            response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
             return("yes! " + str(response))
         else:
             # TODO: make this increase the weight of the action for a previous command?
