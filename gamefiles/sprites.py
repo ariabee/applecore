@@ -39,8 +39,7 @@ class Obstacle(pg.sprite.Sprite):
 
 class Tree(pg.sprite.Sprite):
     def __init__(self, game, x, y, w, h, top):
-        self.groups = game.walls
-        pg.sprite.Sprite.__init__(self, self.groups)
+        pg.sprite.Sprite.__init__(self)
         self.game = game
         self.rect = pg.Rect(x, y, w, h)
         self.x = x
@@ -65,13 +64,15 @@ class Tasks():
         self.goals = goals
         self.current_task = self.task_list[0]
         self.current_goal = self.goals[0]
+        self.completed = []
 
     def check_goal_state(self, cur_state):
         self.current_task = self.task_list[0]
         self.current_goal = self.goals[0]
         if cur_state.colliderect(self.current_goal):
-            self.task_list.pop(0)
+            completed_task = self.task_list.pop(0)
             self.goals.pop(0)
+            self.completed.append(completed_task)
         # if agent position = goal state:
         # remove current task/goal from list
         # set next task/goal

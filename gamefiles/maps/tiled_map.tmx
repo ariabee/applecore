@@ -20,10 +20,10 @@
 48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48,48
 </data>
  </layer>
- <objectgroup id="3" name="objects" locked="1">
+ <objectgroup id="3" name="objects">
   <object id="1" name="agent" x="240" y="336"/>
-  <object id="18" name="tree_trunk" x="148" y="141" width="25" height="25"/>
-  <object id="19" name="tree_top" x="123.5" y="43.5" width="75" height="72"/>
+  <object id="18" name="tree_trunk" x="115" y="149" width="95" height="25"/>
+  <object id="19" name="tree_top" x="151.5" y="72.5" width="20" height="15"/>
  </objectgroup>
  <objectgroup id="4" name="obstacles">
   <object id="6" name="water" x="386" y="32" width="415" height="62"/>

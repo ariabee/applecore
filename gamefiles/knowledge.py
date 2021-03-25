@@ -71,7 +71,7 @@ class Knowledge:
         else:
             random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
             self.agent.dest = random_coords
-            self.agent.response = "moving somewhere"
+            self.agent.response = "I'm moving somewhere..."
             return("moving somewhere")
           
 
@@ -139,9 +139,11 @@ class Knowledge:
         self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         tree_coords = self.objects['tree']
         self.agent.dest = tree_coords
+        self.agent.response = "I'm going to the tree..."
         return self.objects['tree'] # Return tree vector coordinates
 
     def me(self):
+        self.agent.response = str(self.objects['me'])
         return self.objects['me'] # Return agent vector coordinates
 
     def previous(self):
@@ -149,6 +151,7 @@ class Knowledge:
         previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
         self.agent.dest = previous
         self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+        self.agent.response = "I'm going back..."
         return previous # Return previous agent vector coordinates
 
     # def an_object(self, object_name):

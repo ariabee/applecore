@@ -25,6 +25,7 @@ class Game:
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
+        self.help = False # help screen variable
         self.load_data()
 
     def load_data(self):
@@ -59,7 +60,7 @@ class Game:
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
-        task_goals = [self.tree_top.rect]
+        task_goals = [self.tree_trunk.rect, self.tree_top.rect]
         self.tasks = Tasks(task_list, task_goals)
 
     def run(self):
@@ -114,19 +115,31 @@ class Game:
         pg.display.flip()
 
     def display_tasks(self):
-        textRect = pg.Rect(0, 0, 0, 0)
+        #textRect = pg.Rect(0, 0, 0, 0)
         font = pg.font.Font(self.title_font, 15)
         height = 0
         for task in self.tasks.task_list:
             textSurf = font.render(task, True, BLACK).convert_alpha()
             textSize = textSurf.get_size()
-            height += textSize[0]
             bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+            height += textSize[1] * 2
             textRect = bubbleSurf.get_rect()
             bubbleSurf.fill(LIGHTGREY)
             bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
             textRect.center = ((700), (height))
             self.screen.blit(bubbleSurf, textRect)
+        for completed in self.tasks.completed:
+            textSurf = font.render(completed, True, GREEN).convert_alpha()
+            textSize = textSurf.get_size()
+            #height += textSize[0]
+            bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+            height += textSize[1] * 2
+            textRect = bubbleSurf.get_rect()
+            bubbleSurf.fill(LIGHTGREY)
+            bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+            textRect.center = ((700), (height))
+            self.screen.blit(bubbleSurf, textRect)
+
 
     def wait_for_key(self):
         pg.event.wait()
@@ -149,6 +162,25 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.quit()
+                if event.key == pg.K_h and not self.help:
+                    self.help_screen()
+                if event.key == pg.K_h and self.help:
+                    self.help = False
+
+    def help_screen(self):
+        self.help = True
+        self.screen.fill(LIGHTGREY)
+        self.draw_text("SPACE bar or m - Press to give speech input.", self.title_font, 30, BLACK, WIDTH / 2,
+                       200, align="center")
+        self.draw_text("ESC - Quit the game.", self.title_font, 30, BLACK, WIDTH / 2,
+                       300, align="center")
+        self.draw_text("h - Close help screen.", self.title_font, 30, BLACK,
+                       WIDTH / 2, 400, align="center")
+        pg.display.flip()
+        self.wait_for_key()
+        keys = pg.key.get_pressed()
+        if keys[pg.K_ESCAPE]:
+            self.quit()
 
     def show_start_screen(self):
         #self.intro()
