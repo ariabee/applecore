@@ -145,97 +145,97 @@ class Game:
         self.wait_for_key()
 
     # UNCOMMENT FOR SPEECH VERSION
-    # def name_agent_screen(self):
-    #     name = ""
-    #     confirm = False
-    #     while not confirm:
-    #         #print("start test")
-    #         self.screen.fill(DARKGREEN)
-    #         self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 30, WHITE, WIDTH / 2,
-    #                        HEIGHT / 3, align="center")
-    #         self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
-    #         self.draw_text("I can listen to you while you press 'SPACE' or 'm'!", self.title_font, 30, WHITE, WIDTH / 2,
-    #                        HEIGHT * 2 / 3, align="center")
-    #         pg.display.flip()
-    #         pg.event.wait()
-    #         keys = pg.key.get_pressed()
-    #         if keys[pg.K_SPACE]:
-    #             self.draw_text("Listening...", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
-    #             pg.display.flip()
-    #             #print("listening...")
-    #             with sr.Microphone() as source:
-    #                 try:
-    #                     audio = r.listen(source, timeout=5)
-    #                     name = r.recognize_google(audio)
-    #                     #print("name assigned")
-    #                     self.screen.fill(DARKGREEN, rect=self.caption)
-    #                     pg.display.flip()
-    #                 except:
-    #                     #print("I did not hear anything")
-    #                     self.screen.fill(DARKGREEN, rect=self.caption)
-    #                     pg.display.flip()
-    #                     self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
-    #                                HEIGHT * 3 / 4, align="center")
-    #                     pg.display.flip()
-    #                     pg.time.delay(2000)
-    #         elif keys[pg.K_m]:
-    #         	#print("listening...")
-    #         	with sr.Microphone() as source:
-    #                 try:
-    #                     audio = r.listen(source, timeout=5)
-    #                     #print("audio")
-    #                     self.morgan_speech.saveAudio(audio)
-    #                     name = self.morgan_speech.getTranscription()
-    #                     self.screen.fill(DARKGREEN, rect=self.caption)
-    #                     pg.display.flip()
-    #                     #print("name assigned")
-    #                 except:
-    #                     #print("I did not hear anything")
-    #                     self.screen.fill(DARKGREEN, rect=self.caption)
-    #                     pg.display.flip()
-    #                     self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
-    #                                    HEIGHT * 3 / 4, align="center")
-    #                     pg.display.flip()
-    #                     pg.time.delay(2000)
-    #         elif keys[pg.K_ESCAPE]:
-    #             self.quit()
-    #         while name and not confirm:
-    #             #print("confirmation step")
-    #             self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
-    #             pg.display.flip()
-    #             pg.event.wait()
-    #             self.clock.tick(FPS)
-    #             keys = pg.key.get_pressed()
-    #             if keys[pg.K_RETURN]:
-    #                 confirm = True
-    #                 self.screen.fill(DARKGREEN)
-    #                 self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
-    #                                WIDTH / 2, HEIGHT * 3 / 4, align="center")
-    #                 pg.display.flip()
-    #                 pg.time.delay(2000)
-    #             elif keys[pg.K_n]:
-    #                 name = ""
-    #     return name.lower()
+    def name_agent_screen(self):
+        name = ""
+        confirm = False
+        while not confirm:
+            #print("start test")
+            self.screen.fill(DARKGREEN)
+            self.draw_text("What would you like to call me when teaching me tricks?", self.title_font, 30, WHITE, WIDTH / 2,
+                           HEIGHT / 3, align="center")
+            self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+            self.draw_text("I can listen to you while you press 'SPACE' or 'm'!", self.title_font, 30, WHITE, WIDTH / 2,
+                           HEIGHT * 2 / 3, align="center")
+            pg.display.flip()
+            pg.event.wait()
+            keys = pg.key.get_pressed()
+            if keys[pg.K_SPACE]:
+                self.draw_text("Listening...", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                pg.display.flip()
+                #print("listening...")
+                with sr.Microphone() as source:
+                    try:
+                        audio = r.listen(source, timeout=5)
+                        name = r.recognize_google(audio)
+                        #print("name assigned")
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
+                    except:
+                        #print("I did not hear anything")
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                   HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+                        pg.time.delay(2000)
+            elif keys[pg.K_m]:
+            	#print("listening...")
+            	with sr.Microphone() as source:
+                    try:
+                        audio = r.listen(source, timeout=5)
+                        #print("audio")
+                        self.morgan_speech.saveAudio(audio)
+                        name = self.morgan_speech.getTranscription()
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
+                        #print("name assigned")
+                    except:
+                        #print("I did not hear anything")
+                        self.screen.fill(DARKGREEN, rect=self.caption)
+                        pg.display.flip()
+                        self.draw_text("Hm? Can you please say that again?", self.title_font, 20, WHITE, WIDTH / 2,
+                                       HEIGHT * 3 / 4, align="center")
+                        pg.display.flip()
+                        pg.time.delay(2000)
+            elif keys[pg.K_ESCAPE]:
+                self.quit()
+            while name and not confirm:
+                #print("confirmation step")
+                self.draw_text("Do you want to call me "+name+"? ENTER/n", self.title_font, 20, WHITE, WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                pg.display.flip()
+                pg.event.wait()
+                self.clock.tick(FPS)
+                keys = pg.key.get_pressed()
+                if keys[pg.K_RETURN]:
+                    confirm = True
+                    self.screen.fill(DARKGREEN)
+                    self.draw_text("Terrific. '" + name + "' is my name!", self.title_font, 20, WHITE,
+                                   WIDTH / 2, HEIGHT * 3 / 4, align="center")
+                    pg.display.flip()
+                    pg.time.delay(2000)
+                elif keys[pg.K_n]:
+                    name = ""
+        return name.lower()
 
 
     def show_go_screen(self):
         pass
     
     # UNCOMMENT FOR TEXT VERSION
-    def name_agent_screen(self): # with text
-        # Give Young Apple a name
-        # name = g.name_agent()
-        # g.agent.give_name(name.lower())
-        confirm = "n"
-        while confirm.lower()=="n":
-            name = input("\nWhat would you like to call me when teaching me tricks? ")
-            confirm = input("Call me, '" + name + "'? (y/n) ")
-        print("Terrific. '" + name +"' is my name!" )
+    # def name_agent_screen(self): # with text
+    #     # Give Young Apple a name
+    #     # name = g.name_agent()
+    #     # g.agent.give_name(name.lower())
+    #     confirm = "n"
+    #     while confirm.lower()=="n":
+    #         name = input("\nWhat would you like to call me when teaching me tricks? ")
+    #         confirm = input("Call me, '" + name + "'? (y/n) ")
+    #     print("Terrific. '" + name +"' is my name!" )
 
-        self.agent.give_name(name.lower())
-        print("Teach me, " + name + ", to: climb the tree.")
+    #     self.agent.give_name(name.lower())
+    #     print("Teach me, " + name + ", to: climb the tree.")
 
-        return name.lower()
+    #     return name.lower()
 
     def name_agent(self):
         '''
@@ -262,7 +262,7 @@ g.new()
 g.show_start_screen()
 
 # Name the agent
-name = g.name_agent_screen()
+name = g.name_agent_screen() if DEBUG == False else "pie"
 g.agent.give_name(name)
 
 while True:

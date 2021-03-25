@@ -97,7 +97,7 @@ class Knowledge:
                 #TODO: update vec to be in a smaller radius/square relative to agent position 
                 random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
                 self.agent.dest = random_coords
-                self.agent.response = "moving somewhere"
+                #self.agent.response = "moving somewhere"
                 return("moving somewhere")
           
     def left(self, response_only=False):
@@ -106,7 +106,7 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.x -= 100
-            self.agent.response = "Going left..."
+            #self.agent.response = "Going left..."
             return("going left")
 
     def right(self, response_only=False):
@@ -115,7 +115,7 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.x += 100
-            self.agent.response = "Going right..."
+            #self.agent.response = "Going right..."
             return("going right")
 
     def up(self, response_only=False):
@@ -124,7 +124,7 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.y -= 100
-            self.agent.response = "Going up..."
+            #self.agent.response = "Going up..."
             return("going up")
 
     def down(self, response_only=False):
@@ -133,7 +133,7 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.y += 100
-            self.agent.response = "Going down..."
+            #self.agent.response = "Going down..."
             return("going down")
 
     def yes(self, response_only=False):
@@ -142,7 +142,7 @@ class Knowledge:
         else:
             # TODO: make this increase the weight of the action for a previous command?
             response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
-            self.agent.response = "yes! " + str(response)
+            #self.agent.response = "yes! " + str(response)
             return("yes! " + str(response))
 
     def no(self, response_only=False):
@@ -150,7 +150,7 @@ class Knowledge:
             return("oops :(")
         else:
             # TODO: make this decrease the weight of the action for a previous command?
-            self.agent.response = "oops :("
+            #self.agent.response = "oops :("
             return("oops :(")
 
     def tree(self, response_only=False):
