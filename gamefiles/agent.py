@@ -48,7 +48,6 @@ class Agent(pg.sprite.Sprite):
         self.current_action = []
         #self.responses = []
         self.response = ""
-        self.tasks = ["Go to the tree!"]
 
     def turn(self, direction):
         """
@@ -332,21 +331,6 @@ class Agent(pg.sprite.Sprite):
     #             print("responses: " + str(responses))
     #             popped = self.action_queue.pop(0)
     #             print("popped: " + str(popped))
-
-    def display_tasks(self):
-        textRect = pg.Rect(0, 0, 0, 0)
-        font = pg.font.Font(self.game.title_font, 15)
-        height = 0
-        for task in self.tasks:
-            textSurf = font.render(task, True, BLACK).convert_alpha()
-            textSize = textSurf.get_size()
-            height += textSize[0]
-            bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
-            textRect = bubbleSurf.get_rect()
-            bubbleSurf.fill(LIGHTGREY)
-            bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
-            textRect.center = ((700), (height))
-            self.game.screen.blit(bubbleSurf, textRect)
 
 
     def give_text_feedback(self):

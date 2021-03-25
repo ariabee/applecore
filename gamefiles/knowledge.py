@@ -156,7 +156,7 @@ class Knowledge:
 
     def tree(self, response_only=False):
         if response_only:
-            return "tree " + str(self.objects['tree']) # Return tree vector coordinates
+            return "I'm going to the tree..." # Return tree vector coordinates
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             tree_coords = self.objects['tree']
@@ -165,13 +165,13 @@ class Knowledge:
 
     def me(self, response_only=False):
         if response_only:
-            return "me " + str(self.objects['me']) # Return agent vector coordinates
+            return "me" # Return agent vector coordinates
         else:
             return self.objects['me'] # Return agent vector coordinates
 
     def previous(self, response_only=False):
         if response_only:
-            return "going back"
+            return "I'm going back..."
         else:
             #print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
             previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    

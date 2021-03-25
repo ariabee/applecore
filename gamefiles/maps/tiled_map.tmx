@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="25" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="19">
+<map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="25" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="20">
  <tileset firstgid="1" source="sprite_tiles.tsx"/>
  <layer id="1" name="ground" width="25" height="15">
   <data encoding="csv">
@@ -22,7 +22,8 @@
  </layer>
  <objectgroup id="3" name="objects">
   <object id="1" name="agent" x="240" y="336"/>
-  <object id="18" name="tree_top" x="161" y="87"/>
+  <object id="18" name="tree_trunk" x="115" y="149" width="95" height="25"/>
+  <object id="19" name="tree_top" x="151.5" y="72.5" width="20" height="15"/>
  </objectgroup>
  <objectgroup id="4" name="obstacles">
   <object id="6" name="water" x="386" y="32" width="415" height="62"/>
@@ -30,10 +31,9 @@
   <object id="8" name="water" x="544.5" y="131.5" width="254" height="31"/>
   <object id="9" name="water" x="641" y="161.5" width="159" height="31"/>
   <object id="10" x="672.5" y="196.5" width="175" height="31"/>
-  <object id="2" name="tree_trunk" x="126" y="53" width="69" height="109"/>
   <object id="16" name="game_border" x="353.5" y="-73.5" width="445" height="107"/>
  </objectgroup>
- <objectgroup id="5" name="game_borders">
+ <objectgroup id="5" name="game_borders" locked="1">
   <object id="14" name="game_border" x="-66" y="26.5" width="90" height="425"/>
   <object id="11" name="game_border" x="-63" y="452" width="912" height="85"/>
   <object id="15" name="game_border" x="777" y="228.5" width="72" height="223"/>
