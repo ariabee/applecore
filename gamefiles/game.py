@@ -12,8 +12,8 @@ from map import *
 from agent import *
 
 import random, time
-# import torch
-# import torchaudio
+import torch
+import torchaudio
 from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
 
@@ -51,6 +51,12 @@ class Game:
                 self.water = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
             if tile_object.name == "tree_top":
                 self.tree_top = Tree_top(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "bridge":
+                self.bridge = Bridge(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "bridge_crossed":
+                self.bridge_crossed = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "red_flowers":
+                self.red_flowers = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
         for tile_object in self.map.map_data.objects:
             if tile_object.name == "tree_trunk":
                 self.tree_trunk = Tree(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height,
@@ -60,10 +66,7 @@ class Game:
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
-        #task_list = ["Go to the tree!", "Climb the tree!"]
-        task_list = ["Climb the tree!"]
-        #task_goals = [self.tree_trunk.rect, self.tree_top.rect]
-        task_goals = [self.tree_top.rect]
+        task_goals = [self.tree_trunk.rect, self.tree_top.rect, self.bridge_crossed, self.red_flowers]
         self.tasks = Tasks(task_list, task_goals)
 
     def run(self):
@@ -94,10 +97,7 @@ class Game:
         self.all_sprites.update()
         self.camera.update(self.agent)
         if self.tasks.task_list:
-            goal_completed = self.tasks.check_goal_state(self.agent.rect)
-            if goal_completed:
-                self.agent.knowledge.add_to_learned(goal_completed, [[10]]) # NOTE: check on the index in actions
-                #TODO: hi susi. Tuple for (task string, [[10]]) in settings ("go to the tree", [[7]])
+            self.tasks.check_goal_state(self.agent.rect)
 
 
     def draw_grid(self):
@@ -117,17 +117,40 @@ class Game:
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
         self.display_tasks()
+        self.display_help()
         self.agent.give_text_feedback()
         pg.display.flip()
+
+    def display_help(self):
+        font = pg.font.Font(self.title_font, 15)
+        height = 5
+        textSurf = font.render("[H]elp", True, BLACK).convert_alpha()
+        textSize = textSurf.get_size()
+        bubbleSurf = pg.Surface((45, textSize[1] * 1.5))
+        height += textSize[1] * 2
+        textRect = bubbleSurf.get_rect()
+        bubbleSurf.fill(LIGHTGREY)
+        bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+        textRect.center = ((15), (height))
+        self.screen.blit(bubbleSurf, textRect)
 
     def display_tasks(self):
         #textRect = pg.Rect(0, 0, 0, 0)
         font = pg.font.Font(self.title_font, 15)
         height = 0
+        textSurf = font.render("Teach me how to...", True, BLACK).convert_alpha()
+        textSize = textSurf.get_size()
+        bubbleSurf = pg.Surface((180, textSize[1] * 2))
+        height += textSize[1] * 2
+        textRect = bubbleSurf.get_rect()
+        bubbleSurf.fill(LIGHTGREY)
+        bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+        textRect.center = ((700), (height))
+        self.screen.blit(bubbleSurf, textRect)
         for task in self.tasks.task_list:
             textSurf = font.render(task, True, BLACK).convert_alpha()
             textSize = textSurf.get_size()
-            bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+            bubbleSurf = pg.Surface((180, textSize[1] * 2))
             height += textSize[1] * 2
             textRect = bubbleSurf.get_rect()
             bubbleSurf.fill(LIGHTGREY)
@@ -138,7 +161,7 @@ class Game:
             textSurf = font.render(completed, True, GREEN).convert_alpha()
             textSize = textSurf.get_size()
             #height += textSize[0]
-            bubbleSurf = pg.Surface((textSize[0] * 2., textSize[1] * 2))
+            bubbleSurf = pg.Surface((180, textSize[1] * 2))
             height += textSize[1] * 2
             textRect = bubbleSurf.get_rect()
             bubbleSurf.fill(LIGHTGREY)
@@ -176,12 +199,14 @@ class Game:
     def help_screen(self):
         self.help = True
         self.screen.fill(LIGHTGREY)
-        self.draw_text("SPACE bar or m - Press to give speech input.", self.title_font, 30, BLACK, WIDTH / 2,
+        self.draw_text("SPACE bar or m - Press to give speech input. Google API", self.title_font, 30, BLACK, WIDTH / 2,
                        200, align="center")
+        self.draw_text("SPACE bar or m - Press to give speech input. Speechbrain", self.title_font, 30, BLACK, WIDTH / 2,
+                       250, align="center")
         self.draw_text("ESC - Quit the game.", self.title_font, 30, BLACK, WIDTH / 2,
                        300, align="center")
         self.draw_text("h - Close help screen.", self.title_font, 30, BLACK,
-                       WIDTH / 2, 400, align="center")
+                       WIDTH / 2, 350, align="center")
         pg.display.flip()
         self.wait_for_key()
         keys = pg.key.get_pressed()
@@ -203,7 +228,20 @@ class Game:
         pg.display.flip()
         self.wait_for_key()
 
-    # UNCOMMENT FOR SPEECH VERSION
+
+#     def name_agent_screen(self): # with text
+#         # Give Young Apple a name
+#         # name = g.name_agent()
+#         # g.agent.give_name(name.lower())
+#         confirm = "n"
+#         while confirm.lower()=="n":
+#             name = input("\nWhat would you like to call me when teaching me tricks? ")
+#             confirm = input("Call me, '" + name + "'? (y/n) ")
+#         print("Terrific. '" + name +"' is my name!" )
+
+#         self.agent.give_name(name.lower())
+#         print("Teach me, " + name + ", to: climb the tree.")
+
     def name_agent_screen(self):
         name = ""
         confirm = False
@@ -279,22 +317,6 @@ class Game:
 
     def show_go_screen(self):
         pass
-    
-    # UNCOMMENT FOR TEXT VERSION
-    # def name_agent_screen(self): # with text
-    #     # Give Young Apple a name
-    #     # name = g.name_agent()
-    #     # g.agent.give_name(name.lower())
-    #     confirm = "n"
-    #     while confirm.lower()=="n":
-    #         name = input("\nWhat would you like to call me when teaching me tricks? ")
-    #         confirm = input("Call me, '" + name + "'? (y/n) ")
-    #     print("Terrific. '" + name +"' is my name!" )
-
-    #     self.agent.give_name(name.lower())
-    #     print("Teach me, " + name + ", to: climb the tree.")
-
-    #     return name.lower()
 
     def name_agent(self):
         '''
@@ -315,18 +337,16 @@ class Game:
             * I'm ready to move around and learn new tricks.      *\n\
             *******************************************************\n")
 
-# Create the game object
+# create the game object
 g = Game()
 g.new()
 g.show_start_screen()
 
-# Name the agent
-name = g.name_agent_screen() 
-# name = g.name_agent_screen() if DEBUG == False else "pie"
-g.agent.give_name(name)
+name = g.name_agent_screen()
 
 while True:
     #g.new()
-    #g.agent.give_name(name)
+    g.agent.give_name(name)
+
     g.run()
     g.show_go_screen()

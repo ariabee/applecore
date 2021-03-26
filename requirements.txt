@@ -1,6 +1,5 @@
 torch==1.7.1
 torchaudio==0.7.2
-speechbrain==0.5.4
 SpeechRecognition==3.8.1
 PyAudio==0.2.11
 pygame==2.0.1

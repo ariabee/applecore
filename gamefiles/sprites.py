@@ -9,7 +9,6 @@ def collide_with_walls(sprite, group, dir):
     if dir == 'x':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
         if hits:
-            #print("hits x: " + str(hits))
             if hits[0].rect.centerx > sprite.hit_rect.centerx:
                 sprite.position.x = hits[0].rect.left - sprite.hit_rect.width / 2
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
@@ -19,7 +18,6 @@ def collide_with_walls(sprite, group, dir):
     if dir == 'y':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
         if hits:
-            #print("hits y: " + str(hits))
             if hits[0].rect.centery > sprite.hit_rect.centery:
                 sprite.position.y = hits[0].rect.top - sprite.hit_rect.height / 2
             if hits[0].rect.centery < sprite.hit_rect.centery:
@@ -27,7 +25,6 @@ def collide_with_walls(sprite, group, dir):
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.position.y
 
-    return hits
 
 class Obstacle(pg.sprite.Sprite):
     def __init__(self, game, x, y, w, h):
@@ -43,6 +40,7 @@ class Obstacle(pg.sprite.Sprite):
 class Tree(pg.sprite.Sprite):
     def __init__(self, game, x, y, w, h, top):
         pg.sprite.Sprite.__init__(self)
+        self.groups = game.all_sprites
         self.game = game
         self.rect = pg.Rect(x, y, w, h)
         self.x = x
@@ -54,6 +52,18 @@ class Tree(pg.sprite.Sprite):
 class Tree_top(pg.sprite.Sprite):
     def __init__(self, game, x, y, w, h):
         pg.sprite.Sprite.__init__(self)
+        self.groups = game.all_sprites
+        self.game = game
+        self.rect = pg.Rect(x, y, w, h)
+        self.x = x
+        self.y = y
+        self.rect.x = x
+        self.rect.y = y
+
+class Bridge(pg.sprite.Sprite):
+    def __init__(self, game, x, y, w, h):
+        pg.sprite.Sprite.__init__(self)
+        self.groups = game.all_sprites
         self.game = game
         self.rect = pg.Rect(x, y, w, h)
         self.x = x
@@ -65,18 +75,14 @@ class Tasks():
     def __init__(self, task_list, goals):
         self.task_list = task_list
         self.goals = goals
-        self.current_task = self.task_list[0]
-        self.current_goal = self.goals[0]
         self.completed = []
 
     def check_goal_state(self, cur_state):
-        self.current_task = self.task_list[0]
-        self.current_goal = self.goals[0]
-        if cur_state.colliderect(self.current_goal):
-            completed_task = self.task_list.pop(0)
-            self.goals.pop(0)
-            self.completed.append(completed_task)
-            return completed_task
+        for i, (name, goal) in enumerate(zip(self.task_list, self.goals)):
+            if cur_state.colliderect(goal):
+                completed_task = self.task_list.pop(i)
+                self.goals.pop(i)
+                self.completed.append(completed_task)
         # if agent position = goal state:
         # remove current task/goal from list
         # set next task/goal

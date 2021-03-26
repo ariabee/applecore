@@ -30,15 +30,10 @@ GRIDHEIGHT = HEIGHT / TILESIZE
 AGENT_SPEED = 30
 
 r = sr.Recognizer()
+# Tasks
+task_list = ["Go to the tree!", "Climb the tree!", "Cross the bridge!", "Find red flowers!"]
 
 # Hide torchaudio future package warning
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
-
-# Debug settings
-DEBUG = True
-
-def printif(text):
-    if DEBUG:
-        print(str(text))

@@ -104,9 +104,6 @@ class Transcript:
         actions_is_empty = not self.action_sequences
         return instruct_is_empty or actions_is_empty
 
-    def entry_number(self):
-        entry_number = len(self.instructions) - 1
-        return entry_number
 
     def save(self):
         '''
