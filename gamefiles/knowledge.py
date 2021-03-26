@@ -25,13 +25,14 @@ class Knowledge:
                          'yes': [5], 'no': [6], \
 						 'tree': [7], \
                          'you': [8], agent.name: [8], \
-                         'back': [9] }
+                         'back': [9],
+                         'bridge': [10]}
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
-        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous]
+        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous, self.bridge]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
-                        'me': agent.position} # vector of x, y posiiton on map
+                        'me': agent.position, 'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y)} # vector of x, y posiiton on map
         # self.confirmations = [self.yes, self.no]
         # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
 
@@ -153,6 +154,13 @@ class Knowledge:
         self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
         self.agent.response = "I'm going back..."
         return previous # Return previous agent vector coordinates
+
+    def bridge(self):
+        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+        bridge_coords = self.objects['bridge']
+        self.agent.dest = bridge_coords
+        self.agent.response = "I'm going to the bridge..."
+        return self.objects['bridge'] # Return tree vector coordinates
 
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]
