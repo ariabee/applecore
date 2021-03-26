@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="39">
+<map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="40">
  <tileset firstgid="1" source="sprite_tiles.tsx"/>
  <layer id="1" name="ground" width="50" height="30" locked="1">
   <data encoding="csv">
@@ -42,6 +42,7 @@
   <object id="20" name="bridge" x="401.333" y="697.333" width="316" height="14.6667"/>
   <object id="21" name="bridge_crossed" x="706.667" y="654.667" width="17.3333" height="110.667"/>
   <object id="22" name="red_flowers" x="1362.67" y="874.667" width="133.333" height="38.6667"/>
+  <object id="39" name="bridge_crossed_op" x="394" y="650" width="17.3333" height="110.667"/>
  </objectgroup>
  <objectgroup id="4" name="obstacles">
   <object id="25" name="water" x="690.667" y="-8" width="237.333" height="118.667"/>

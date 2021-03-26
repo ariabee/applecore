@@ -34,6 +34,7 @@ r = sr.Recognizer()
 
 # Tasks
 task_list = ["Go to the tree!", "Climb the tree!", "Cross the bridge!", "Find red flowers!"]
+task_commands = ["go to the tree", "climb the tree", "cross the bridge", "find red flowers"]
 task_index = [7, 11, 12, 13]
 
 # Hide torchaudio future package warning

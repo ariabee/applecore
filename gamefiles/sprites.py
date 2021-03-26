@@ -76,10 +76,11 @@ class Bridge(pg.sprite.Sprite):
         self.rect.y = y
 
 class Tasks():
-    def __init__(self, task_list, goals, index):
+    def __init__(self, task_list, goals, index, commands):
         self.task_list = task_list
         self.goals = goals
         self.index = index
+        self.commands = commands
         self.completed = []
 
     def check_goal_state(self, cur_state):
@@ -87,7 +88,10 @@ class Tasks():
             if cur_state.colliderect(goal):
                 completed_task = self.task_list.pop(i)
                 self.goals.pop(i)
+                index = self.index.pop(i)
+                command = self.commands.pop(i)
                 self.completed.append(completed_task)
+                return command, index
         # if agent position = goal state:
         # remove current task/goal from list
         # set next task/goal

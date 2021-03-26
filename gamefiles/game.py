@@ -64,7 +64,7 @@ class Game:
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
         task_goals = [self.tree_trunk.rect, self.tree_top.rect, self.bridge_crossed, self.red_flowers]
-        self.tasks = Tasks(task_list, task_goals, task_index)
+        self.tasks = Tasks(task_list, task_goals, task_index, task_commands)
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -94,7 +94,9 @@ class Game:
         self.all_sprites.update()
         self.camera.update(self.agent)
         if self.tasks.task_list:
-            self.tasks.check_goal_state(self.agent.rect)
+            goal_completed = self.tasks.check_goal_state(self.agent.rect)
+            if goal_completed:
+                self.agent.knowledge.add_to_learned(goal_completed[0], [[goal_completed[1]]])
 
 
     def draw_grid(self):

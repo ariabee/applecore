@@ -30,9 +30,15 @@ class Knowledge:
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
-        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous, self.bridge]
+        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous, self.bridge,
+                        self.climb_tree, self.cross_bridge, self.find_flowers]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
-                        'me': agent.position, 'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y)} # vector of x, y posiiton on map
+                        'me': agent.position, 'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
+                        'treetop': vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y), 'bridge_crossed':
+                        vec(self.agent.game.bridge_crossed.x, self.agent.game.bridge_crossed.y), 'flowers':
+                        vec(self.agent.game.red_flowers.x, self.agent.game.red_flowers.y)}
+        # vector of x, y posiiton on map
+        # vector of x, y posiiton on map
         # self.confirmations = [self.yes, self.no]
         # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
 
@@ -201,7 +207,7 @@ class Knowledge:
 
     # Define complex actions / game tasks:
 
-    def climb_tree(self):
+    def climb_tree(self, response_only=False):
     # def climb_the_tree(self, position, action_sequence):
         # (should perform actions, either predefined or passed into the function)
         # move agent to position
@@ -216,8 +222,21 @@ class Knowledge:
 
 
         #self.agent.position = vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)
+        if response_only:
+            return "climbing the tree"  # Return tree vector coordinates
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            treetop_coords = self.objects['treetop']
+            self.agent.dest = treetop_coords
+            return self.objects['treetop']  # Return treetop vector coordinates
 
-        return "climbing the tree"
+    def cross_bridge(self):
+        pass
+
+    def find_flowers(self):
+        pass
+
+
 
 
 
