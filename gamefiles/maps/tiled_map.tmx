@@ -59,11 +59,11 @@
   <object id="37" name="water" x="378.667" y="821.333" width="248" height="150.667"/>
   <object id="38" name="water" x="321.333" y="889.333" width="105.333" height="84"/>
  </objectgroup>
- <objectgroup id="5" name="game_borders" locked="1">
-  <object id="14" name="game_border" x="-66" y="-67.5" width="90" height="1077"/>
-  <object id="11" name="game_border" x="-65" y="926" width="1750" height="85"/>
-  <object id="15" name="game_border" x="1579" y="-61.5" width="104" height="1073"/>
-  <object id="12" name="game_border" x="-65.5" y="-64.5" width="1750" height="88"/>
+ <objectgroup id="5" name="game_borders">
+  <object id="14" name="game_border" x="-429.636" y="-412.955" width="453.636" height="1770.94"/>
+  <object id="11" name="game_border" x="-455.909" y="926" width="2571.21" height="427.424"/>
+  <object id="15" name="game_border" x="1579" y="-406.955" width="531.273" height="1763.91"/>
+  <object id="12" name="game_border" x="-435.197" y="-420.5" width="2516.67" height="444"/>
  </objectgroup>
  <layer id="2" name="trees" width="50" height="30" locked="1">
   <data encoding="csv">
