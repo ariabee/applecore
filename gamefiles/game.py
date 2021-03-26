@@ -123,13 +123,13 @@ class Game:
     def display_help(self):
         font = pg.font.Font(self.title_font, 15)
         height = 10
-        textSurf = font.render("[h]elp", True, BLACK).convert_alpha()
+        textSurf = font.render("Press H", True, BLACK).convert_alpha()
         textSize = textSurf.get_size()
-        bubbleSurf = pg.Surface((45, textSize[1] * 1.5))
+        bubbleSurf = pg.Surface((65, textSize[1] * 1.5))
         textRect = bubbleSurf.get_rect()
         bubbleSurf.fill(LIGHTGREY)
         bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
-        textRect.center = ((20), (height))
+        textRect.center = ((30), (height))
         self.screen.blit(bubbleSurf, textRect)
 
     def display_tasks(self):
@@ -197,14 +197,21 @@ class Game:
     def help_screen(self):
         self.help = True
         self.screen.fill(LIGHTGREY)
-        self.draw_text("SPACE bar or M - Press to give speech input. Google API", self.title_font, 30, BLACK, WIDTH / 2,
-                       200, align="center")
-        self.draw_text("SPACE bar or M - Press to give speech input. Speechbrain", self.title_font, 30, BLACK, WIDTH / 2,
-                       250, align="center")
-        self.draw_text("ESC - Quit the game.", self.title_font, 30, BLACK, WIDTH / 2,
-                       300, align="center")
-        self.draw_text("H - Close help screen.", self.title_font, 30, BLACK,
-                       WIDTH / 2, 350, align="center")
+        self.draw_text("SPACE bar - Press to give speech input. Google API", self.title_font, 25, BLACK, WIDTH / 2,
+                       75, align="center")
+        self.draw_text("M - Press to give speech input. Speechbrain", self.title_font, 25, BLACK, WIDTH / 2,
+                       100, align="center")
+        self.draw_text("I understand some basic commands like:", self.title_font, 30, BLACK,
+                       WIDTH / 2, 200, align="center")
+        self.draw_text("'Walk left!' 'Go somewhere!' 'Where are you?'", self.title_font, 30, BLACK,
+                       WIDTH / 2, 230, align="center")
+        self.draw_text("Try it out!",
+                       self.title_font, 30, BLACK,
+                       WIDTH / 2, 260, align="center")
+        self.draw_text("ESC - Quit the game.", self.title_font, 25, BLACK, WIDTH / 2,
+                       425, align="center")
+        self.draw_text("H - Close help screen.", self.title_font, 25, BLACK,
+                       WIDTH / 2, 450, align="center")
         pg.display.flip()
         self.wait_for_key()
         keys = pg.key.get_pressed()
@@ -215,7 +222,7 @@ class Game:
         #self.intro()
         self.screen.fill(DARKGREEN)
         self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 30, WHITE, WIDTH / 2,
-                       HEIGHT / 3, align="center")
+                       HEIGHT / 3, align="center") # draw(string, self.title_font, text size, text color, width, height, align='center')
         self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
         self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 30, WHITE, WIDTH / 2,
                        HEIGHT * 2 / 3, align="center")

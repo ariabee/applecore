@@ -230,11 +230,23 @@ class Knowledge:
             self.agent.dest = treetop_coords
             return self.objects['treetop']  # Return treetop vector coordinates
 
-    def cross_bridge(self):
-        pass
+    def cross_bridge(self, response_only=False):
+        if response_only:
+            return "crossing the bridge"
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            crossed_coords = self.objects['bridge_crossed']
+            self.agent.dest = crossed_coords
+            return self.objects['bridge_crossed']  # Return bridge crossed vector coordinates
 
-    def find_flowers(self):
-        pass
+    def find_flowers(self, response_only=False):
+        if response_only:
+            return "finding red flowers"
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            flower_coords = self.objects['flowers']
+            self.agent.dest = flower_coords
+            return self.objects['flowers']  # Return flower vector coordinates
 
 
 
