@@ -53,11 +53,12 @@ class Knowledge:
         E.g.: "go up there", [[0],[1],[3]] stored as "go up there" : [0,1,3]
         """
         self._learned.update({words : [a[0] for a in action_sequence]}) # [0, 3, 1, 2]
-        #print("~~learned: " + str(self._learned))
-        self.agent.response = "I learned to: " + str(words) # TODO: make this a return string instead, test it
+        printif("~~learned: " + str(self._learned))
+        return("I learned to: " + str(words))
 
     def link_prev_command(self):
-        prior_input, prior_actions = self.agent.transcript.previous()
+        prior_input, prior_actions = self.agent.transcript.current()
+        printif("prior input, actions: " + str(prior_input) + ", " + str(prior_actions))
         response = self.add_to_learned(prior_input, prior_actions) 
         return response
 
@@ -96,7 +97,9 @@ class Knowledge:
                 pass
             else:
                 #TODO: update vec to be in a smaller radius/square relative to agent position 
-                random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
+                x, y = int(self.agent.position.x), int(self.agent.position.y)
+                random_coords = vec( randint(x-30, x+30), randint(y-30, y+30) )
+                #random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
                 self.agent.dest = random_coords
                 #self.agent.response = "moving somewhere"
                 return("moving somewhere")
@@ -157,7 +160,7 @@ class Knowledge:
 
     def tree(self, response_only=False):
         if response_only:
-            return "I'm going to the tree..." # Return tree vector coordinates
+            return "to the tree" # Return tree vector coordinates
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             tree_coords = self.objects['tree']
@@ -172,7 +175,7 @@ class Knowledge:
 
     def previous(self, response_only=False):
         if response_only:
-            return "I'm going back..."
+            return "I'm going back"
         else:
             #print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
             previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
