@@ -43,8 +43,8 @@ class Obstacle(pg.sprite.Sprite):
 
 class Tree(pg.sprite.Sprite):
     def __init__(self, game, x, y, w, h, top):
-        pg.sprite.Sprite.__init__(self)
-        self.groups = game.all_sprites
+        # pg.sprite.Sprite.__init__(self)
+        # self.groups = game.all_sprites
         self.game = game
         self.rect = pg.Rect(x, y, w, h)
         self.x = x
