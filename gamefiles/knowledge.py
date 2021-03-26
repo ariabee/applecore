@@ -25,14 +25,14 @@ class Knowledge:
                          'yes': [5], 'no': [6], \
 						 'tree': [7], \
                          'you': [8], agent.name: [8], \
-                         'back': [9] }
+                         'back': [9],
+                         'bridge': [10]}
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
-        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous, self.climb_tree]
+        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous, self.bridge]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
-                        'me': agent.position, \
-                        'treetop': vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)} # vector of x, y posiiton on map
+                        'me': agent.position, 'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y)} # vector of x, y posiiton on map
         # self.confirmations = [self.yes, self.no]
         # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
 
@@ -61,6 +61,7 @@ class Knowledge:
         printif("prior input, actions: " + str(prior_input) + ", " + str(prior_actions))
         response = self.add_to_learned(prior_input, prior_actions) 
         return response
+          
 
     def set_direction(self):
         """
@@ -83,7 +84,8 @@ class Knowledge:
         # self.agent.vel.y *= 0.7071
         self.agent.vel.x *= 0.5
         self.agent.vel.y *= 0.5
-
+        
+      
     def move(self, destination=None, response_only=False):
         """
         moves in random direction
@@ -166,6 +168,15 @@ class Knowledge:
             tree_coords = self.objects['tree']
             self.agent.dest = tree_coords
             return self.objects['tree'] # Return tree vector coordinates
+    
+    def bridge(self, response_only=False):
+        if response_only:
+            return "I'm going to the bridge..."
+        else:
+            self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
+            bridge_coords = self.objects['bridge']
+            self.agent.dest = bridge_coords
+            return self.objects['bridge'] # Return bridge vector coordinates
 
     def me(self, response_only=False):
         if response_only:
@@ -182,6 +193,7 @@ class Knowledge:
             self.agent.dest = previous
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             return previous # Return previous agent vector coordinates
+          
 
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]
@@ -189,7 +201,7 @@ class Knowledge:
 
     # Define complex actions / game tasks:
 
-    def climb_tree(self, response_only=False):
+    def climb_tree(self):
     # def climb_the_tree(self, position, action_sequence):
         # (should perform actions, either predefined or passed into the function)
         # move agent to position
@@ -201,10 +213,6 @@ class Knowledge:
 
         # if standing in front of the trunk
         # just climb the tree
-        self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-        top_of_tree = self.objects['treetop']
-        self.agent.dest = top_of_tree
-        #return self.objects['treetop']
 
 
         #self.agent.position = vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)

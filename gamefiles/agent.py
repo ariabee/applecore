@@ -122,7 +122,7 @@ class Agent(pg.sprite.Sprite):
             with sr.Microphone() as source:
                 try:
                     audio = r.listen(source, timeout=5)
-                    self.instruction = r.recognize_google(audio)
+                    self.instruction = r.recognize_google(audio).lower()
                     printif("\nYou: " + str(self.instruction))
                 except:
                     self.instruction = ''
@@ -139,7 +139,7 @@ class Agent(pg.sprite.Sprite):
                 try:
                     audio = r.listen(source, timeout=5)
                     self.game.morgan_speech.saveAudio(audio)
-                    self.instruction = self.game.morgan_speech.getTranscription()
+                    self.instruction = self.game.morgan_speech.getTranscription().lower()
                     printif("You: " + str(self.instruction))
                 except:
                     printif("Hm? Can you please say that again?")
