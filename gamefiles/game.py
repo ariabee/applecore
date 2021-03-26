@@ -77,13 +77,13 @@ class Game:
 
     def quit(self):
         self.screen.fill(DARKGREEN)
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        self.screen.blit(self.agent.images['normal'], (WIDTH / 2 - 25, 210)) #TODO make this call from agent property
         pg.display.flip()
         pg.time.delay(200)
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px_wink.png")), (WIDTH / 2 - 25, 210))
+        self.screen.blit(self.agent.images['wink'], (WIDTH / 2 - 25, 210))
         pg.display.flip()
         pg.time.delay(200)
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        self.screen.blit(self.agent.images['normal'], (WIDTH / 2 - 25, 210))
         pg.display.flip()
         pg.time.delay(50)
         pg.quit()
@@ -322,7 +322,7 @@ g.show_start_screen()
 
 # Name the agent
 name = g.name_agent_screen() 
-# name = g.name_agent_screen() if DEBUG == False else "pie"
+#name = g.name_agent_screen() if DEBUG == False else "lil pie"
 g.agent.give_name(name)
 
 while True:

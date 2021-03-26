@@ -20,13 +20,14 @@ class Agent(pg.sprite.Sprite):
         self.groups = game.all_sprites
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.images = [pg.image.load(path.join(game.img_folder, "apple_64px.png")), \
-                       pg.image.load(path.join(game.img_folder, "apple_64px_blink.png"))]
+        self.images = {'normal': pg.image.load(path.join(game.img_folder, "apple_64px.png")).convert_alpha(), \
+                       'blink': pg.image.load(path.join(game.img_folder, "apple_64px_blink.png")).convert_alpha(), \
+                       'wink': pg.image.load(path.join(game.img_folder, "apple_64px_wink.png")).convert_alpha()}
         self.blinks = False
         self.blink_time = .25
         self.staring_time = 3
         self.start_time = time.time()
-        self.image = self.images[0]
+        self.image = self.images['normal']
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.hit_rect = self.rect
@@ -68,11 +69,11 @@ class Agent(pg.sprite.Sprite):
         end_time = time.time()
         elapsed = end_time - self.start_time
         if not self.blinks and elapsed > self.staring_time:
-            self.image = self.images[1]
+            self.image = self.images['blink']
             self.blinks = True
             self.start_time = end_time
         elif self.blinks and elapsed > self.blink_time:
-            self.image = self.images[0]
+            self.image = self.images['normal']
             self.blinks = False
             self.start_time = end_time
 
@@ -115,6 +116,7 @@ class Agent(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]:
             self.action_queue = []
+            self.response = ''
             self.vel = vec(0, 0)
             self.dest = vec_dest(self.position.x, self.position.y)
             with sr.Microphone() as source:
@@ -235,7 +237,7 @@ class Agent(pg.sprite.Sprite):
             for action in actions:
                 print("- action: " + str(action))
                 action_response = self.knowledge.actions[action](response_only=True)
-                responses += action_response + ". "
+                responses += action_response + " "
         
         self.response = responses
 
