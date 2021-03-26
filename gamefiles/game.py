@@ -67,7 +67,7 @@ class Game:
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
         task_goals = [self.tree_trunk.rect, self.tree_top.rect, self.bridge_crossed, self.red_flowers]
-        self.tasks = Tasks(task_list, task_goals)
+        self.tasks = Tasks(task_list, task_goals, task_index)
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -123,15 +123,14 @@ class Game:
 
     def display_help(self):
         font = pg.font.Font(self.title_font, 15)
-        height = 5
-        textSurf = font.render("[H]elp", True, BLACK).convert_alpha()
+        height = 10
+        textSurf = font.render("[h]elp", True, BLACK).convert_alpha()
         textSize = textSurf.get_size()
         bubbleSurf = pg.Surface((45, textSize[1] * 1.5))
-        height += textSize[1] * 2
         textRect = bubbleSurf.get_rect()
         bubbleSurf.fill(LIGHTGREY)
         bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
-        textRect.center = ((15), (height))
+        textRect.center = ((20), (height))
         self.screen.blit(bubbleSurf, textRect)
 
     def display_tasks(self):

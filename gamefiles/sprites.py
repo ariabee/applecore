@@ -72,13 +72,14 @@ class Bridge(pg.sprite.Sprite):
         self.rect.y = y
 
 class Tasks():
-    def __init__(self, task_list, goals):
+    def __init__(self, task_list, goals, index):
         self.task_list = task_list
         self.goals = goals
+        self.index = index
         self.completed = []
 
     def check_goal_state(self, cur_state):
-        for i, (name, goal) in enumerate(zip(self.task_list, self.goals)):
+        for i, (name, goal, index) in enumerate(zip(self.task_list, self.goals, self.index)):
             if cur_state.colliderect(goal):
                 completed_task = self.task_list.pop(i)
                 self.goals.pop(i)
