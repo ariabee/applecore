@@ -12,11 +12,8 @@ from map import *
 from agent import *
 
 import random, time
-import torch
-import torchaudio
 from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
-
 
 
 class Game:
@@ -198,13 +195,13 @@ class Game:
     def help_screen(self):
         self.help = True
         self.screen.fill(LIGHTGREY)
-        self.draw_text("SPACE bar or m - Press to give speech input. Google API", self.title_font, 30, BLACK, WIDTH / 2,
+        self.draw_text("SPACE bar or M - Press to give speech input. Google API", self.title_font, 30, BLACK, WIDTH / 2,
                        200, align="center")
-        self.draw_text("SPACE bar or m - Press to give speech input. Speechbrain", self.title_font, 30, BLACK, WIDTH / 2,
+        self.draw_text("SPACE bar or M - Press to give speech input. Speechbrain", self.title_font, 30, BLACK, WIDTH / 2,
                        250, align="center")
         self.draw_text("ESC - Quit the game.", self.title_font, 30, BLACK, WIDTH / 2,
                        300, align="center")
-        self.draw_text("h - Close help screen.", self.title_font, 30, BLACK,
+        self.draw_text("H - Close help screen.", self.title_font, 30, BLACK,
                        WIDTH / 2, 350, align="center")
         pg.display.flip()
         self.wait_for_key()
@@ -222,7 +219,7 @@ class Game:
                        HEIGHT * 2 / 3, align="center")
         self.draw_text("Press any key to start.", self.title_font, 20, LIGHTLIGHTGREY,
                        WIDTH / 2, HEIGHT * 13 / 16, align="center")
-        self.draw_text("Press 'escape' to exit.", self.title_font, 15, LIGHTLIGHTGREY,
+        self.draw_text("Press 'ESC' to exit.", self.title_font, 15, LIGHTLIGHTGREY,
                        WIDTH / 2, HEIGHT * 14 / 16, align="center")
         pg.display.flip()
         self.wait_for_key()

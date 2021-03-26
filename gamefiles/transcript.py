@@ -14,7 +14,6 @@ class Transcript:
     def __init__(self):
         '''
         Create a new transcript for the game.
-
         param: instructions, list of string instructions from beginning (0) to end (length - 1)
         param: action_sequences, list of list action sequences
         param: feedback, list of string feedback OR list of tuples(string response, string facial expression)
@@ -104,6 +103,9 @@ class Transcript:
         actions_is_empty = not self.action_sequences
         return instruct_is_empty or actions_is_empty
 
+    def entry_number(self):
+        entry_number = len(self.instructions) - 1
+        return entry_number
 
     def save(self):
         '''
@@ -117,3 +119,4 @@ class Transcript:
             if self.instructions and self.action_sequences:
                 for instruct, action in zip(self.instructions, self.action_sequences):
                     writer.writerow([str(instruct), str(action), ''])
+                    
