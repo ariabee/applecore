@@ -9,6 +9,7 @@ from transcript import Transcript
 import math
 from os import path
 import time
+import random
 
 vec = pg.math.Vector2
 vec_dest = pg.math.Vector2
@@ -39,6 +40,7 @@ class Agent(pg.sprite.Sprite):
         self.instruction = ""
         self.orientation = "front" # left, right, front, back
         self.name = "Young Apple"
+        self.silence_responses = ["can you please say that again?", "oops, I missed that. say again?", "I heard *silence*", "repeat again, please?", "could you say again?", "I didn't hear that, try again?", "I heard *silence*"]
         self.knowledge = Knowledge(self)
         self.transcript = Transcript()
 
@@ -129,6 +131,7 @@ class Agent(pg.sprite.Sprite):
                     printif("\nYou: " + str(self.instruction))
                 except:
                     self.instruction = ''
+                    self.response = random.choice(self.silence_responses)
                     printif("\nYou: *silence*")
                     printif("(Hm? Can you please say that again?)")
 
@@ -146,6 +149,7 @@ class Agent(pg.sprite.Sprite):
                     self.instruction = self.game.morgan_speech.getTranscription().lower()
                     printif("You: " + str(self.instruction))
                 except:
+                    self.response = random.choice(self.silence_responses)
                     printif("Hm? Can you please say that again?")
                     self.instruction = ''
 
@@ -247,8 +251,13 @@ class Agent(pg.sprite.Sprite):
                 action_response = self.knowledge.actions[action](response_only=True)
                 responses += action_response + " "
         
-        self.response = responses
+        if responses:
+            self.response = responses
+        else:
+            # Agent responds to fully unfamiliar phrases by repeating instruction
+            self.response = "how do I " + self.instruction + "?" 
 
+        printif("recognized: " + str(self.recognized_phrases) + ", " + str(self.recognized_words))
         printif(self.name + ": " + str(self.response))
         return self.response
 

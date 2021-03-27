@@ -8,7 +8,6 @@ from transcript import Transcript
 from settings import *
 from random import randint
 import math
-from io import StringIO
 import pygame as pg
 
 vec = pg.math.Vector2
