@@ -235,19 +235,21 @@ class Game:
         pg.display.flip()
         self.wait_for_key()
 
-
-#     def name_agent_screen(self): # with text
-#         # Give Young Apple a name
-#         # name = g.name_agent()
-#         # g.agent.give_name(name.lower())
-#         confirm = "n"
-#         while confirm.lower()=="n":
-#             name = input("\nWhat would you like to call me when teaching me tricks? ")
-#             confirm = input("Call me, '" + name + "'? (y/n) ")
-#         print("Terrific. '" + name +"' is my name!" )
-
-#         self.agent.give_name(name.lower())
-#         print("Teach me, " + name + ", to: climb the tree.")
+    # UNCOMMENT FOR TEXT VERSION
+    # def name_agent_screen(self): # with text
+    #     # Give Young Apple a name
+    #     # name = g.name_agent()
+    #     # g.agent.give_name(name.lower())
+    #     confirm = "n"
+    #     while confirm.lower()=="n":
+    #         name = input("\nWhat would you like to call me when teaching me tricks? ")
+    #         confirm = input("Call me, '" + name + "'? (y/n) ")
+    #     print("Terrific. '" + name +"' is my name!" )
+    #
+    #     self.agent.give_name(name.lower())
+    #     print("Teach me, " + name + ", to: climb the tree.")
+    #
+    #     return name.lower()
 
     def name_agent_screen(self):
         name = ""
@@ -321,7 +323,6 @@ class Game:
                     name = ""
         return name.lower()
 
-
     def show_go_screen(self):
         pass
 
@@ -356,7 +357,7 @@ g.agent.give_name(name)
 
 while True:
     #g.new()
-    g.agent.give_name(name)
+    #g.agent.give_name(name)
 
     g.run()
     g.show_go_screen()

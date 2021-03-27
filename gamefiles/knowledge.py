@@ -23,17 +23,18 @@ class Knowledge:
 						 'right': [2], \
                          'up': [3], \
                          'down': [4], \
-                         'yes': [5], 'no': [6], \
+                         'yes': [5], 'no': [6], 'bad': [6], \
 						 'tree': [7], \
                          'you': [8], agent.name: [8], \
                          'back': [9],
-                         'bridge': [10]}
+                         'bridge': [10],
+                         'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 'great': [14]}
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
         self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, 
                         self.tree, self.me, self.previous, self.bridge, 
-                        self.climb_tree, self.cross_bridge, self.find_flowers]
+                        self.climb_tree, self.cross_bridge, self.find_flowers, self.compliment]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y),
                         'me': agent.position,
                         'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
@@ -242,7 +243,14 @@ class Knowledge:
             self.agent.dest = flower_coords
             return self.objects['flowers']  # Return flower vector coordinates
 
-    # #IN PROGRESS BELOW
+    def compliment(self, response_only=False, phrase=""):
+        if response_only:
+            #return "thanks, you're " + phrase
+            return "thank you"
+        else:
+            return "thank you"
+
+    # #IN PROGRESS
     # def init_action_key(self):
     #     KEY = "self.move, self.left, self.right, self.up, self.down, self.yes, self.no, \
     #            self.tree, self.me, self.previous, self.bridge, self.climb_tree, self.cross_bridge,self.find_flowers"
