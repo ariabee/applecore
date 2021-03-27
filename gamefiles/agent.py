@@ -207,7 +207,7 @@ class Agent(pg.sprite.Sprite):
         Currently composes actions into list of single actions. Returns list.
         (Here is where semantics are helpful...:))
         Composes the actions into a meaningful sequence. 
-        Returns the composed action sequence (a list of integer lists) e.g. [[1],[0,3,1],[2]]
+        Returns the composed action sequence (a list of integer lists) e.g. [[1],[0],[3]]
         """
         single_actions = []
         printif("composing actions... " + str(actions))
@@ -215,12 +215,19 @@ class Agent(pg.sprite.Sprite):
             for action in action_list:            
                 single_actions.append([action]) # note that action is still inside a list e.g. [1]
 
-        # # remove move action if a destination is given
-        # move = None
-        # if action == 0:
-        #             move = (action, 
-        #         if move and action in [1,2,3,4,7,9]:
-        #             # check for a destination with move
+        # Remove move action if a destination action is given
+        # TODO: have this make use of Action object type properties 
+        move_int = 0
+        move = False
+        dest = False
+        for action in single_actions:
+            if action[0] == move_int: # move function
+                move = True
+            elif action[0] in [1,2,3,4,7,9,10]: # destination function
+                dest = True
+        if move and dest:
+            while [move_int] in single_actions:
+                single_actions.remove([move_int])
         
         printif("composed: " + str(single_actions))
         return single_actions
