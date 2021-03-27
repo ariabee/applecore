@@ -12,11 +12,8 @@ from map import *
 from agent import *
 
 import random, time
-# import torch
-# import torchaudio
 from asr.speech_to_text import SpeechToText
 import speech_recognition as sr
-
 
 
 class Game:
@@ -25,6 +22,7 @@ class Game:
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
+        self.help = False # help screen variable
         self.load_data()
 
     def load_data(self):
@@ -50,14 +48,23 @@ class Game:
                 self.water = Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
             if tile_object.name == "tree_top":
                 self.tree_top = Tree_top(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "bridge":
+                self.bridge = Bridge(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "bridge_crossed":
+                self.bridge_crossed = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+            if tile_object.name == "red_flowers":
+                self.red_flowers = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+        for tile_object in self.map.map_data.objects:
             if tile_object.name == "tree_trunk":
                 self.tree_trunk = Tree(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height,
-                                           self.tree_top)
+                                       self.tree_top)
         for tile_object in self.map.map_data.objects:
             if tile_object.name == "agent":
                 self.agent = Agent(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
         self.caption = pg.Rect(0, HEIGHT * 0.72, WIDTH, 40)
+        task_goals = [self.tree_trunk.rect, self.tree_top.rect, self.bridge_crossed, self.red_flowers]
+        self.tasks = Tasks(task_list, task_goals, task_index, task_commands)
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -70,13 +77,13 @@ class Game:
 
     def quit(self):
         self.screen.fill(DARKGREEN)
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        self.screen.blit(self.agent.images['normal'], (WIDTH / 2 - 25, 210)) #TODO make this call from agent property
         pg.display.flip()
         pg.time.delay(200)
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px_wink.png")), (WIDTH / 2 - 25, 210))
+        self.screen.blit(self.agent.images['wink'], (WIDTH / 2 - 25, 210))
         pg.display.flip()
         pg.time.delay(200)
-        self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
+        self.screen.blit(self.agent.images['normal'], (WIDTH / 2 - 25, 210))
         pg.display.flip()
         pg.time.delay(50)
         pg.quit()
@@ -86,6 +93,11 @@ class Game:
         # update portion of the game loop
         self.all_sprites.update()
         self.camera.update(self.agent)
+        if self.tasks.task_list:
+            goal_completed = self.tasks.check_goal_state(self.agent.rect)
+            if goal_completed:
+                self.agent.knowledge.add_to_learned(goal_completed[0], [[goal_completed[1]]])
+
 
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
@@ -103,9 +115,60 @@ class Game:
         self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
-        self.agent.display_tasks()
+        self.display_tasks()
+        self.display_help()
         self.agent.give_text_feedback()
         pg.display.flip()
+
+    def display_help(self):
+        font = pg.font.Font(self.title_font, 15)
+        height = 10
+        textSurf = font.render("Press H", True, BLACK).convert_alpha()
+        textSize = textSurf.get_size()
+        bubbleSurf = pg.Surface((65, textSize[1] * 1.5))
+        textRect = bubbleSurf.get_rect()
+        bubbleSurf.fill(LIGHTGREY)
+        bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+        textRect.center = ((40), (height+20))
+        self.screen.blit(bubbleSurf, textRect)
+
+    def display_tasks(self):
+        #textRect = pg.Rect(0, 0, 0, 0)
+        font = pg.font.Font(self.title_font, 15)
+        title_font = pg.font.Font(self.title_font, 15)
+        title_font.set_bold
+        height = 0
+        textSurf = title_font.render("Teach me how to...", True, BLACK).convert_alpha()
+        textSize = textSurf.get_size()
+        bubbleSurf = pg.Surface((180, textSize[1] * 2))
+        height += textSize[1] * 2
+        textRect = bubbleSurf.get_rect()
+        bubbleSurf.fill(LIGHTGREY)
+        bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+        textRect.center = ((700), (height))
+        self.screen.blit(bubbleSurf, textRect)
+        for task in self.tasks.task_list:
+            textSurf = font.render(task, True, BLACK).convert_alpha()
+            textSize = textSurf.get_size()
+            bubbleSurf = pg.Surface((180, textSize[1] * 2))
+            height += textSize[1] * 2
+            textRect = bubbleSurf.get_rect()
+            bubbleSurf.fill(LIGHTGREY)
+            bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+            textRect.center = ((700), (height))
+            self.screen.blit(bubbleSurf, textRect)
+        for completed in self.tasks.completed:
+            textSurf = font.render(completed, True, GREEN).convert_alpha()
+            textSize = textSurf.get_size()
+            #height += textSize[0]
+            bubbleSurf = pg.Surface((180, textSize[1] * 2))
+            height += textSize[1] * 2
+            textRect = bubbleSurf.get_rect()
+            bubbleSurf.fill(LIGHTGREY)
+            bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
+            textRect.center = ((700), (height))
+            self.screen.blit(bubbleSurf, textRect)
+
 
     def wait_for_key(self):
         pg.event.wait()
@@ -128,18 +191,46 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.quit()
+                if event.key == pg.K_h and not self.help:
+                    self.help_screen()
+                if event.key == pg.K_h and self.help:
+                    self.help = False
+
+    def help_screen(self):
+        self.help = True
+        self.screen.fill(LIGHTGREY)
+        self.draw_text("SPACE bar - Press to give speech input. Google API", self.title_font, 25, BLACK, WIDTH / 2,
+                       75, align="center")
+        self.draw_text("M - Press to give speech input. Speechbrain", self.title_font, 25, BLACK, WIDTH / 2,
+                       100, align="center")
+        self.draw_text("I understand some basic commands like:", self.title_font, 30, BLACK,
+                       WIDTH / 2, 200, align="center")
+        self.draw_text("'Walk left!' 'Go somewhere!' 'Where are you?'", self.title_font, 30, BLACK,
+                       WIDTH / 2, 230, align="center")
+        self.draw_text("Try it out!",
+                       self.title_font, 30, BLACK,
+                       WIDTH / 2, 260, align="center")
+        self.draw_text("ESC - Quit the game.", self.title_font, 25, BLACK, WIDTH / 2,
+                       425, align="center")
+        self.draw_text("H - Close help screen.", self.title_font, 25, BLACK,
+                       WIDTH / 2, 450, align="center")
+        pg.display.flip()
+        self.wait_for_key()
+        keys = pg.key.get_pressed()
+        if keys[pg.K_ESCAPE]:
+            self.quit()
 
     def show_start_screen(self):
         #self.intro()
         self.screen.fill(DARKGREEN)
         self.draw_text("Hello, and welcome to the world of me, Young Apple.", self.title_font, 30, WHITE, WIDTH / 2,
-                       HEIGHT / 3, align="center")
+                       HEIGHT / 3, align="center") # draw(string, self.title_font, text size, text color, width, height, align='center')
         self.screen.blit(pg.image.load(path.join(self.img_folder, "apple_64px.png")), (WIDTH / 2 - 25, 210))
         self.draw_text("I'm ready to move around and learn new tricks.", self.title_font, 30, WHITE, WIDTH / 2,
                        HEIGHT * 2 / 3, align="center")
         self.draw_text("Press any key to start.", self.title_font, 20, LIGHTLIGHTGREY,
                        WIDTH / 2, HEIGHT * 13 / 16, align="center")
-        self.draw_text("Press 'escape' to exit.", self.title_font, 15, LIGHTLIGHTGREY,
+        self.draw_text("Press 'ESC' to exit.", self.title_font, 15, LIGHTLIGHTGREY,
                        WIDTH / 2, HEIGHT * 14 / 16, align="center")
         pg.display.flip()
         self.wait_for_key()
@@ -258,7 +349,10 @@ g = Game()
 g.new()
 g.show_start_screen()
 
-name = g.name_agent_screen()
+# Name the agent
+#name = g.name_agent_screen() 
+name = g.name_agent_screen() if DEBUG == False else "lil pie"
+g.agent.give_name(name)
 
 while True:
     #g.new()

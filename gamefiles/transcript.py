@@ -8,20 +8,21 @@
 # TODO: after baseline, expand and refine linguistic feedback property
 from datetime import datetime
 import csv
+from settings import *
 
 class Transcript:
 
     def __init__(self):
         '''
         Create a new transcript for the game.
-
         param: instructions, list of string instructions from beginning (0) to end (length - 1)
         param: action_sequences, list of list action sequences
         param: feedback, list of string feedback OR list of tuples(string response, string facial expression)
         '''
         self.instructions = []
         self.action_sequences = []
-        self.feedback = [] # Will be added after baseline.
+        self.feedback = []
+        self.keys = [] # Which key was pressed to initiate speech recognition
         self.timestamp = self.__init_timestamp()
         self.file = 'transcript_' + self.timestamp + '.csv'
         self.file_path = 'transcripts/' + self.file
@@ -46,12 +47,16 @@ class Transcript:
         self.action_sequences.append(actions)
 
 
-    def store(self, instruct="", actions=[]):
+    def store(self, key="", instruct="", actions=[], response = ""):
         """
         Store instructions: string, and actions: list in transcript.
         """
+        printif("storing in transcript: " + str(key) + ", " + str(instruct) + ", " + str(actions) + ", " + str(response))
+        self.keys.append(key)
         self.instructions.append(instruct)
         self.action_sequences.append(actions)
+        self.feedback.append(response)
+        printif("transcript: \n-instructions " + str(self.instructions) + "\n-actions " + str(self.action_sequences))
 
 
     def previous_instruction(self):
@@ -104,6 +109,9 @@ class Transcript:
         actions_is_empty = not self.action_sequences
         return instruct_is_empty or actions_is_empty
 
+    def entry_number(self):
+        entry_number = len(self.instructions) - 1
+        return entry_number
 
     def save(self):
         '''
@@ -112,8 +120,8 @@ class Transcript:
         # TODO: update to also save responses/feedback
         with open(self.file_path, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Instruction', 'Actions', 'Response'])
+            writer.writerow(['Key_Pressed','Instruction', 'Actions', 'Response'])
 
             if self.instructions and self.action_sequences:
-                for instruct, action in zip(self.instructions, self.action_sequences):
-                    writer.writerow([str(instruct), str(action), ''])
+                for key, instruct, action, response in zip(self.keys, self.instructions, self.action_sequences, self.feedback):
+                    writer.writerow([str(key), str(instruct), str(action), str(response)])
