@@ -43,7 +43,7 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
 # Debug settings
-DEBUG = True
+DEBUG = False
 
 def printif(text):
     if DEBUG:
