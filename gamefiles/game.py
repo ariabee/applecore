@@ -23,6 +23,7 @@ class Game:
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         self.help = False # help screen variable
+        self.goal_completed = None
         self.load_data()
 
     def load_data(self):
@@ -94,9 +95,12 @@ class Game:
         self.all_sprites.update()
         self.camera.update(self.agent)
         if self.tasks.task_list:
-            goal_completed = self.tasks.check_goal_state(self.agent.rect)
-            if goal_completed:
-                self.agent.knowledge.add_to_learned(goal_completed[0], [[goal_completed[1]]])
+            self.goal_completed = self.tasks.check_goal_state(self.agent.rect)
+            if self.goal_completed:
+                self.agent.knowledge.add_to_learned(self.goal_completed[0], [[self.goal_completed[1]]])
+                #self.agent.success = True
+        else:
+            self.goal_completed = None
 
 
     def draw_grid(self):
@@ -199,21 +203,21 @@ class Game:
     def help_screen(self):
         self.help = True
         self.screen.fill(LIGHTGREY)
-        self.draw_text("SPACE bar - Press to give speech input. Google API", self.title_font, 25, BLACK, WIDTH / 2,
+        self.draw_text("SPACE bar - Press & hold to give speech input. Uses Google API", self.title_font, 25, BLACK, WIDTH / 2,
                        75, align="center")
-        self.draw_text("M - Press to give speech input. Speechbrain", self.title_font, 25, BLACK, WIDTH / 2,
-                       100, align="center")
+        self.draw_text("M - Press & hold to give speech input. Uses SpeechBrain", self.title_font, 25, BLACK, WIDTH / 2,
+                       105, align="center")
         self.draw_text("I understand some basic commands like:", self.title_font, 30, BLACK,
                        WIDTH / 2, 200, align="center")
         self.draw_text("'Walk left!' 'Go somewhere!' 'Where are you?'", self.title_font, 30, BLACK,
-                       WIDTH / 2, 230, align="center")
+                       WIDTH / 2, 235, align="center")
         self.draw_text("Try it out!",
                        self.title_font, 30, BLACK,
-                       WIDTH / 2, 260, align="center")
+                       WIDTH / 2, 265, align="center")
         self.draw_text("ESC - Quit the game.", self.title_font, 25, BLACK, WIDTH / 2,
                        425, align="center")
         self.draw_text("H - Close help screen.", self.title_font, 25, BLACK,
-                       WIDTH / 2, 450, align="center")
+                       WIDTH / 2, 455, align="center")
         pg.display.flip()
         self.wait_for_key()
         keys = pg.key.get_pressed()

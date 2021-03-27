@@ -28,13 +28,15 @@ class Knowledge:
                          'you': [8], agent.name: [8], \
                          'back': [9],
                          'bridge': [10],
-                         'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 'great': [14]}
+                         'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 'great': [14],
+                         'hi': [15], 'hello': [15], 'hey': [15]}
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
         self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, 
                         self.tree, self.me, self.previous, self.bridge, 
-                        self.climb_tree, self.cross_bridge, self.find_flowers, self.compliment]
+                        self.climb_tree, self.cross_bridge, self.find_flowers, self.compliment,
+                        self.hello]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y),
                         'me': agent.position,
                         'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
@@ -249,6 +251,12 @@ class Knowledge:
             return "thank you"
         else:
             return "thank you"
+
+    def hello(self, response_only=False, phrase=""):
+        if response_only:
+            return "hello to you too"
+        else:
+            return "hello to you too"
 
     # #IN PROGRESS
     # def init_action_key(self):

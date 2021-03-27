@@ -323,7 +323,6 @@ class Agent(pg.sprite.Sprite):
             #self.transcript.store(self.instruction, self.knowledge.readable_actions(self.action_queue.copy()), self.response)
             self.transcript.store(self.key_used, self.instruction, self.action_queue.copy(), self.response)
 
-
             # Reset instruction
             self.instruction = ""
 
@@ -341,6 +340,11 @@ class Agent(pg.sprite.Sprite):
         if not still_moving and self.action_queue:
             printif("popping action now...")
             self.pop_action()
+        
+        # If task completed, save the task string to the transcript
+        if self.game.goal_completed:
+            self.transcript.store_success(self.game.goal_completed[0])
 
+        
         self.transcript.save()
         

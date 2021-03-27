@@ -22,6 +22,7 @@ class Transcript:
         self.instructions = []
         self.action_sequences = []
         self.feedback = []
+        self.success_history = []
         self.keys = [] # Which key was pressed to initiate speech recognition
         self.timestamp = self.__init_timestamp()
         self.file = 'transcript_' + self.timestamp + '.csv'
@@ -47,15 +48,24 @@ class Transcript:
         self.action_sequences.append(actions)
 
 
-    def store(self, key="", instruct="", actions=[], response = ""):
+    def store_success(self, success_task):
+        """
+        Stores the achieved task string in the current transcript entry.
+        """
+        entry = len(self.success_history) - 1
+        self.success_history[entry] = "success: " + success_task
+
+
+    def store(self, key="", instruct="", actions=[], response="", success=""):
         """
         Store instructions: string, and actions: list in transcript.
         """
-        printif("storing in transcript: " + str(key) + ", " + str(instruct) + ", " + str(actions) + ", " + str(response))
+        printif("storing in transcript: " + str(key) + ", " + str(instruct) + ", " + str(actions) + ", " + str(response) + ", " + str(success))
         self.keys.append(key)
         self.instructions.append(instruct)
         self.action_sequences.append(actions)
         self.feedback.append(response)
+        self.success_history.append(success)
         printif("transcript: \n-instructions " + str(self.instructions) + "\n-actions " + str(self.action_sequences))
 
 
@@ -120,8 +130,8 @@ class Transcript:
         # TODO: update to also save responses/feedback
         with open(self.file_path, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Key_Pressed','Instruction', 'Actions', 'Response'])
+            writer.writerow(['Key_Pressed','Instruction', 'Actions', 'Response', 'Task Achieved'])
 
             if self.instructions and self.action_sequences:
-                for key, instruct, action, response in zip(self.keys, self.instructions, self.action_sequences, self.feedback):
-                    writer.writerow([str(key), str(instruct), str(action), str(response)])
+                for key, instruct, action, response, success in zip(self.keys, self.instructions, self.action_sequences, self.feedback, self.success_history):
+                    writer.writerow([str(key), str(instruct), str(action), str(response), str(success)])
