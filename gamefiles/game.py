@@ -129,14 +129,16 @@ class Game:
         textRect = bubbleSurf.get_rect()
         bubbleSurf.fill(LIGHTGREY)
         bubbleSurf.blit(textSurf, textSurf.get_rect(center=textRect.center))
-        textRect.center = ((30), (height))
+        textRect.center = ((40), (height+20))
         self.screen.blit(bubbleSurf, textRect)
 
     def display_tasks(self):
         #textRect = pg.Rect(0, 0, 0, 0)
         font = pg.font.Font(self.title_font, 15)
+        title_font = pg.font.Font(self.title_font, 15)
+        title_font.set_bold
         height = 0
-        textSurf = font.render("Teach me how to...", True, BLACK).convert_alpha()
+        textSurf = title_font.render("Teach me how to...", True, BLACK).convert_alpha()
         textSize = textSurf.get_size()
         bubbleSurf = pg.Surface((180, textSize[1] * 2))
         height += textSize[1] * 2
@@ -348,8 +350,8 @@ g.new()
 g.show_start_screen()
 
 # Name the agent
-name = g.name_agent_screen() 
-#name = g.name_agent_screen() if DEBUG == False else "lil pie"
+#name = g.name_agent_screen() 
+name = g.name_agent_screen() if DEBUG == False else "lil pie"
 g.agent.give_name(name)
 
 while True:
