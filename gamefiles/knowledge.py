@@ -8,6 +8,7 @@ from transcript import Transcript
 from settings import *
 from random import randint
 import math
+from io import StringIO
 import pygame as pg
 
 vec = pg.math.Vector2
@@ -17,6 +18,7 @@ class Knowledge:
     def __init__(self, agent):
         self.agent = agent
         # TODO: might need to make every word have a function. or a value of category, index in category
+        # TODO: make action events object instances of a class
         self._lexicon = {'move': [0], 'run': [0], 'go': [0], 'walk': [0], 'come': [0], \
                          'left': [1], \
 						 'right': [2], \
@@ -30,17 +32,17 @@ class Knowledge:
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
-        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, self.tree, self.me, self.previous, self.bridge,
+        self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, 
+                        self.tree, self.me, self.previous, self.bridge, 
                         self.climb_tree, self.cross_bridge, self.find_flowers]
-        self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y), \
-                        'me': agent.position, 'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
-                        'treetop': vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y), 'bridge_crossed':
-                        vec(self.agent.game.bridge_crossed.x, self.agent.game.bridge_crossed.y), 'flowers':
-                        vec(self.agent.game.red_flowers.x, self.agent.game.red_flowers.y)}
-        # vector of x, y posiiton on map
-        # vector of x, y posiiton on map
-        # self.confirmations = [self.yes, self.no]
-        # self.categories = {"action": self.actions, "object": self.objects, "confirm": self.confirmations}
+        self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y),
+                        'me': agent.position,
+                        'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
+                        'treetop': vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y), 
+                        'bridge_crossed': vec(self.agent.game.bridge_crossed.x, self.agent.game.bridge_crossed.y), 
+                        'flowers': vec(self.agent.game.red_flowers.x, self.agent.game.red_flowers.y)}
+        
+        # self.action_key = self.init_action_key()
 
     def lexicon(self):
         return self._lexicon
@@ -63,7 +65,7 @@ class Knowledge:
         return("I learned to: " + str(words))
 
     def link_prev_command(self):
-        prior_input, prior_actions = self.agent.transcript.current()
+        prior_input, prior_actions = self.agent.transcript.previous()
         printif("prior input, actions: " + str(prior_input) + ", " + str(prior_actions))
         response = self.add_to_learned(prior_input, prior_actions) 
         return response
@@ -106,10 +108,9 @@ class Knowledge:
             else:
                 #TODO: update vec to be in a smaller radius/square relative to agent position 
                 x, y = int(self.agent.position.x), int(self.agent.position.y)
-                random_coords = vec( randint(x-30, x+30), randint(y-30, y+30) )
+                random_coords = vec( randint(x-40, x+40), randint(y-40, y+40) )
                 #random_coords = vec(randint(0, self.agent.game.map.width), randint(0, self.agent.game.map.height))
                 self.agent.dest = random_coords
-                #self.agent.response = "moving somewhere"
                 return("moving somewhere")
           
     def left(self, response_only=False):
@@ -118,7 +119,6 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.x -= 100
-            #self.agent.response = "Going left..."
             return("going left")
 
     def right(self, response_only=False):
@@ -127,7 +127,6 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.x += 100
-            #self.agent.response = "Going right..."
             return("going right")
 
     def up(self, response_only=False):
@@ -136,7 +135,6 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.y -= 100
-            #self.agent.response = "Going up..."
             return("going up")
 
     def down(self, response_only=False):
@@ -145,17 +143,18 @@ class Knowledge:
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             self.agent.dest.y += 100
-            #self.agent.response = "Going down..."
             return("going down")
 
     def yes(self, response_only=False):
+        response = "yes! "
         if response_only:
-            response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
-            return("yes! " + str(response))
+            if not self.agent.transcript.is_empty():
+                prior_input, prior_actions = self.agent.transcript.previous()
+                response += "I learned to: " + str(prior_input)
+            return response
         else:
             # TODO: make this increase the weight of the action for a previous command?
             response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
-            #self.agent.response = "yes! " + str(response)
             return("yes! " + str(response))
 
     def no(self, response_only=False):
@@ -163,7 +162,6 @@ class Knowledge:
             return("oops :(")
         else:
             # TODO: make this decrease the weight of the action for a previous command?
-            #self.agent.response = "oops :("
             return("oops :(")
 
     def tree(self, response_only=False):
@@ -200,7 +198,6 @@ class Knowledge:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             return previous # Return previous agent vector coordinates
           
-
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]
     #     return coordinates
@@ -220,8 +217,6 @@ class Knowledge:
         # if standing in front of the trunk
         # just climb the tree
 
-
-        #self.agent.position = vec(self.agent.game.tree_top.x, self.agent.game.tree_top.y)
         if response_only:
             return "climbing the tree"  # Return tree vector coordinates
         else:
@@ -248,6 +243,26 @@ class Knowledge:
             self.agent.dest = flower_coords
             return self.objects['flowers']  # Return flower vector coordinates
 
+    # #IN PROGRESS BELOW
+    # def init_action_key(self):
+    #     KEY = "self.move, self.left, self.right, self.up, self.down, self.yes, self.no, \
+    #            self.tree, self.me, self.previous, self.bridge, self.climb_tree, self.cross_bridge,self.find_flowers"
+    #     #KEY = KEY.replace("self.", "").replace("[", "").replace("]", "")
+    #     KEY = KEY.replace("self.", "")
+    #     KEY = KEY.split(", ")
+
+    #     printif("KEY initialized: " + str(KEY))
+    #     return KEY 
+
+    # def readable_actions(self, list_of_action_ints):
+    #     KEY = self.action_key
+    #     action_names = []
+
+    #     for action_int in list_of_action_ints:
+    #         action_names.append(KEY[action_int[0]])
+
+    #     printif("readable actions: " + str(action_names))
+    #     return action_names
 
 
 
