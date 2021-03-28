@@ -28,7 +28,8 @@ class Knowledge:
                          'you': [8], agent.name: [8], \
                          'back': [9],
                          'bridge': [10],
-                         'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 'great': [14],
+                         'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 
+                         'great': [14], 'yay': [14],
                          'hi': [15], 'hello': [15], 'hey': [15]}
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.

@@ -81,7 +81,7 @@ class Transcript:
         '''
         Returns the current instruction from the transcript.
         '''
-        return self.instructions[len(self.instructions)-1]
+        return self.instructions[-1]
 
 
     def previous_actions(self):
