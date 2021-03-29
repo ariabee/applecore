@@ -45,9 +45,9 @@ class Agent(pg.sprite.Sprite):
         self.transcript = Transcript()
 
         # Working memory properties
-        self.recognized_phrases = []
-        self.recognized_words = []
+        self.recognized = []
         self.actions = [] # current, complete list of action sequences e.g. [[1],[[0],[2]]]
+        self.input_to_actions = []
         self.action_queue = [] # remaining actions to be completed
         self.current_action = []
         self.key_used = ""
@@ -166,8 +166,7 @@ class Agent(pg.sprite.Sprite):
         1) words from its lexicon and learned phrases
         2) a list of actions to carry out
         """
-        recognized_words = ""
-        recognized_phrases = ""
+        recognized = []
         actions = []
         unknowns = ""
         instruction = self.instruction # the input string from the user
@@ -181,7 +180,7 @@ class Agent(pg.sprite.Sprite):
         for phrase in learned:
             if phrase in instruction:
                 printif("found the phrase: " + str(phrase))
-                recognized_phrases += (phrase + " ")
+                recognized.append(phrase)
                 actions.append(learned[phrase])
 
                 # If found, remove phrase from instruction
@@ -192,15 +191,16 @@ class Agent(pg.sprite.Sprite):
         # Then check for remaining recognized words in the lexicon
         for word in instruction_split:
             if word in lexicon:
-                recognized_words += (word + " ")
+                recognized.append(word)
                 actions.append(lexicon[word])
-                # print(actions)
 
-        self.recognized_phrases = recognized_phrases
-        self.recognized_words = recognized_words
+        self.recognized = recognized
         self.actions = actions
+        self.input_to_actions = [(r, a) for r, a in zip(self.recognized, self.actions)]
 
-        return (recognized_phrases, recognized_words, actions)
+        printif("recognized: " + str(self.recognized) + "\n action list: " + str(self.actions))
+
+        return (recognized, actions)
 
     def compose_actions(self, actions):
         """
@@ -215,19 +215,16 @@ class Agent(pg.sprite.Sprite):
             for action in action_list:            
                 single_actions.append([action]) # note that action is still inside a list e.g. [1]
 
-        # Remove move action if a destination action is given
+        # Remove move action if a destination action is given 
         # TODO: have this make use of Action object type properties 
-        move_int = 0
-        move = False
-        dest = False
-        for action in single_actions:
-            if action[0] == move_int: # move function
-                move = True
-            elif action[0] in [1,2,3,4,7,9,10]: # destination function
-                dest = True
-        if move and dest:
-            while [move_int] in single_actions:
-                single_actions.remove([move_int])
+        move = 0
+        destinations = [1,2,3,4,7,9,10]
+
+        if [move] in single_actions: # move function
+            for action in single_actions:
+                if action[0] in destinations: # destination function
+                    while [move] in single_actions:
+                        single_actions.remove([move])
         
         printif("composed: " + str(single_actions))
         return single_actions
@@ -247,16 +244,25 @@ class Agent(pg.sprite.Sprite):
         TODO: Composes feedback into input-based response.
         """
         single_actions = self.action_queue
+        input_to_actions = self.input_to_actions
 
         responses = ""
 
-        #print("- single_actions: " + str(single_actions))
-        for actions in single_actions:
-            #print("- actions: " + str(actions))
-            for action in actions:
-                #print("- action: " + str(action))
-                action_response = self.knowledge.actions[action](response_only=True)
+        for phrase, actions in input_to_actions:
+            if len(actions) > 1:
+                responses += phrase
+            else:
+                action = actions[0]
+                action_response = self.knowledge.actions[action](response_only=True, phrase=phrase)
                 responses += action_response + " "
+
+        # #print("- single_actions: " + str(single_actions))
+        # for actions in single_actions:
+        #     #print("- actions: " + str(actions))
+        #     for action in actions:
+        #         #print("- action: " + str(action))
+        #         action_response = self.knowledge.actions[action](response_only=True)
+        #         responses += action_response + " "
         
         if responses:
             self.response = responses
@@ -264,7 +270,6 @@ class Agent(pg.sprite.Sprite):
             # Agent responds to fully unfamiliar phrases by repeating instruction
             self.response = "how do I " + self.instruction + "?" 
 
-        printif("recognized: " + str(self.recognized_phrases) + ", " + str(self.recognized_words))
         printif(self.name + ": " + str(self.response))
         return self.response
 
