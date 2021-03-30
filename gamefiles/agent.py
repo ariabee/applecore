@@ -255,7 +255,7 @@ class Agent(pg.sprite.Sprite):
         responses = ""
 
         for phrase, actions in input_to_actions:
-            if len(actions) > 1:
+            if len(actions) > 1 or len(phrase.split()) > 1:
                 responses += phrase
             else:
                 action = actions[0]

@@ -257,8 +257,11 @@ class Knowledge:
 
     def compliment(self, response_only=False, phrase=""):
         if response_only:
-            #return "thanks, you're " + phrase
-            return "thank you"
+            if phrase in ["good","love","yay"]:
+                return "thank you"
+            else:
+                return "thanks, you're " + phrase
+            
         else:
             return "thank you"
 
