@@ -30,14 +30,15 @@ class Knowledge:
                          'bridge': [10],
                          'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 
                          'great': [14], 'yay': [14],
-                         'hi': [15], 'hello': [15], 'hey': [15]}
+                         'hi': [15], 'hello': [15], 'hey': [15],
+                         'name': [16]}
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
         self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, 
                         self.tree, self.me, self.previous, self.bridge, 
                         self.climb_tree, self.cross_bridge, self.find_flowers, self.compliment,
-                        self.hello]
+                        self.hello, self.name]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y),
                         'me': agent.position,
                         'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
@@ -102,7 +103,15 @@ class Knowledge:
         moves in random direction
         """
         if response_only:
-            return("I " + phrase + " somewhere")
+            if phrase == "go" or phrase == "walk":
+                verb = phrase + "ing"
+            elif phrase == "move":
+                verb = "moving"
+            elif phrase == "run":
+                verb = "running"
+            else:
+                verb = "moving"
+            return(verb + " somewhere")
         else:
             if destination:
                 self.agent.dest = destination
@@ -152,7 +161,7 @@ class Knowledge:
         response = "yes! "
         if response_only:
             if not self.agent.transcript.is_empty():
-                prior_input, prior_actions = self.agent.transcript.previous()
+                prior_input, prior_actions = self.agent.transcript.current()
                 response += "I learned to: " + str(prior_input)
             return response
         else:
@@ -169,7 +178,7 @@ class Knowledge:
 
     def tree(self, response_only=False, phrase=""):
         if response_only:
-            return "to the tree" # Return tree vector coordinates
+            return "to the tree"
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             tree_coords = self.objects['tree']
@@ -178,7 +187,7 @@ class Knowledge:
     
     def bridge(self, response_only=False, phrase=""):
         if response_only:
-            return "I'm going to the bridge..."
+            return "to the bridge"
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             bridge_coords = self.objects['bridge']
@@ -193,7 +202,7 @@ class Knowledge:
 
     def previous(self, response_only=False, phrase=""):
         if response_only:
-            return "I'm going back"
+            return "going back"
         else:
             #print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
             previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
@@ -248,7 +257,8 @@ class Knowledge:
 
     def compliment(self, response_only=False, phrase=""):
         if response_only:
-            return "thanks, you're " + phrase
+            #return "thanks, you're " + phrase
+            return "thank you"
         else:
             return "thank you"
 
@@ -257,6 +267,12 @@ class Knowledge:
             return phrase + " to you too"
         else:
             return "hello to you too"
+
+    def name(self, response_only=False, phrase=""):
+        if response_only:
+            return self.agent.name
+        else:
+            return self.agent.name
 
     # #IN PROGRESS
     # def init_action_key(self):

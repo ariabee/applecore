@@ -225,6 +225,12 @@ class Agent(pg.sprite.Sprite):
                 if action[0] in destinations: # destination function
                     while [move] in single_actions:
                         single_actions.remove([move])
+
+        me = 8
+        yes = 5
+        if [me] in single_actions and [yes] in single_actions:
+            while [me] in single_actions:
+                single_actions.remove([me])
         
         printif("composed: " + str(single_actions))
         return single_actions
