@@ -246,8 +246,8 @@ class Agent(pg.sprite.Sprite):
 
     def compose_feedback(self):
         """
-        Temporary basic text feedback version below.
-        TODO: Composes feedback into input-based response.
+        Composes feedback into input-based text response.
+        TODO: Continue updating for improved input integration.
         """
         single_actions = self.action_queue
         input_to_actions = self.input_to_actions
@@ -255,8 +255,8 @@ class Agent(pg.sprite.Sprite):
         responses = ""
 
         for phrase, actions in input_to_actions:
-            if len(actions) > 1 or len(phrase.split()) > 1:
-                responses += phrase
+            if len(actions) > 1 or len(phrase.split()) > 1: # Indicates a learned phrase 
+                responses += phrase                         # vs. an action that integrates user input in response
             else:
                 action = actions[0]
                 action_response = self.knowledge.actions[action](response_only=True, phrase=phrase)
