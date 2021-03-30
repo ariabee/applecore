@@ -30,14 +30,15 @@ class Knowledge:
                          'bridge': [10],
                          'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 
                          'great': [14], 'yay': [14],
-                         'hi': [15], 'hello': [15], 'hey': [15]}
+                         'hi': [15], 'hello': [15], 'hey': [15],
+                         'name': [16]}
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
         self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, 
                         self.tree, self.me, self.previous, self.bridge, 
                         self.climb_tree, self.cross_bridge, self.find_flowers, self.compliment,
-                        self.hello]
+                        self.hello, self.name]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y),
                         'me': agent.position,
                         'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
@@ -97,12 +98,20 @@ class Knowledge:
         self.agent.vel.y *= 0.5
         
       
-    def move(self, destination=None, response_only=False):
+    def move(self, destination=None, response_only=False, phrase=""):
         """
         moves in random direction
         """
         if response_only:
-            return("moving somewhere")
+            if phrase == "go" or phrase == "walk":
+                verb = phrase + "ing"
+            elif phrase == "move":
+                verb = "moving"
+            elif phrase == "run":
+                verb = "running"
+            else:
+                verb = "moving"
+            return(verb + " somewhere")
         else:
             if destination:
                 self.agent.dest = destination
@@ -116,7 +125,7 @@ class Knowledge:
                 self.agent.dest = random_coords
                 return("moving somewhere")
           
-    def left(self, response_only=False):
+    def left(self, response_only=False, phrase=""):
         if response_only:
             return("going left")
         else:
@@ -124,7 +133,7 @@ class Knowledge:
             self.agent.dest.x -= 100
             return("going left")
 
-    def right(self, response_only=False):
+    def right(self, response_only=False, phrase=""):
         if response_only:
             return("going right")
         else:
@@ -132,7 +141,7 @@ class Knowledge:
             self.agent.dest.x += 100
             return("going right")
 
-    def up(self, response_only=False):
+    def up(self, response_only=False, phrase=""):
         if response_only:
             return("going up")
         else:
@@ -140,7 +149,7 @@ class Knowledge:
             self.agent.dest.y -= 100
             return("going up")
 
-    def down(self, response_only=False):
+    def down(self, response_only=False, phrase=""):
         if response_only:
             return("going down")
         else:
@@ -148,11 +157,11 @@ class Knowledge:
             self.agent.dest.y += 100
             return("going down")
 
-    def yes(self, response_only=False):
+    def yes(self, response_only=False, phrase=""):
         response = "yes! "
         if response_only:
             if not self.agent.transcript.is_empty():
-                prior_input, prior_actions = self.agent.transcript.previous()
+                prior_input, prior_actions = self.agent.transcript.current()
                 response += "I learned to: " + str(prior_input)
             return response
         else:
@@ -160,40 +169,40 @@ class Knowledge:
             response = self.link_prev_command() if not self.agent.transcript.is_empty() else ""
             return("yes! " + str(response))
 
-    def no(self, response_only=False):
+    def no(self, response_only=False, phrase=""):
         if response_only:
             return("oops :(")
         else:
             # TODO: make this decrease the weight of the action for a previous command?
             return("oops :(")
 
-    def tree(self, response_only=False):
+    def tree(self, response_only=False, phrase=""):
         if response_only:
-            return "to the tree" # Return tree vector coordinates
+            return "to the tree"
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             tree_coords = self.objects['tree']
             self.agent.dest = tree_coords
             return self.objects['tree'] # Return tree vector coordinates
     
-    def bridge(self, response_only=False):
+    def bridge(self, response_only=False, phrase=""):
         if response_only:
-            return "I'm going to the bridge..."
+            return "to the bridge"
         else:
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
             bridge_coords = self.objects['bridge']
             self.agent.dest = bridge_coords
             return self.objects['bridge'] # Return bridge vector coordinates
 
-    def me(self, response_only=False):
+    def me(self, response_only=False, phrase=""):
         if response_only:
             return "me" # Return agent vector coordinates
         else:
             return self.objects['me'] # Return agent vector coordinates
 
-    def previous(self, response_only=False):
+    def previous(self, response_only=False, phrase=""):
         if response_only:
-            return "I'm going back"
+            return "going back"
         else:
             #print("current pos: " + str(self.agent.position) + ", dest: " +str(self.agent.previous_pos))
             previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
@@ -207,7 +216,7 @@ class Knowledge:
 
     # Define complex actions / game tasks:
 
-    def climb_tree(self, response_only=False):
+    def climb_tree(self, response_only=False, phrase=""):
     # def climb_the_tree(self, position, action_sequence):
         # (should perform actions, either predefined or passed into the function)
         # move agent to position
@@ -228,7 +237,7 @@ class Knowledge:
             self.agent.dest = treetop_coords
             return self.objects['treetop']  # Return treetop vector coordinates
 
-    def cross_bridge(self, response_only=False):
+    def cross_bridge(self, response_only=False, phrase=""):
         if response_only:
             return "crossing the bridge"
         else:
@@ -237,7 +246,7 @@ class Knowledge:
             self.agent.dest = crossed_coords
             return self.objects['bridge_crossed']  # Return bridge crossed vector coordinates
 
-    def find_flowers(self, response_only=False):
+    def find_flowers(self, response_only=False, phrase=""):
         if response_only:
             return "finding red flowers"
         else:
@@ -248,16 +257,25 @@ class Knowledge:
 
     def compliment(self, response_only=False, phrase=""):
         if response_only:
-            #return "thanks, you're " + phrase
-            return "thank you"
+            if phrase in ["good","love","yay"]:
+                return "thank you"
+            else:
+                return "thanks, you're " + phrase
+            
         else:
             return "thank you"
 
     def hello(self, response_only=False, phrase=""):
         if response_only:
-            return "hello to you too"
+            return phrase + " to you too"
         else:
             return "hello to you too"
+
+    def name(self, response_only=False, phrase=""):
+        if response_only:
+            return self.agent.name
+        else:
+            return self.agent.name
 
     # #IN PROGRESS
     # def init_action_key(self):
