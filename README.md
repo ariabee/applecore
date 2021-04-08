@@ -6,13 +6,11 @@ Language, Action, & Perception Software Project
 
 Winter 2020-2021
 
+## How to Play
+
 <p align="center">
 	<img src="gamefiles/img/applecore-demo-thumbnail.png" alt="Demo Thumbnail Image" width="500"/>
 </p>
-
-![Demo Thumbnail Image](gamefiles/img/applecore-demo-thumbnail.png)
-
-## How to Play
 
 ### Download Game Files
 1. Clone repository or download zip file.
