@@ -6,7 +6,9 @@ Language, Action, & Perception Software Project
 
 Winter 2020-2021
 
-![alt text](https://github.com/ariabee/applecore/tree/main/gamefiles/img/applecore-demo-thumbnail.png "Demo Thumbnail Image")
+<img src="https://github.com/ariabee/applecore/blob/feedback/gamefiles/img/applecore-demo-thumbnail.png" alt="Demo Thumbnail Image" width="250"/>
+
+![Demo Thumbnail Image](gamefiles/img/applecore-demo-thumbnail.png)
 
 ## How to Play
 
