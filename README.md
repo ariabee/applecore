@@ -6,7 +6,11 @@ Language, Action, & Perception Software Project
 
 Winter 2020-2021
 
-## How to Use (Development)
+![alt text](https://github.com/ariabee/applecore/tree/main/gamefiles/img/applecore-demo-thumbnail.png "Demo Thumbnail Image")
+
+## How to Play
+
+### Download Game Files
 1. Clone repository or download zip file.
 2. Have Python 3 installed, or download it [here](https://www.python.org/).
 3. To install dependencies, do 1 of the following 2 options: 
