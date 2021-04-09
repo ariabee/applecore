@@ -331,7 +331,6 @@ class Agent(pg.sprite.Sprite):
             self.compose_feedback()
             
             # Save to transcript
-            #self.transcript.store(self.instruction, self.knowledge.readable_actions(self.action_queue.copy()), self.response)
             self.transcript.store(self.key_used, self.instruction, self.action_queue.copy(), self.response)
 
             # Reset instruction
