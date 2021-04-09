@@ -256,7 +256,7 @@ class Agent(pg.sprite.Sprite):
 
         for phrase, actions in input_to_actions:
             if len(actions) > 1 or len(phrase.split()) > 1:  # Phrase is a learned phrase as evidenced by actions > 1
-                responses += phrase                          # or phrase is multi-word.
+                responses += phrase + " "                    # or phrase is multi-word.
             else: # Action integrates user input in response.
                 action = actions[0]
                 action_response = self.knowledge.actions[action](response_only=True, phrase=phrase)

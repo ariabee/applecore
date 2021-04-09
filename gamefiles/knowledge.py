@@ -201,9 +201,9 @@ class Knowledge:
             return self.objects['me'] # Return agent vector coordinates
 
     def previous(self, response_only=False, phrase=""):
-    '''
-    Returns agent's previous vector coordinates.
-    '''
+        """
+        Returns agent's previous vector coordinates.
+        """
         if response_only:
             return "going back"
         else:
