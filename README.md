@@ -6,7 +6,7 @@ Language, Action, & Perception Software Project
 
 Winter 2020-2021
 
-## How to Play
+## How to Use (Play the Game)
 
 <p align="center">
 	<img src="gamefiles/img/applecore-demo-thumbnail.png" alt="Demo Thumbnail Image" width="500"/>
@@ -28,3 +28,6 @@ Winter 2020-2021
 
 4. Navigate to `gamefiles/` on local machine.
 5. Run `python3 game.py` or `python game.py` to play the game.
+
+## Demo
+For a brief game demonstration, visit https://www.youtube.com/watch?v=0x6ZBAsmyY0.
