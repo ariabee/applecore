@@ -7,12 +7,6 @@ Language, Action, & Perception Software Project
 Winter 2020-2021
 
 ## How to Use (Play the Game)
-
-<p align="center">
-	<img src="gamefiles/img/applecore-demo-thumbnail.png" alt="Demo Thumbnail Image" width="500"/>
-</p>
-
-### Download Game Files
 1. Clone repository or download zip file.
 2. Have Python 3 installed, or download it [here](https://www.python.org/).
 3. To install dependencies, do 1 of the following 2 options: 
@@ -31,3 +25,6 @@ Winter 2020-2021
 
 ## Demo
 For a brief game demonstration, visit https://www.youtube.com/watch?v=0x6ZBAsmyY0.
+<p align="center">
+	<img src="gamefiles/img/applecore-demo-thumbnail.png" alt="Demo Thumbnail Image" />
+</p>
