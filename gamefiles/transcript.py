@@ -127,7 +127,6 @@ class Transcript:
         '''
         Saves transcript to a csv file.
         '''
-        # TODO: update to also save responses/feedback
         with open(self.file_path, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Key_Pressed','Instruction', 'Actions', 'Response', 'Task Achieved'])

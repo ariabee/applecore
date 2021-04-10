@@ -204,28 +204,28 @@ class Agent(pg.sprite.Sprite):
 
     def compose_actions(self, actions):
         """
-        Currently composes actions into list of single actions. Returns list.
-        (Here is where semantics are helpful...:))
         Composes the actions into a meaningful sequence. 
+        (Here is where semantics are helpful...:))
         Returns the composed action sequence (a list of integer lists) e.g. [[1],[0],[3]]
         """
+        # Restructure actions list into list of single actions e.g. [[1],[0],[3]].
         single_actions = []
         printif("composing actions... " + str(actions))
         for action_list in actions:
             for action in action_list:            
                 single_actions.append([action]) # note that action is still inside a list e.g. [1]
 
-        # Remove move action if a destination action is given 
+        # Remove 'move' action if a destination action is already given.
         # TODO: have this make use of Action object type properties 
         move = 0
         destinations = [1,2,3,4,7,9,10]
-
         if [move] in single_actions: # move function
             for action in single_actions:
                 if action[0] in destinations: # destination function
                     while [move] in single_actions:
                         single_actions.remove([move])
 
+        # If 'me' and 'yes' action are both present, remove the 'me' action. (Patchy fix)
         me = 8
         yes = 5
         if [me] in single_actions and [yes] in single_actions:
@@ -255,9 +255,9 @@ class Agent(pg.sprite.Sprite):
         responses = ""
 
         for phrase, actions in input_to_actions:
-            if len(actions) > 1 or len(phrase.split()) > 1: # Indicates a learned phrase 
-                responses += phrase                         # vs. an action that integrates user input in response
-            else:
+            if len(actions) > 1 or len(phrase.split()) > 1:  # Phrase is a learned phrase as evidenced by actions > 1
+                responses += phrase + " "                    # or phrase is multi-word.
+            else: # Action integrates user input in response.
                 action = actions[0]
                 action_response = self.knowledge.actions[action](response_only=True, phrase=phrase)
                 responses += action_response + " "
@@ -331,7 +331,6 @@ class Agent(pg.sprite.Sprite):
             self.compose_feedback()
             
             # Save to transcript
-            #self.transcript.store(self.instruction, self.knowledge.readable_actions(self.action_queue.copy()), self.response)
             self.transcript.store(self.key_used, self.instruction, self.action_queue.copy(), self.response)
 
             # Reset instruction

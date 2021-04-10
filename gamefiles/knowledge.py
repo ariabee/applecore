@@ -201,6 +201,9 @@ class Knowledge:
             return self.objects['me'] # Return agent vector coordinates
 
     def previous(self, response_only=False, phrase=""):
+        """
+        Returns agent's previous vector coordinates.
+        """
         if response_only:
             return "going back"
         else:
@@ -208,7 +211,7 @@ class Knowledge:
             previous = vec(self.agent.previous_pos.x, self.agent.previous_pos.y)    
             self.agent.dest = previous
             self.agent.previous_pos = vec(self.agent.position.x, self.agent.position.y)
-            return previous # Return previous agent vector coordinates
+            return previous
           
     # def an_object(self, object_name):
     #     coordinates = self.objects[object_name]
@@ -255,6 +258,8 @@ class Knowledge:
             self.agent.dest = flower_coords
             return self.objects['flowers']  # Return flower vector coordinates
 
+    # Additional actions:
+
     def compliment(self, response_only=False, phrase=""):
         if response_only:
             if phrase in ["good","love","yay"]:
@@ -277,26 +282,6 @@ class Knowledge:
         else:
             return self.agent.name
 
-    # #IN PROGRESS
-    # def init_action_key(self):
-    #     KEY = "self.move, self.left, self.right, self.up, self.down, self.yes, self.no, \
-    #            self.tree, self.me, self.previous, self.bridge, self.climb_tree, self.cross_bridge,self.find_flowers"
-    #     #KEY = KEY.replace("self.", "").replace("[", "").replace("]", "")
-    #     KEY = KEY.replace("self.", "")
-    #     KEY = KEY.split(", ")
-
-    #     printif("KEY initialized: " + str(KEY))
-    #     return KEY 
-
-    # def readable_actions(self, list_of_action_ints):
-    #     KEY = self.action_key
-    #     action_names = []
-
-    #     for action_int in list_of_action_ints:
-    #         action_names.append(KEY[action_int[0]])
-
-    #     printif("readable actions: " + str(action_names))
-    #     return action_names
 
 
 
