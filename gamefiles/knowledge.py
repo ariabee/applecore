@@ -31,14 +31,16 @@ class Knowledge:
                          'beautiful': [14], 'nice': [14], 'good': [14], 'love': [14], 'cute': [14], 
                          'great': [14], 'yay': [14],
                          'hi': [15], 'hello': [15], 'hey': [15],
-                         'name': [16]}
+                         'name': [16],
+                         'repeat': [17], 'again': [17]
+                         }
         
         self._learned = {} # An initially empty list of learned commands mapped to actions.
 
         self.actions = [self.move, self.left, self.right, self.up, self.down, self.yes, self.no, 
                         self.tree, self.me, self.previous, self.bridge, 
                         self.climb_tree, self.cross_bridge, self.find_flowers, self.compliment,
-                        self.hello, self.name]
+                        self.hello, self.name, self.repeat]
         self.objects = {'tree': vec(self.agent.game.tree_trunk.x, self.agent.game.tree_trunk.y),
                         'me': agent.position,
                         'bridge': vec(self.agent.game.bridge.x, self.agent.game.bridge.y),
@@ -282,6 +284,15 @@ class Knowledge:
         else:
             return self.agent.name
 
+    def repeat(self, response_only=False, phrase=""):
+        """
+        Returns previously completed action sequence
+        """
+        if response_only:
+            return phrase + ": " + str(self.agent.transcript.current_response())
+        else:
+            printif("repeat current action sequence: " + str(self.agent.transcript.previous_actions()) )
+            return self.agent.transcript.previous_actions() #TODO: explain this
 
 
 

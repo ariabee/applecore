@@ -114,6 +114,14 @@ class Transcript:
         return (self.current_instruction(), self.current_actions())
 
 
+    def current_response(self):
+        '''
+        Returns the most recent agent response from the transcript.
+        '''
+        index_current_input = len(self.feedback)-1
+        return self.feedback[index_current_input]
+
+
     def is_empty(self):
         instruct_is_empty = not self.instructions
         actions_is_empty = not self.action_sequences

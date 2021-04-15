@@ -198,7 +198,7 @@ class Agent(pg.sprite.Sprite):
         self.actions = actions
         self.input_to_actions = [(r, a) for r, a in zip(self.recognized, self.actions)]
 
-        printif("recognized: " + str(self.recognized) + "\n action list: " + str(self.actions))
+        printif("recognized: " + str(self.recognized) + "\n to action list: " + str(self.actions))
 
         return (recognized, actions)
 
@@ -231,7 +231,15 @@ class Agent(pg.sprite.Sprite):
         if [me] in single_actions and [yes] in single_actions:
             while [me] in single_actions:
                 single_actions.remove([me])
-        
+
+        # If 'repeat' action is used, add the repeated actions to the action list
+        repeat = 17
+        if [repeat] in single_actions:
+            index_repeat = single_actions.index([repeat])
+            repeated = self.knowledge.actions[repeat]()
+            for action in reversed(repeated):
+                single_actions.insert(index_repeat+1, action) # insert repeated action after 'repeat' action
+
         printif("composed: " + str(single_actions))
         return single_actions
 
@@ -285,7 +293,7 @@ class Agent(pg.sprite.Sprite):
         '''
         action = self.action_queue[0][0]
         action_info = [action, self.transcript.entry_number()] # allows repeated actions in new queues
-        #TODO: make sure this allows for the same action twice
+        #TODO: make sure this allows for the same action twice (sometimes)
         if action_info != self.current_action: # keeps the agent from re-calling the current action
             self.current_action = action_info
             self.knowledge.actions[action]()
@@ -298,7 +306,7 @@ class Agent(pg.sprite.Sprite):
         printif("popped: " + str(popped))
 
         if len(self.action_queue) == 0:
-            printif("actions completed (" + str(self.action_queue) + ")")
+            printif("actions completed, empty queue (" + str(self.action_queue) + ")")
         
         return popped
 
